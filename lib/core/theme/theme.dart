@@ -4,87 +4,90 @@ import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
 class AppThemes {
+  // Light Theme
   static final ThemeData lightTheme = ThemeData(
-    scaffoldBackgroundColor: AppColors.appLightThemeBackground,
+    useMaterial3: true,
     brightness: Brightness.light,
-    primaryColor: AppColors.appPrimaryColor,
-    cardColor: AppColors.appLightThemeBackground,
-    progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: Colors.blue,
+    scaffoldBackgroundColor: Colors.white,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFF6750A4),
+      brightness: Brightness.light,
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.appPrimaryColor,
-      iconTheme: IconThemeData(color: Colors.white),
-      titleTextStyle: GoogleFonts.roboto(
-        fontSize: 20.0,
-        fontWeight: FontWeight.normal,
-        color: Colors.white,
+      centerTitle: true,
+      elevation: 0,
+      backgroundColor: AppColors.appLightThemeBackground,
+      titleTextStyle: GoogleFonts.montserrat(
+        color: Colors.black,
+        fontWeight: FontWeight.bold,
+        fontSize: 18,
+      ),
+      iconTheme: const IconThemeData(color: Colors.black),
+    ),
+    textTheme: _textTheme(Colors.black),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        elevation: 2,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     ),
-    textTheme: TextTheme(
-      headlineLarge: GoogleFonts.roboto(
-        fontSize: 32.0,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-      ),
-      headlineMedium: GoogleFonts.roboto(
-        fontSize: 25.0,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-      ),
-      headlineSmall: GoogleFonts.roboto(
-        fontSize: 20.0,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-      ),
-      bodyLarge: GoogleFonts.roboto(fontSize: 18.0, color: Colors.black),
-      bodyMedium: GoogleFonts.roboto(fontSize: 16.0, color: Colors.black),
-      bodySmall: GoogleFonts.roboto(fontSize: 14.0, color: Colors.black),
-      displayLarge: GoogleFonts.roboto(fontSize: 12.0, color: Colors.black),
-      displayMedium: GoogleFonts.roboto(fontSize: 10.0, color: Colors.black),
-      displaySmall: GoogleFonts.roboto(fontSize: 8.0, color: Colors.black),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
   );
 
+  // Dark Theme
   static final ThemeData darkTheme = ThemeData(
-    scaffoldBackgroundColor: AppColors.appDarkThemeBackground,
-    progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: Colors.grey,
-    ),
+    useMaterial3: true,
     brightness: Brightness.dark,
-    primaryColor: AppColors.appPrimaryColor,
-    cardColor: AppColors.appDarkThemeBackground,
+    scaffoldBackgroundColor: Colors.black,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFF6750A4),
+      brightness: Brightness.dark,
+    ),
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.appPrimaryColor,
-      iconTheme: IconThemeData(color: Colors.white),
-      titleTextStyle: GoogleFonts.roboto(
-        fontSize: 20.0,
-        fontWeight: FontWeight.normal,
+      centerTitle: true,
+      elevation: 0,
+      backgroundColor: AppColors.appDarkThemeBackground,
+      titleTextStyle: GoogleFonts.montserrat(
         color: Colors.white,
+        fontWeight: FontWeight.bold,
+        fontSize: 18,
+      ),
+      iconTheme: const IconThemeData(color: Colors.white),
+    ),
+    textTheme: _textTheme(Colors.white),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        elevation: 2,
+        backgroundColor: const Color(0xFF6750A4),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     ),
-    textTheme: TextTheme(
-      headlineLarge: GoogleFonts.roboto(
-        fontSize: 32.0,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-      headlineMedium: GoogleFonts.roboto(
-        fontSize: 25.0,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-      headlineSmall: GoogleFonts.roboto(
-        fontSize: 20.0,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-      bodyLarge: GoogleFonts.roboto(fontSize: 18.0, color: Colors.white70),
-      bodyMedium: GoogleFonts.roboto(fontSize: 16.0, color: Colors.white70),
-      bodySmall: GoogleFonts.roboto(fontSize: 14.0, color: Colors.white70),
-      displayLarge: GoogleFonts.roboto(fontSize: 12.0, color: Colors.white70),
-      displayMedium: GoogleFonts.roboto(fontSize: 10.0, color: Colors.white70),
-      displaySmall: GoogleFonts.roboto(fontSize: 8.0, color: Colors.white70),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
+  );
+
+  static TextTheme _textTheme(Color color) => TextTheme(
+    displayLarge: GoogleFonts.roboto(color: color),
+    displayMedium: GoogleFonts.roboto(color: color),
+    displaySmall: GoogleFonts.roboto(color: color),
+    headlineLarge: GoogleFonts.roboto(color: color),
+    headlineMedium: GoogleFonts.roboto(color: color),
+    headlineSmall: GoogleFonts.roboto(color: color),
+    titleLarge: GoogleFonts.roboto(color: color),
+    titleMedium: GoogleFonts.roboto(color: color),
+    titleSmall: GoogleFonts.roboto(color: color),
+    bodyLarge: GoogleFonts.roboto(color: color),
+    bodyMedium: GoogleFonts.roboto(color: color),
+    bodySmall: GoogleFonts.roboto(color: color),
+    labelLarge: GoogleFonts.roboto(color: color),
+    labelMedium: GoogleFonts.roboto(color: color),
+    labelSmall: GoogleFonts.roboto(color: color),
   );
 }
