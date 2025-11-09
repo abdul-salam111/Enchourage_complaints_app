@@ -1,17 +1,20 @@
-
 import 'package:flutter/material.dart';
 import '../res/images.dart';
 
 class AppLogo extends StatelessWidget {
-  final double radius;
+  final double height;
+  final double width;
 
-  const AppLogo({super.key, this.radius = 30});
+  const AppLogo({super.key, this.height = 100, this.width = 100});
 
   @override
   Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: radius,
-      backgroundImage: AssetImage(AppImages.appLogo),
+    return Container(
+      height: height,
+      width: width,
+      decoration: BoxDecoration(
+        image: DecorationImage(image: AssetImage(AppImages.appLogo)),
+      ),
     );
   }
 }
