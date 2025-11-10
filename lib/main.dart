@@ -6,7 +6,6 @@ void main() async {
   runApp(const MyApp());
   WidgetsFlutterBinding.ensureInitialized();
   await setupLocator();
-  
 }
 
 class MyApp extends StatefulWidget {
@@ -33,6 +32,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: _themeController.themeMode,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
