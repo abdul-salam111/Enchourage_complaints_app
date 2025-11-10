@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_template/core/app_depencies.dart';
 import 'package:flutter_template/core/theme/theme_controller.dart';
-import 'package:get_it/get_it.dart';
-
-final sl = GetIt.instance;
 
 void main() async {
   runApp(const MyApp());

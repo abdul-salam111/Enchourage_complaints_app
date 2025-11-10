@@ -6,6 +6,6 @@ import 'theme/theme_controller.dart';
 final sl = GetIt.instance;
 
 Future<void> setupLocator() async {
-  sl.registerLazySingleton<ThemeController>(() => ThemeController());
-  sl.registerLazySingleton<DioHelper>(() => DioHelper());
+  sl.registerSingleton<ThemeController>(ThemeController());
+  sl.registerSingleton<DioHelper>(DioHelper());
 }
