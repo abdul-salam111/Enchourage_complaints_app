@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_template/core/core.dart';
 import 'package:iconsax/iconsax.dart';
+import '../core.dart';
 
 class SearchableDropdown extends StatefulWidget {
   final List<String> items;
