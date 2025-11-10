@@ -6,10 +6,10 @@ cd my_new_app
 rm -rf .git
 
 # 3️⃣ Rename Flutter app name (what shows on the device)
-flutter pub run rename --appname "My New App"
+rename setAppName --targets ios,android --value "YourAppName"
 
 # 4️⃣ Change the package/bundle ID (Android + iOS)
-flutter pub run change_app_package_name:main com.abdulsalam.mynewapp
+flutter pub global run change_app_package_name:main com.pharmasuitbooking.app
 
 # 5️⃣ Get dependencies
 flutter pub get
