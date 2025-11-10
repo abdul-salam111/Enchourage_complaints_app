@@ -19,5 +19,5 @@ export 'networks/network_manager/injection_container.dart';
 export 'networks/network_manager/prints.dart';
 export './services/session_manager.dart';
 export './services/splash_services.dart';
-export './services/storage.dart';
+export 'local_storage/storage.dart';
 export './shared/domain/usecases/usecase.dart';

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../services/storage.dart';
+import '../local_storage/storage.dart';
 
 class ThemeController extends ChangeNotifier {
 

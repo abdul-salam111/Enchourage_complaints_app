@@ -38,7 +38,6 @@ class StorageKeys {
   static const String salesmanInfo = 'salesmanInfo';
 }
 
-enum UserType { artist, trainer }
 
 extension LocalStorageGetters on LocalStorage {
   Future<String?> get userId async {
