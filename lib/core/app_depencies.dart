@@ -8,4 +8,5 @@ final sl = GetIt.instance;
 Future<void> setupLocator() async {
   sl.registerSingleton<ThemeController>(ThemeController());
   sl.registerSingleton<DioHelper>(DioHelper());
+ 
 }

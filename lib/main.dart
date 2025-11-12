@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_template/core/app_depencies.dart';
 import 'package:flutter_template/core/theme/theme_controller.dart';
+import 'routes/routes.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -26,13 +27,13 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Flutter Project',
-      home: Center(),
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: _themeController.themeMode,
       debugShowCheckedModeBanner: false,
+      routerConfig: AppRoutes.router,
     );
   }
 }

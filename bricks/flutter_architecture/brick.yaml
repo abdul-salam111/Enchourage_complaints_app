@@ -1,0 +1,10 @@
+name: flutter_architecture
+description: A Mason brick to setup project architecture (MVC, MVVM, Clean)
+version: 0.1.0+1
+
+vars:
+  architecture:
+    type: string
+    description: Which architecture pattern do you want to follow?
+    default: mvc
+    prompt: Choose your architecture (mvc, mvvm, clean)
