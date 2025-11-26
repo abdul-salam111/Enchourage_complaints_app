@@ -2,170 +2,282 @@ import 'dart:io';
 import 'package:mason/mason.dart';
 
 Future<void> run(HookContext context) async {
-  final pageName = context.vars['page_name'];
   final logger = context.logger;
 
-  // Convert to case styles
+  // 🧠 Step 1: Ask for feature or page name
+  final pageName = context.vars['page_name'] ?? logger.prompt('Enter feature/page name:');
   final className = _toPascalCase(pageName);
   final fileName = _toSnakeCase(pageName);
 
-  logger.info('Creating MVC page: $pageName');
-
   final currentDir = Directory.current;
+  final libDir = Directory('${currentDir.path}/lib');
 
-  // Create view and controller
-  _createView(currentDir, className, fileName, logger);
-  _createController(currentDir, className, fileName, logger);
+  // 🧠 Step 2: Ask or detect architecture type
+  logger.info('\nSelect your architecture:');
+  logger.info('  1️⃣  MVC');
+  logger.info('  2️⃣  MVVM');
+  logger.info('  3️⃣  Clean Feature-Based');
+  final archChoice = logger.prompt('Enter number (1/2/3):');
 
-  // Add route to routes.dart
-  _updateRoutes(currentDir, className, fileName, logger);
+  String architecture;
+  switch (archChoice) {
+    case '1':
+      architecture = 'MVC';
+      break;
+    case '2':
+      architecture = 'MVVM';
+      break;
+    case '3':
+      architecture = 'Clean';
+      break;
+    default:
+      architecture = _detectArchitecture(libDir);
+      logger.warn('⚠ Invalid selection, auto-detected: $architecture');
+  }
 
-  logger.success('\n✓ $className page created successfully!');
-  logger.info('\n📁 Files created:');
-  logger.info('  ✓ lib/views/${fileName}_view.dart');
-  logger.info('  ✓ lib/controllers/${fileName}_controller.dart');
-  logger.info('  ✓ Route added to lib/routes/routes.dart');
+  logger.info('\n🧠 Using architecture: $architecture');
+  logger.info('Creating feature/page: $pageName\n');
+
+  // 🧱 Step 3: Create structure based on architecture
+  if (architecture == 'MVC') {
+    _createView(currentDir, className, fileName, false, logger);
+    _createController(currentDir, className, fileName, logger);
+    _updateRoutes(currentDir, className, fileName, logger);
+  } else if (architecture == 'MVVM') {
+    _createView(currentDir, className, fileName, true, logger);
+    _createViewModel(currentDir, className, fileName, logger);
+    _updateRoutes(currentDir, className, fileName, logger);
+  } else {
+    _createCleanFeature(libDir, className, fileName, logger);
+  }
+
+  logger.success('\n✅ $className ($architecture) setup complete!');
 }
 
-void _createView(
-    Directory currentDir, String className, String fileName, Logger logger) {
-  final file = File('${currentDir.path}/lib/views/${fileName}_view.dart');
-  file.createSync(recursive: true);
-  file.writeAsStringSync('''import 'package:flutter/material.dart';
-import '../controllers/${fileName}_controller.dart';
+String _detectArchitecture(Directory libDir) {
+  if (Directory('${libDir.path}/viewmodels').existsSync()) return 'MVVM';
+  if (Directory('${libDir.path}/controllers').existsSync()) return 'MVC';
+  if (Directory('${libDir.path}/features').existsSync()) return 'Clean';
+  return 'MVC';
+}
 
-class ${className}View extends StatefulWidget {
+/// ---------------------------------------------------------------------------
+/// 🧩 CLEAN FEATURE-BASED ARCHITECTURE
+/// ---------------------------------------------------------------------------
+
+void _createCleanFeature(
+  Directory libDir,
+  String className,
+  String fileName,
+  Logger logger,
+) {
+  final featureDir = Directory('${libDir.path}/features/$fileName');
+
+  final dataFolders = ['datasources', 'repository_impl', 'models'];
+  final domainFolders = ['repositories', 'usecases', 'entities'];
+  final presentationFolders = ['views', 'widgets', 'blocs'];
+
+  // ✅ Create base structure
+  for (final folder in [
+    'features',
+    'features/$fileName',
+    'features/$fileName/data',
+    'features/$fileName/domain',
+    'features/$fileName/presentation',
+  ]) {
+    Directory('${libDir.path}/$folder').createSync(recursive: true);
+    logger.success('📁 Created: lib/$folder');
+  }
+
+  // ✅ Subfolders
+  for (final folder in dataFolders) {
+    Directory('${featureDir.path}/data/$folder').createSync(recursive: true);
+  }
+  for (final folder in domainFolders) {
+    Directory('${featureDir.path}/domain/$folder').createSync(recursive: true);
+  }
+  for (final folder in presentationFolders) {
+    Directory('${featureDir.path}/presentation/$folder').createSync(recursive: true);
+  }
+
+  // ✅ View
+  File('${featureDir.path}/presentation/views/${fileName}_view.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:flutter/material.dart';
+
+class ${className}View extends StatelessWidget {
   const ${className}View({super.key});
-
-  @override
-  State<${className}View> createState() => _${className}ViewState();
-}
-
-class _${className}ViewState extends State<${className}View> {
-  late final ${className}Controller _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = ${className}Controller();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('$className')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '$className View',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Action Button'),
-            ),
-          ],
-        ),
-      ),
+      body: const Center(child: Text('$className View')),
     );
   }
 }
 ''');
+  logger.success('🧱 View created.');
+
+  // ✅ Datasource Interface & Implementation
+  File('${featureDir.path}/data/datasources/${fileName}_remote_datasource.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''abstract interface class I${className}RemoteDataSource {
+  Future<bool> login(String email, String password);
 }
 
-void _createController(
-    Directory currentDir, String className, String fileName, Logger logger) {
-  final file =
-      File('${currentDir.path}/lib/controllers/${fileName}_controller.dart');
-  file.createSync(recursive: true);
-  file.writeAsStringSync('''
-
-class ${className}Controller {
-  ${className}Controller() {
-    _initialize();
-  }
-
-  void _initialize() {
-    // Initialize controller
-  }
-
-  void dispose() {
-    // Dispose resources
+class ${className}RemoteDataSourceImpl implements I${className}RemoteDataSource {
+  @override
+  Future<bool> login(String email, String password) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return true;
   }
 }
 ''');
+  logger.success('🧱 Datasource created.');
+
+  // ✅ Entity
+  File('${featureDir.path}/domain/entities/${fileName}_entity.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''class ${className}Entity {
+  final String email;
+  final String password;
+  ${className}Entity({required this.email, required this.password});
 }
+''');
+  logger.success('🧱 Entity created.');
 
-void _updateRoutes(
-    Directory currentDir, String className, String fileName, Logger logger) {
-  final routesFile = File('${currentDir.path}/lib/routes/routes.dart');
+  // ✅ Repository Interface
+  File('${featureDir.path}/domain/repositories/${fileName}_repository.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''abstract interface class ${className}Repository {
+  Future<bool> signIn(String email, String password);
+}
+''');
+  logger.success('🧱 Repository interface created.');
 
-  if (!routesFile.existsSync()) {
-    logger.warn('⚠ routes.dart not found. Creating new one for GoRouter...');
-    routesFile.createSync(recursive: true);
-    routesFile.writeAsStringSync('''import 'package:go_router/go_router.dart';
-import '../views/${fileName}_view.dart';
+  // ✅ Repository Implementation
+  File('${featureDir.path}/data/repository_impl/${fileName}_repository_impl.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import '../../domain/repositories/${fileName}_repository.dart';
+import '../datasources/${fileName}_remote_datasource.dart';
+
+class ${className}RepositoryImpl implements ${className}Repository {
+  final I${className}RemoteDataSource dataSource;
+
+  ${className}RepositoryImpl(this.dataSource);
+
+  @override
+  Future<bool> signIn(String email, String password) async {
+    return dataSource.login(email, password);
+  }
+}
+''');
+  logger.success('🧱 Repository implementation created.');
+
+  // ✅ Routes
+  final routesFile = File('${libDir.path}/routes/routes.dart');
+  routesFile
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:go_router/go_router.dart';
+import '../features/$fileName/presentation/views/${fileName}_view.dart';
 
 class AppRoutes {
   static const String $fileName = '/$fileName';
-  static const String ${fileName}Name = '$fileName';
 
   static final GoRouter router = GoRouter(
+    initialLocation: $fileName,
     routes: [
       GoRoute(
         path: $fileName,
-        name: ${fileName}Name,
+        name: '$fileName',
         builder: (context, state) => const ${className}View(),
       ),
     ],
   );
 }
 ''');
-    return;
-  }
-
-  String content = routesFile.readAsStringSync();
-
-  // ✅ Add import
-  if (!content.contains("import '../views/${fileName}_view.dart';")) {
-    final lastImport = RegExp(r"import '[^']+';").allMatches(content).last;
-    content =
-        "${content.substring(0, lastImport.end)}\nimport '../views/${fileName}_view.dart';${content.substring(lastImport.end)}";
-  }
-
-  // ✅ Add route constants (path + name)
-  if (!content.contains("static const String $fileName = '/$fileName';")) {
-    final match = RegExp(r'class AppRoutes \{').firstMatch(content);
-    if (match != null) {
-      content =
-          "${content.substring(0, match.end)}\n  static const String $fileName = '/$fileName';\n  static const String ${fileName}Name = '$fileName';${content.substring(match.end)}";
-    }
-  }
-
-  // ✅ Add GoRoute if missing
-  if (!content.contains("name: ${fileName}Name")) {
-    final goRouteMatch = RegExp(r'routes:\s*\[').firstMatch(content);
-    if (goRouteMatch != null) {
-      final insertPos = goRouteMatch.end;
-      content =
-          "${content.substring(0, insertPos)}\n      GoRoute(path: $fileName, name: ${fileName}Name, builder: (context, state) => const ${className}View(),),${content.substring(insertPos)}";
-    } else {
-      logger.warn('⚠ Could not find GoRouter routes list in routes.dart');
-    }
-  }
-
-  routesFile.writeAsStringSync(content);
-  logger.success('✓ Route (path + name) added successfully!');
+  logger.success('🧭 Routes file created.');
 }
+
+/// ---------------------------------------------------------------------------
+/// 🧩 MVC & MVVM HELPERS
+/// ---------------------------------------------------------------------------
+
+void _createView(
+    Directory currentDir, String className, String fileName, bool isMVVM, Logger logger) {
+  final logicType = isMVVM ? 'ViewModel' : 'Controller';
+  final logicFolder = isMVVM ? 'viewmodels' : 'controllers';
+  final file = File('${currentDir.path}/lib/views/${fileName}_view.dart');
+  file.createSync(recursive: true);
+  file.writeAsStringSync('''import 'package:flutter/material.dart';
+import '../$logicFolder/${fileName}_${logicType.toLowerCase()}.dart';
+
+class ${className}View extends StatelessWidget {
+  const ${className}View({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('$className')),
+      body: const Center(child: Text('$className View')),
+    );
+  }
+}
+''');
+  logger.success('🧱 Created: lib/views/${fileName}_view.dart');
+}
+
+void _createController(
+    Directory currentDir, String className, String fileName, Logger logger) {
+  final file = File('${currentDir.path}/lib/controllers/${fileName}_controller.dart');
+  file.createSync(recursive: true);
+  file.writeAsStringSync('''import 'package:flutter/material.dart';
+class ${className}Controller {
+  void onActionPressed() => debugPrint('$className Controller Action');
+}
+''');
+  logger.success('🧱 Controller created.');
+}
+
+void _createViewModel(
+    Directory currentDir, String className, String fileName, Logger logger) {
+  final file = File('${currentDir.path}/lib/viewmodels/${fileName}_viewmodel.dart');
+  file.createSync(recursive: true);
+  file.writeAsStringSync('''import 'package:flutter/foundation.dart';
+class ${className}ViewModel extends ChangeNotifier {
+  void onActionPressed() => debugPrint('$className ViewModel Action');
+}
+''');
+  logger.success('🧱 ViewModel created.');
+}
+
+void _updateRoutes(
+    Directory currentDir, String className, String fileName, Logger logger) {
+  final routesFile = File('${currentDir.path}/lib/routes/routes.dart');
+  routesFile.createSync(recursive: true);
+  routesFile.writeAsStringSync('''import 'package:go_router/go_router.dart';
+import '../views/${fileName}_view.dart';
+
+class AppRoutes {
+  static const String $fileName = '/$fileName';
+
+  static final GoRouter router = GoRouter(
+    routes: [
+      GoRoute(
+        path: $fileName,
+        name: '$fileName',
+        builder: (context, state) => const ${className}View(),
+      ),
+    ],
+  );
+}
+''');
+  logger.success('🧭 Routes updated.');
+}
+
+/// ---------------------------------------------------------------------------
+/// 🧩 Naming helpers
+/// ---------------------------------------------------------------------------
 
 String _toPascalCase(String text) {
   return text.split('_').map((word) {
@@ -178,6 +290,5 @@ String _toSnakeCase(String text) {
   return text
       .replaceAllMapped(RegExp(r'[A-Z]'), (match) => '_${match.group(0)}')
       .toLowerCase()
-      .replaceAll(RegExp(r'^_'), '')
-      .replaceAll(RegExp(r'__+'), '_');
+      .replaceAll(RegExp(r'^_'), '');
 }

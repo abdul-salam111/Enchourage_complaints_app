@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_template/core/app_depencies.dart';
 import 'package:flutter_template/core/theme/theme_controller.dart';
+
 import 'routes/routes.dart';
 
 void main() async {

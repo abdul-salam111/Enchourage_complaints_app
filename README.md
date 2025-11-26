@@ -25,3 +25,12 @@ git remote add origin https://github.com/abdulsalam/my_new_app.git
 # 8️⃣ Push your new project to your own repository
 git branch -M main
 git push -u origin main
+
+
+# 9 create project architecture
+mason make flutter_architecture
+
+
+# 10 create any page or screen
+mason make create_page
+
