@@ -78,7 +78,15 @@ Future<void> run(HookContext context) async {
 // 🧩 SIMPLE MVC
 // ------------------------------------------------------------------
 void _createSimpleMVC(Directory libDir, Logger logger) {
-  final folders = ['models', 'views', 'controllers', 'routes', 'repositories'];
+  final folders = [
+    'models',
+    'models/request_models',
+    'models/response_models',
+    'views',
+    'controllers',
+    'routes',
+    'repositories'
+  ];
   for (var folder in folders) {
     Directory('${libDir.path}/$folder').createSync(recursive: true);
     logger.success('📁 Created: lib/$folder');
@@ -92,6 +100,8 @@ import '../controllers/home_controller.dart';
 
 class HomeView extends StatelessWidget {
   final controller = HomeController();
+
+  HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +128,10 @@ class HomeController {
   void onButtonPressed() {
     debugPrint('HomeController: Button pressed!');
   }
+  
+  void dispose() {
+    // Clean up resources
+  }
 }
 ''');
   logger.success('🧱 Created: lib/controllers/home_controller.dart');
@@ -129,8 +143,11 @@ class HomeController {
 import '../views/home_view.dart';
 
 class AppRoutes {
-  static const homePath = '/';
-  static const homeName = 'home';
+  // Route paths
+  static const String homePath = '/';
+  
+  // Route names
+  static const String homeName = 'home';
   
   static final GoRouter router = GoRouter(
     initialLocation: homePath,
@@ -152,7 +169,15 @@ class AppRoutes {
 // (Same as MVC but uses ViewModel instead of Controller)
 // ------------------------------------------------------------------
 void _createSimpleMVVM(Directory libDir, Logger logger) {
-  final folders = ['models', 'views', 'viewmodels', 'routes', 'repositories'];
+  final folders = [
+    'models',
+    'models/request_models',
+    'models/response_models',
+    'views',
+    'viewmodels',
+    'routes',
+    'repositories'
+  ];
   for (var folder in folders) {
     Directory('${libDir.path}/$folder').createSync(recursive: true);
     logger.success('📁 Created: lib/$folder');
@@ -166,6 +191,8 @@ import '../viewmodels/home_viewmodel.dart';
 
 class HomeView extends StatelessWidget {
   final viewModel = HomeViewModel();
+
+  HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -192,6 +219,10 @@ class HomeViewModel {
   void onButtonPressed() {
     debugPrint('HomeViewModel: Button pressed!');
   }
+  
+  void dispose() {
+    // Clean up resources
+  }
 }
 ''');
   logger.success('🧱 Created: lib/viewmodels/home_viewmodel.dart');
@@ -203,8 +234,11 @@ class HomeViewModel {
 import '../views/home_view.dart';
 
 class AppRoutes {
-  static const homePath = '/';
-  static const homeName = 'home';
+  // Route paths
+  static const String homePath = '/';
+  
+  // Route names
+  static const String homeName = 'home';
   
   static final GoRouter router = GoRouter(
     initialLocation: homePath,
@@ -226,7 +260,13 @@ class AppRoutes {
 // ------------------------------------------------------------------
 void _createCleanFeature(Directory libDir, Logger logger) {
   final featureDir = Directory('${libDir.path}/features/signin');
-  final dataFolders = ['datasources', 'repository_impl', 'models'];
+  final dataFolders = [
+    'datasources',
+    'repository_impl',
+    'models',
+    'models/request_models',
+    'models/response_models'
+  ];
   final domainFolders = ['repositories', 'usecases', 'entities'];
   final presentationFolders = ['views', 'widgets', 'blocs'];
 
@@ -299,9 +339,11 @@ abstract interface class IRemoteSignInDataSource {
 class RemoteSignInDataSourceImpl implements IRemoteSignInDataSource {
   @override
   Future<bool> login(String email, String password) async {
-    // Simulate API request
-    await Future.delayed(const Duration(seconds: 1));
-    return email == "test@example.com" && password == "123456";
+    try {
+        return true;
+    } catch (error) {
+      throw Exception('Login error: \${error.toString()}');
+    }
   }
 }
 ''');
@@ -360,14 +402,18 @@ class SignInRepositoryImpl implements SignInRepository {
 import '../features/signin/presentation/views/signin_view.dart';
 
 class AppRoutes {
-  static const String signIn = '/signin';
+  // Route paths
+  static const String signInPath = '/signin';
+  
+  // Route names
+  static const String signInName = 'signin';
 
   static final GoRouter router = GoRouter(
-    initialLocation: signIn,
+    initialLocation: signInPath,
     routes: [
       GoRoute(
-        path: signIn,
-        name: 'signin',
+        path: signInPath,
+        name: signInName,
         builder: (context, state) => const SignInView(),
       ),
     ],
@@ -385,11 +431,89 @@ class AppRoutes {
 // ------------------------------------------------------------------
 void _createMVCFeature(Directory libDir, Logger logger) {
   final featureDir = Directory('${libDir.path}/features/home');
-  final folders = ['models', 'views', 'controllers'];
+  final folders = [
+    'models',
+    'models/request_models',
+    'models/response_models',
+    'views',
+    'controllers'
+  ];
   for (var folder in folders) {
     Directory('${featureDir.path}/$folder').createSync(recursive: true);
     logger.success('📁 Created: lib/features/home/$folder');
   }
+
+  // 🧱 HomeView
+  File('${featureDir.path}/views/home_view.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:flutter/material.dart';
+import '../controllers/home_controller.dart';
+
+class HomeView extends StatelessWidget {
+  final controller = HomeController();
+
+  HomeView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Home')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: controller.onButtonPressed,
+          child: const Text('Tap Me'),
+        ),
+      ),
+    );
+  }
+}
+''');
+  logger.success('🧱 Created: lib/features/home/views/home_view.dart');
+
+  // 🧱 Controller
+  File('${featureDir.path}/controllers/home_controller.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:flutter/material.dart';
+
+class HomeController {
+  void onButtonPressed() {
+    debugPrint('HomeController: Button pressed!');
+  }
+  
+  void dispose() {
+    // Clean up resources
+  }
+}
+''');
+  logger.success(
+      '🧱 Created: lib/features/home/controllers/home_controller.dart');
+
+  // 🧱 Routes
+  File('${libDir.path}/routes/routes.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:go_router/go_router.dart';
+import '../features/home/views/home_view.dart';
+
+class AppRoutes {
+  // Route paths
+  static const String homePath = '/';
+  
+  // Route names
+  static const String homeName = 'home';
+  
+  static final GoRouter router = GoRouter(
+    initialLocation: homePath,
+    routes: [
+      GoRoute(
+        path: homePath,
+        name: homeName,
+        builder: (context, state) => HomeView(),
+      ),
+    ],
+  );
+}
+''');
+  logger.success('🧱 Created: lib/routes/routes.dart');
 }
 
 // ------------------------------------------------------------------
@@ -397,9 +521,87 @@ void _createMVCFeature(Directory libDir, Logger logger) {
 // ------------------------------------------------------------------
 void _createMVVMFeature(Directory libDir, Logger logger) {
   final featureDir = Directory('${libDir.path}/features/home');
-  final folders = ['models', 'views', 'viewmodels'];
+  final folders = [
+    'models',
+    'models/request_models',
+    'models/response_models',
+    'views',
+    'viewmodels'
+  ];
   for (var folder in folders) {
     Directory('${featureDir.path}/$folder').createSync(recursive: true);
     logger.success('📁 Created: lib/features/home/$folder');
   }
+
+  // 🧱 HomeView
+  File('${featureDir.path}/views/home_view.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:flutter/material.dart';
+import '../viewmodels/home_viewmodel.dart';
+
+class HomeView extends StatelessWidget {
+  final viewModel = HomeViewModel();
+
+  HomeView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Home')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: viewModel.onButtonPressed,
+          child: const Text('Tap Me'),
+        ),
+      ),
+    );
+  }
+}
+''');
+  logger.success('🧱 Created: lib/features/home/views/home_view.dart');
+
+  // 🧱 ViewModel
+  File('${featureDir.path}/viewmodels/home_viewmodel.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:flutter/material.dart';
+
+class HomeViewModel {
+  void onButtonPressed() {
+    debugPrint('HomeViewModel: Button pressed!');
+  }
+  
+  void dispose() {
+    // Clean up resources
+  }
+}
+''');
+  logger
+      .success('🧱 Created: lib/features/home/viewmodels/home_viewmodel.dart');
+
+  // 🧱 Routes
+  File('${libDir.path}/routes/routes.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:go_router/go_router.dart';
+import '../features/home/views/home_view.dart';
+
+class AppRoutes {
+  // Route paths
+  static const String homePath = '/';
+  
+  // Route names
+  static const String homeName = 'home';
+  
+  static final GoRouter router = GoRouter(
+    initialLocation: homePath,
+    routes: [
+      GoRoute(
+        path: homePath,
+        name: homeName,
+        builder: (context, state) => HomeView(),
+      ),
+    ],
+  );
+}
+''');
+  logger.success('🧱 Created: lib/routes/routes.dart');
 }
