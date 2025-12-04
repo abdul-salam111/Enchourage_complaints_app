@@ -1,6 +1,6 @@
 # 1️⃣ Clone your Flutter base template
 git clone https://github.com/abdul-salam111/Flutter-Template.git education_app && cd education_app
-cd my_new_app
+
 
 # 2️⃣ Remove Git history (disconnect from template repo)
 rm -rf .git
