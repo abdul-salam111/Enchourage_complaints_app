@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:mason/mason.dart';
 
 Future<void> run(HookContext context) async {
@@ -23,12 +24,15 @@ Future<void> run(HookContext context) async {
   }
 
   String architecture;
+  bool useBloc = false;
+
   switch (choice) {
     case 1:
       architecture = 'simple_mvvm';
       break;
     case 2:
       architecture = 'clean_bloc';
+      useBloc = true;
       break;
     case 3:
       architecture = 'clean_mvvm';
@@ -38,6 +42,11 @@ Future<void> run(HookContext context) async {
   }
 
   logger.info('Setting up $architecture architecture...');
+
+  // Install Bloc packages if selected
+  if (useBloc) {
+    await _installBlocDependencies(logger);
+  }
 
   final currentDir = Directory.current;
   final libDir = Directory('${currentDir.path}/lib');
@@ -58,7 +67,186 @@ Future<void> run(HookContext context) async {
   }
 
   logger.success('✅ $architecture architecture setup complete!');
+
+  // Show next steps
+  if (useBloc) {
+    logger.info('''
+📦 Bloc packages have been added to your pubspec.yaml.
+
+Next steps:
+1. Run 'flutter pub get' to install dependencies (if not already done)
+2. Start implementing your features in lib/features/
+3. Check lib/routes/ for navigation setup
+4. Check lib/core/app_dependencies.dart for dependency injection setup
+''');
+  } else {
+    logger.info('''
+Next steps:
+1. Start implementing your views and viewmodels
+2. Check lib/routes/ for navigation setup
+3. Add any additional dependencies to pubspec.yaml as needed
+''');
+  }
 }
+
+// ------------------------------------------------------------------
+// 🧩 Install Bloc Dependencies (Simpler & More Reliable)
+// ------------------------------------------------------------------
+Future<void> _installBlocDependencies(Logger logger) async {
+  logger.info('📦 Installing Bloc packages...');
+
+  final pubspecFile = File('pubspec.yaml');
+  if (!pubspecFile.existsSync()) {
+    logger.err('❌ pubspec.yaml not found in current directory.');
+    return;
+  }
+
+  String content = await pubspecFile.readAsString();
+
+  // Check if Bloc packages are already in dependencies
+  bool hasFlutterBloc = false;
+  bool hasBloc = false;
+  bool hasEquatable = false;
+  bool hasGetIt = false;
+  bool hasGoRouter = false;
+
+  // Look specifically in the dependencies section
+  final lines = content.split('\n');
+  bool inDependenciesSection = false;
+  
+  for (int i = 0; i < lines.length; i++) {
+    final line = lines[i].trim();
+    
+    if (line == 'dependencies:') {
+      inDependenciesSection = true;
+      continue;
+    }
+    
+    if (line == 'dev_dependencies:' || (line.isNotEmpty && !lines[i].startsWith('  ') && !lines[i].startsWith('\t') && inDependenciesSection)) {
+      inDependenciesSection = false;
+    }
+    
+    if (inDependenciesSection) {
+      if (line.contains('flutter_bloc:')) hasFlutterBloc = true;
+      if (line.contains('bloc:')) hasBloc = true;
+      if (line.contains('equatable:')) hasEquatable = true;
+      if (line.contains('get_it:')) hasGetIt = true;
+      if (line.contains('go_router:')) hasGoRouter = true;
+    }
+  }
+
+  // List of packages to add
+  final packagesToAdd = <String>[];
+  if (!hasFlutterBloc) packagesToAdd.add('  flutter_bloc: ^8.1.3');
+  if (!hasBloc) packagesToAdd.add('  bloc: ^8.1.2');
+  if (!hasEquatable) packagesToAdd.add('  equatable: ^2.0.5');
+  if (!hasGetIt) packagesToAdd.add('  get_it: ^7.6.4');
+  if (!hasGoRouter) packagesToAdd.add('  go_router: ^12.1.2');
+
+  if (packagesToAdd.isEmpty) {
+    logger.info('✅ All Bloc packages are already installed');
+    return;
+  }
+
+  logger.info('📦 Adding missing packages: ${packagesToAdd.length} package(s)');
+
+  // Create backup
+  final backupFile = File('pubspec.yaml.backup');
+  await backupFile.writeAsString(content);
+  logger.info('📋 Created backup: pubspec.yaml.backup');
+
+  // Add packages directly after the last dependency
+  final updatedLines = <String>[];
+  inDependenciesSection = false;
+  bool packagesAdded = false;
+  
+  for (int i = 0; i < lines.length; i++) {
+    final line = lines[i];
+    updatedLines.add(line);
+    
+    final trimmedLine = line.trim();
+    
+    if (trimmedLine == 'dependencies:') {
+      inDependenciesSection = true;
+      continue;
+    }
+    
+    if (inDependenciesSection && !packagesAdded) {
+      // Check if next line is dev_dependencies or another section
+      if (i + 1 < lines.length) {
+        final nextLine = lines[i + 1];
+        final trimmedNextLine = nextLine.trim();
+        
+        if (trimmedNextLine == 'dev_dependencies:' || 
+            (trimmedNextLine.isNotEmpty && !nextLine.startsWith('  ') && !nextLine.startsWith('\t'))) {
+          // Add packages before this line
+          for (final package in packagesToAdd) {
+            updatedLines.add(package);
+          }
+          packagesAdded = true;
+        }
+      } else {
+        // End of file, add packages here
+        for (final package in packagesToAdd) {
+          updatedLines.add(package);
+        }
+        packagesAdded = true;
+      }
+    }
+  }
+
+  final updatedContent = updatedLines.join('\n');
+  await pubspecFile.writeAsString(updatedContent);
+  logger.success('✅ Added packages to pubspec.yaml');
+
+  // Show what was added
+  for (final package in packagesToAdd) {
+    logger.info('   + $package');
+  }
+
+  // Run flutter pub get
+  logger.info('\n🔄 Running flutter pub get...');
+  try {
+    final process = await Process.start('flutter', ['pub', 'get'], runInShell: true);
+    
+    // Stream output in real-time
+    process.stdout.transform(utf8.decoder).listen((data) {
+      final output = data.trim();
+      if (output.isNotEmpty) {
+        logger.info(output);
+      }
+    });
+    
+    process.stderr.transform(utf8.decoder).listen((data) {
+      final output = data.trim();
+      if (output.isNotEmpty) {
+        logger.err(output);
+      }
+    });
+    
+    final exitCode = await process.exitCode;
+    if (exitCode == 0) {
+      logger.success('✅ Dependencies installed successfully');
+      // Delete backup
+      if (backupFile.existsSync()) {
+        backupFile.deleteSync();
+      }
+    } else {
+      logger.err('❌ Failed to install dependencies');
+      logger.warn('⚠️  Restoring original pubspec.yaml from backup...');
+      await pubspecFile.writeAsString(content);
+      logger.info('Please run "flutter pub get" manually.');
+    }
+  } catch (e) {
+    logger.err('❌ Error running flutter pub get: $e');
+    logger.warn('⚠️  Restoring original pubspec.yaml from backup...');
+    await pubspecFile.writeAsString(content);
+    logger.info('Please run "flutter pub get" manually.');
+  }
+}
+
+
+
 
 // ------------------------------------------------------------------
 // 🧩 SIMPLE MVVM
@@ -129,7 +317,8 @@ class HomeViewModel {
 // ------------------------------------------------------------------
 // 🧩 CLEAN FEATURE-BASED (with Bloc or MVVM)
 // ------------------------------------------------------------------
-void _createCleanFeature(Directory libDir, Logger logger, {bool useBloc = true}) {
+void _createCleanFeature(Directory libDir, Logger logger,
+    {bool useBloc = true}) {
   final featureName = useBloc ? 'signin' : 'home';
   final featureDir = Directory('${libDir.path}/features/$featureName');
   final dataFolders = [
@@ -140,8 +329,8 @@ void _createCleanFeature(Directory libDir, Logger logger, {bool useBloc = true})
     'models/response_models'
   ];
   final domainFolders = ['repositories', 'usecases', 'entities'];
-  final presentationFolders = useBloc 
-      ? ['views', 'widgets', 'blocs'] 
+  final presentationFolders = useBloc
+      ? ['views', 'widgets', 'blocs']
       : ['views', 'widgets', 'viewmodels'];
 
   // ✅ Create root structure
@@ -172,7 +361,8 @@ void _createCleanFeature(Directory libDir, Logger logger, {bool useBloc = true})
   for (var folder in presentationFolders) {
     Directory('${featureDir.path}/presentation/$folder')
         .createSync(recursive: true);
-    logger.success('📁 Created: lib/features/$featureName/presentation/$folder');
+    logger
+        .success('📁 Created: lib/features/$featureName/presentation/$folder');
   }
 
   if (useBloc) {
@@ -184,9 +374,9 @@ void _createCleanFeature(Directory libDir, Logger logger, {bool useBloc = true})
   // ✅ Create separate route files
   final className = useBloc ? 'SignIn' : 'Home';
   final fileName = useBloc ? 'signIn' : 'home';
-  _createSeparateRouteFiles(
-      libDir, fileName, className, 'features/$featureName/presentation/views', logger);
-  
+  _createSeparateRouteFiles(libDir, fileName, className,
+      'features/$featureName/presentation/views', logger);
+
   // ✅ Update dependency injection file (only for Bloc)
   if (useBloc) {
     _updateDependencyInjection(libDir, logger);
@@ -283,26 +473,45 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
   }
 }
 ''');
-  logger.success('🧱 Created: lib/features/signin/presentation/blocs/signin_bloc.dart');
+  logger.success(
+      '🧱 Created: lib/features/signin/presentation/blocs/signin_bloc.dart');
 
   // ✅ Create Bloc Events
   File('${featureDir.path}/presentation/blocs/signin_event.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''abstract class SignInEvent {}
+    ..writeAsStringSync('''import 'package:equatable/equatable.dart';
+
+abstract class SignInEvent extends Equatable {
+  const SignInEvent();
+
+  @override
+  List<Object> get props => [];
+}
 
 class SignInSubmitted extends SignInEvent {
   final String email;
   final String password;
 
-  SignInSubmitted({required this.email, required this.password});
+  const SignInSubmitted({required this.email, required this.password});
+
+  @override
+  List<Object> get props => [email, password];
 }
 ''');
-  logger.success('🧱 Created: lib/features/signin/presentation/blocs/signin_event.dart');
+  logger.success(
+      '🧱 Created: lib/features/signin/presentation/blocs/signin_event.dart');
 
   // ✅ Create Bloc States
   File('${featureDir.path}/presentation/blocs/signin_state.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''abstract class SignInState {}
+    ..writeAsStringSync('''import 'package:equatable/equatable.dart';
+
+abstract class SignInState extends Equatable {
+  const SignInState();
+
+  @override
+  List<Object> get props => [];
+}
 
 class SignInInitial extends SignInState {}
 
@@ -312,10 +521,14 @@ class SignInSuccess extends SignInState {}
 
 class SignInError extends SignInState {
   final String message;
-  SignInError(this.message);
+  const SignInError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
 ''');
-  logger.success('🧱 Created: lib/features/signin/presentation/blocs/signin_state.dart');
+  logger.success(
+      '🧱 Created: lib/features/signin/presentation/blocs/signin_state.dart');
 
   // ✅ DataSource with Interface + Implementation
   File('${featureDir.path}/data/datasources/remote_signin_datasource.dart')
@@ -344,11 +557,16 @@ class RemoteSignInDataSourceImpl implements IRemoteSignInDataSource {
   // ✅ Example Entity
   File('${featureDir.path}/domain/entities/user_entity.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''class UserEntity {
+    ..writeAsStringSync('''import 'package:equatable/equatable.dart';
+
+class UserEntity extends Equatable {
   final String email;
   final String password;
 
-  UserEntity({required this.email, required this.password});
+  const UserEntity({required this.email, required this.password});
+
+  @override
+  List<Object> get props => [email, password];
 }
 ''');
   logger.success(
@@ -415,7 +633,8 @@ class HomeView extends StatelessWidget {
   }
 }
 ''');
-  logger.success('🧱 Created: lib/features/home/presentation/views/home_view.dart');
+  logger.success(
+      '🧱 Created: lib/features/home/presentation/views/home_view.dart');
 
   // ✅ ViewModel
   File('${featureDir.path}/presentation/viewmodels/home_viewmodel.dart')
@@ -432,7 +651,8 @@ class HomeViewModel {
   }
 }
 ''');
-  logger.success('🧱 Created: lib/features/home/presentation/viewmodels/home_viewmodel.dart');
+  logger.success(
+      '🧱 Created: lib/features/home/presentation/viewmodels/home_viewmodel.dart');
 
   // ✅ DataSource with Interface + Implementation
   File('${featureDir.path}/data/datasources/remote_home_datasource.dart')
@@ -456,7 +676,8 @@ class RemoteHomeDataSourceImpl implements IRemoteHomeDataSource {
   }
 }
 ''');
-  logger.success('🧱 Created: lib/features/home/data/datasources/remote_home_datasource.dart');
+  logger.success(
+      '🧱 Created: lib/features/home/data/datasources/remote_home_datasource.dart');
 
   // ✅ Example Entity
   File('${featureDir.path}/domain/entities/home_entity.dart')
@@ -468,7 +689,8 @@ class RemoteHomeDataSourceImpl implements IRemoteHomeDataSource {
   HomeEntity({required this.id, required this.title});
 }
 ''');
-  logger.success('🧱 Created: lib/features/home/domain/entities/home_entity.dart');
+  logger.success(
+      '🧱 Created: lib/features/home/domain/entities/home_entity.dart');
 
   // ✅ Example Repository Interface
   File('${featureDir.path}/domain/repositories/home_repository.dart')
@@ -477,7 +699,8 @@ class RemoteHomeDataSourceImpl implements IRemoteHomeDataSource {
   Future<String> getData();
 }
 ''');
-  logger.success('🧱 Created: lib/features/home/domain/repositories/home_repository.dart');
+  logger.success(
+      '🧱 Created: lib/features/home/domain/repositories/home_repository.dart');
 
   // ✅ Example Repository Implementation
   File('${featureDir.path}/data/repository_impl/home_repository_impl.dart')
@@ -497,7 +720,8 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 }
 ''');
-  logger.success('🧱 Created: lib/features/home/data/repository_impl/home_repository_impl.dart');
+  logger.success(
+      '🧱 Created: lib/features/home/data/repository_impl/home_repository_impl.dart');
 }
 
 // ------------------------------------------------------------------
@@ -558,18 +782,35 @@ class AppRoutes {
 // 🧩 Update Dependency Injection (GetIt)
 // ------------------------------------------------------------------
 void _updateDependencyInjection(Directory libDir, Logger logger) {
+  // Create core directory if it doesn't exist
+  final coreDir = Directory('${libDir.path}/core');
+  if (!coreDir.existsSync()) {
+    coreDir.createSync(recursive: true);
+    logger.success('📁 Created: lib/core');
+  }
+
   final depFile = File('${libDir.path}/core/app_dependencies.dart');
-  
+
+  // If file doesn't exist, create it with basic setup
   if (!depFile.existsSync()) {
-    logger.warn('⚠️  app_dependencies.dart not found. Skipping DI setup.');
-    return;
+    depFile.createSync(recursive: true);
+    depFile.writeAsStringSync('''import 'package:get_it/get_it.dart';
+
+final GetIt sl = GetIt.instance;
+
+Future<void> setupLocator() async {
+  // Register dependencies here
+}
+''');
+    logger.success('🧩 Created: lib/core/app_dependencies.dart');
   }
 
   String content = depFile.readAsStringSync();
 
   // Check if SignIn dependencies are already registered
   if (content.contains('SignInBloc') || content.contains('SignInRepository')) {
-    logger.warn('⚠️  SignIn dependencies already registered in app_dependencies.dart');
+    logger.warn(
+        '⚠️  SignIn dependencies already registered in app_dependencies.dart');
     return;
   }
 
@@ -578,18 +819,21 @@ void _updateDependencyInjection(Directory libDir, Logger logger) {
   if (lastImportIndex != -1) {
     final endOfLastImport = content.indexOf(';', lastImportIndex) + 1;
     final newImports = '''
+
 import '../features/signin/data/datasources/remote_signin_datasource.dart';
 import '../features/signin/data/repository_impl/signin_repository_impl.dart';
 import '../features/signin/domain/repositories/signin_repository.dart';
 import '../features/signin/presentation/blocs/signin_bloc.dart';''';
-    
+
     content = content.substring(0, endOfLastImport) +
         newImports +
         content.substring(endOfLastImport);
   }
 
   // Find the setupLocator function and add registrations
-  final setupFunctionMatch = RegExp(r'Future<void>\s+setupLocator\s*\(\s*\)\s+async\s*\{').firstMatch(content);
+  final setupFunctionMatch =
+      RegExp(r'Future<void>\s+setupLocator\s*\(\s*\)\s+async\s*\{')
+          .firstMatch(content);
   if (setupFunctionMatch != null) {
     final functionStart = setupFunctionMatch.end;
     final registrations = '''
@@ -607,12 +851,13 @@ import '../features/signin/presentation/blocs/signin_bloc.dart';''';
     () => SignInBloc(sl()),
   );
 ''';
-    
+
     content = content.substring(0, functionStart) +
         registrations +
         content.substring(functionStart);
   }
 
   depFile.writeAsStringSync(content);
-  logger.success('🔧 Updated: lib/core/app_dependencies.dart with SignIn dependencies');
+  logger.success(
+      '🔧 Updated: lib/core/app_dependencies.dart with SignIn dependencies');
 }

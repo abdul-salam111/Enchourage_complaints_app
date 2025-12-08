@@ -1,4 +1,4 @@
-export './res/res.dart';
+
 export './theme/theme.dart';
 export 'utils/alignments.dart';
 export 'theme/colors.dart';
@@ -8,8 +8,6 @@ export 'utils/physics.dart';
 export 'constants/app_conts.dart';
 export './utils/extensions.dart';
 export './utils/unfocus_wrapper.dart';
-export './res/icons.dart';
-export './res/images.dart';
 export './utils/apptoast.dart';
 export './utils/validators.dart';
 export 'networks/exceptions/app_exceptions.dart';
