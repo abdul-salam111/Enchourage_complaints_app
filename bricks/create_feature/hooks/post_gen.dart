@@ -118,7 +118,53 @@ void _createCleanFeature(
   // ✅ View
   File('${featureDir.path}/presentation/views/${fileName}_view.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
+    ..writeAsStringSync(useBloc 
+        ? '''import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/${fileName}_bloc.dart';
+import '../blocs/${fileName}_event.dart';
+import '../blocs/${fileName}_state.dart';
+import '../../../../core/app_dependencies.dart';
+
+class ${className}View extends StatelessWidget {
+  const ${className}View({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<${className}Bloc>(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('$className')),
+        body: BlocBuilder<${className}Bloc, ${className}State>(
+          builder: (context, state) {
+            if (state is ${className}Loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            
+            if (state is ${className}Success) {
+              return const Center(child: Text('$className Success!'));
+            }
+            
+            if (state is ${className}Error) {
+              return Center(child: Text('Error: \\\${state.message}'));
+            }
+            
+            return Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  context.read<${className}Bloc>().add(${className}ActionTriggered());
+                },
+                child: const Text('Trigger Action'),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+'''
+        : '''import 'package:flutter/material.dart';
 
 class ${className}View extends StatelessWidget {
   const ${className}View({super.key});
@@ -151,6 +197,9 @@ class ${className}ViewModel {
 }
 ''');
     logger.success('🧱 ViewModel created.');
+  } else {
+    // Create Bloc files
+    _createBlocFiles(featureDir, className, fileName, logger);
   }
 
   // ✅ Datasource Interface & Implementation
@@ -218,6 +267,84 @@ class ${className}RepositoryImpl implements ${className}Repository {
     'features/$fileName/presentation/views',
     logger,
   );
+  
+  // ✅ Update dependency injection file (only for Bloc)
+  if (useBloc) {
+    _updateDependencyInjection(libDir, className, fileName, logger);
+  }
+}
+
+/// ---------------------------------------------------------------------------
+/// 🧩 Create Bloc Files
+/// ---------------------------------------------------------------------------
+
+void _createBlocFiles(
+  Directory featureDir,
+  String className,
+  String fileName,
+  Logger logger,
+) {
+  // ✅ Create Bloc
+  File('${featureDir.path}/presentation/blocs/${fileName}_bloc.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/repositories/${fileName}_repository.dart';
+import '${fileName}_event.dart';
+import '${fileName}_state.dart';
+
+class ${className}Bloc extends Bloc<${className}Event, ${className}State> {
+  final ${className}Repository repository;
+
+  ${className}Bloc(this.repository) : super(${className}Initial()) {
+    on<${className}ActionTriggered>(_onActionTriggered);
+  }
+
+  Future<void> _onActionTriggered(
+    ${className}ActionTriggered event,
+    Emitter<${className}State> emit,
+  ) async {
+    emit(${className}Loading());
+    try {
+      final result = await repository.performAction('param1', 'param2');
+      if (result) {
+        emit(${className}Success());
+      } else {
+        emit(${className}Error('Action failed'));
+      }
+    } catch (e) {
+      emit(${className}Error(e.toString()));
+    }
+  }
+}
+''');
+  logger.success('🧱 Bloc created.');
+
+  // ✅ Create Bloc Events
+  File('${featureDir.path}/presentation/blocs/${fileName}_event.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''abstract class ${className}Event {}
+
+class ${className}ActionTriggered extends ${className}Event {}
+''');
+  logger.success('🧱 Bloc Events created.');
+
+  // ✅ Create Bloc States
+  File('${featureDir.path}/presentation/blocs/${fileName}_state.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''abstract class ${className}State {}
+
+class ${className}Initial extends ${className}State {}
+
+class ${className}Loading extends ${className}State {}
+
+class ${className}Success extends ${className}State {}
+
+class ${className}Error extends ${className}State {
+  final String message;
+  ${className}Error(this.message);
+}
+''');
+  logger.success('🧱 Bloc States created.');
 }
 
 /// ---------------------------------------------------------------------------
@@ -436,4 +563,73 @@ String _toSnakeCase(String text) {
       .replaceAllMapped(RegExp(r'[A-Z]'), (match) => '_${match.group(0)}')
       .toLowerCase()
       .replaceAll(RegExp(r'^_'), '');
+}
+
+/// ---------------------------------------------------------------------------
+/// 🧩 Update Dependency Injection (GetIt)
+/// ---------------------------------------------------------------------------
+
+void _updateDependencyInjection(
+  Directory libDir,
+  String className,
+  String fileName,
+  Logger logger,
+) {
+  final depFile = File('${libDir.path}/core/app_dependencies.dart');
+  
+  if (!depFile.existsSync()) {
+    logger.warn('⚠️  app_dependencies.dart not found. Skipping DI setup.');
+    return;
+  }
+
+  String content = depFile.readAsStringSync();
+
+  // Check if dependencies are already registered
+  if (content.contains('${className}Bloc') || content.contains('${className}Repository')) {
+    logger.warn('⚠️  $className dependencies already registered in app_dependencies.dart');
+    return;
+  }
+
+  // Add imports at the top (after existing imports)
+  final lastImportIndex = content.lastIndexOf("import '");
+  if (lastImportIndex != -1) {
+    final endOfLastImport = content.indexOf(';', lastImportIndex) + 1;
+    final newImports = '''
+import '../features/$fileName/data/datasources/${fileName}_remote_datasource.dart';
+import '../features/$fileName/data/repository_impl/${fileName}_repository_impl.dart';
+import '../features/$fileName/domain/repositories/${fileName}_repository.dart';
+import '../features/$fileName/presentation/blocs/${fileName}_bloc.dart';''';
+    
+    content = content.substring(0, endOfLastImport) +
+        newImports +
+        content.substring(endOfLastImport);
+  }
+
+  // Find the setupLocator function and add registrations
+  final setupFunctionMatch = RegExp(r'Future<void>\s+setupLocator\s*\(\s*\)\s+async\s*\{').firstMatch(content);
+  if (setupFunctionMatch != null) {
+    final functionStart = setupFunctionMatch.end;
+    final registrations = '''
+
+  // $className Feature Dependencies
+  sl.registerLazySingleton<I${className}RemoteDataSource>(
+    () => ${className}RemoteDataSourceImpl(),
+  );
+  
+  sl.registerLazySingleton<${className}Repository>(
+    () => ${className}RepositoryImpl(sl()),
+  );
+  
+  sl.registerFactory<${className}Bloc>(
+    () => ${className}Bloc(sl()),
+  );
+''';
+    
+    content = content.substring(0, functionStart) +
+        registrations +
+        content.substring(functionStart);
+  }
+
+  depFile.writeAsStringSync(content);
+  logger.success('🔧 Updated: lib/core/app_dependencies.dart with $className dependencies');
 }

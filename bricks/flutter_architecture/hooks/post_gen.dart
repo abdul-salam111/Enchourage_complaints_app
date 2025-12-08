@@ -186,6 +186,11 @@ void _createCleanFeature(Directory libDir, Logger logger, {bool useBloc = true})
   final fileName = useBloc ? 'signIn' : 'home';
   _createSeparateRouteFiles(
       libDir, fileName, className, 'features/$featureName/presentation/views', logger);
+  
+  // ✅ Update dependency injection file (only for Bloc)
+  if (useBloc) {
+    _updateDependencyInjection(libDir, logger);
+  }
 }
 
 // ------------------------------------------------------------------
@@ -196,18 +201,46 @@ void _createBlocFiles(Directory featureDir, Logger logger) {
   File('${featureDir.path}/presentation/views/signin_view.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/signin_bloc.dart';
+import '../blocs/signin_event.dart';
+import '../blocs/signin_state.dart';
+import '../../../../core/app_dependencies.dart';
 
 class SignInView extends StatelessWidget {
   const SignInView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {},
-          child: const Text('Login'),
+    return BlocProvider(
+      create: (_) => sl<SignInBloc>(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Sign In')),
+        body: BlocBuilder<SignInBloc, SignInState>(
+          builder: (context, state) {
+            if (state is SignInLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            
+            if (state is SignInSuccess) {
+              return const Center(child: Text('Sign In Successful!'));
+            }
+            
+            if (state is SignInError) {
+              return Center(child: Text('Error: \${state.message}'));
+            }
+            
+            return Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  context.read<SignInBloc>().add(
+                    SignInSubmitted(email: 'test@example.com', password: 'password'),
+                  );
+                },
+                child: const Text('Login'),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -216,6 +249,73 @@ class SignInView extends StatelessWidget {
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/presentation/views/signin_view.dart');
+
+  // ✅ Create Bloc
+  File('${featureDir.path}/presentation/blocs/signin_bloc.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/repositories/signin_repository.dart';
+import 'signin_event.dart';
+import 'signin_state.dart';
+
+class SignInBloc extends Bloc<SignInEvent, SignInState> {
+  final SignInRepository repository;
+
+  SignInBloc(this.repository) : super(SignInInitial()) {
+    on<SignInSubmitted>(_onSignInSubmitted);
+  }
+
+  Future<void> _onSignInSubmitted(
+    SignInSubmitted event,
+    Emitter<SignInState> emit,
+  ) async {
+    emit(SignInLoading());
+    try {
+      final result = await repository.signIn(event.email, event.password);
+      if (result) {
+        emit(SignInSuccess());
+      } else {
+        emit(SignInError('Sign in failed'));
+      }
+    } catch (e) {
+      emit(SignInError(e.toString()));
+    }
+  }
+}
+''');
+  logger.success('🧱 Created: lib/features/signin/presentation/blocs/signin_bloc.dart');
+
+  // ✅ Create Bloc Events
+  File('${featureDir.path}/presentation/blocs/signin_event.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''abstract class SignInEvent {}
+
+class SignInSubmitted extends SignInEvent {
+  final String email;
+  final String password;
+
+  SignInSubmitted({required this.email, required this.password});
+}
+''');
+  logger.success('🧱 Created: lib/features/signin/presentation/blocs/signin_event.dart');
+
+  // ✅ Create Bloc States
+  File('${featureDir.path}/presentation/blocs/signin_state.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''abstract class SignInState {}
+
+class SignInInitial extends SignInState {}
+
+class SignInLoading extends SignInState {}
+
+class SignInSuccess extends SignInState {}
+
+class SignInError extends SignInState {
+  final String message;
+  SignInError(this.message);
+}
+''');
+  logger.success('🧱 Created: lib/features/signin/presentation/blocs/signin_state.dart');
 
   // ✅ DataSource with Interface + Implementation
   File('${featureDir.path}/data/datasources/remote_signin_datasource.dart')
@@ -452,4 +552,67 @@ class AppRoutes {
 }
 ''');
   logger.success('🧭 Created: lib/routes/routes.dart');
+}
+
+// ------------------------------------------------------------------
+// 🧩 Update Dependency Injection (GetIt)
+// ------------------------------------------------------------------
+void _updateDependencyInjection(Directory libDir, Logger logger) {
+  final depFile = File('${libDir.path}/core/app_dependencies.dart');
+  
+  if (!depFile.existsSync()) {
+    logger.warn('⚠️  app_dependencies.dart not found. Skipping DI setup.');
+    return;
+  }
+
+  String content = depFile.readAsStringSync();
+
+  // Check if SignIn dependencies are already registered
+  if (content.contains('SignInBloc') || content.contains('SignInRepository')) {
+    logger.warn('⚠️  SignIn dependencies already registered in app_dependencies.dart');
+    return;
+  }
+
+  // Add imports at the top (after existing imports)
+  final lastImportIndex = content.lastIndexOf("import '");
+  if (lastImportIndex != -1) {
+    final endOfLastImport = content.indexOf(';', lastImportIndex) + 1;
+    final newImports = '''
+import '../features/signin/data/datasources/remote_signin_datasource.dart';
+import '../features/signin/data/repository_impl/signin_repository_impl.dart';
+import '../features/signin/domain/repositories/signin_repository.dart';
+import '../features/signin/presentation/blocs/signin_bloc.dart';''';
+    
+    content = content.substring(0, endOfLastImport) +
+        newImports +
+        content.substring(endOfLastImport);
+  }
+
+  // Find the setupLocator function and add registrations
+  final setupFunctionMatch = RegExp(r'Future<void>\s+setupLocator\s*\(\s*\)\s+async\s*\{').firstMatch(content);
+  if (setupFunctionMatch != null) {
+    final functionStart = setupFunctionMatch.end;
+    final registrations = '''
+
+  // SignIn Feature Dependencies
+  sl.registerLazySingleton<IRemoteSignInDataSource>(
+    () => RemoteSignInDataSourceImpl(),
+  );
+  
+  sl.registerLazySingleton<SignInRepository>(
+    () => SignInRepositoryImpl(sl()),
+  );
+  
+  sl.registerFactory<SignInBloc>(
+    () => SignInBloc(sl()),
+  );
+''';
+    
+    content = content.substring(0, functionStart) +
+        registrations +
+        content.substring(functionStart);
+  }
+
+  depFile.writeAsStringSync(content);
+  logger.success('🔧 Updated: lib/core/app_dependencies.dart with SignIn dependencies');
 }
