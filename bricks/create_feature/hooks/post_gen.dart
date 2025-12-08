@@ -24,16 +24,14 @@ Future<void> run(HookContext context) async {
   logger.info('Creating feature/page: $pageName\n');
 
   // 🧱 Step 3: Create structure based on architecture
-  if (architecture == 'MVC') {
-    _createView(currentDir, className, fileName, false, logger);
-    _createController(currentDir, className, fileName, logger);
-    _addRouteToExisting(currentDir, className, fileName, 'views', logger);
-  } else if (architecture == 'MVVM') {
-    _createView(currentDir, className, fileName, true, logger);
+  if (architecture == 'SimpleMVVM') {
+    _createView(currentDir, className, fileName, logger);
     _createViewModel(currentDir, className, fileName, logger);
     _addRouteToExisting(currentDir, className, fileName, 'views', logger);
-  } else {
-    _createCleanFeature(libDir, className, fileName, logger);
+  } else if (architecture == 'CleanBloc') {
+    _createCleanFeature(libDir, className, fileName, logger, useBloc: true);
+  } else if (architecture == 'CleanMVVM') {
+    _createCleanFeature(libDir, className, fileName, logger, useBloc: false);
   }
 
   logger.success('\n✅ $className ($architecture) setup complete!');
@@ -46,41 +44,37 @@ String _detectArchitecture(Directory libDir) {
     if (features.isNotEmpty) {
       final firstFeature = features.first;
       if (firstFeature is Directory) {
-        // Check if it has data/domain/presentation structure
+        // Check if it has data/domain/presentation structure (Clean Architecture)
         if (Directory('${firstFeature.path}/data').existsSync() &&
             Directory('${firstFeature.path}/domain').existsSync() &&
             Directory('${firstFeature.path}/presentation').existsSync()) {
-          return 'Clean';
-        }
-        // Check if it has MVC structure
-        if (Directory('${firstFeature.path}/controllers').existsSync()) {
-          return 'MVC';
-        }
-        // Check if it has MVVM structure
-        if (Directory('${firstFeature.path}/viewmodels').existsSync()) {
-          return 'MVVM';
+          
+          // Check if it uses Bloc or MVVM
+          if (Directory('${firstFeature.path}/presentation/blocs').existsSync()) {
+            return 'CleanBloc';
+          } else if (Directory('${firstFeature.path}/presentation/viewmodels').existsSync()) {
+            return 'CleanMVVM';
+          }
+          
+          // Default to CleanBloc if presentation layer exists but no specific pattern detected
+          return 'CleanBloc';
         }
       }
     }
-    // Features folder exists but empty, default to Clean
-    return 'Clean';
+    // Features folder exists but empty, default to CleanBloc
+    return 'CleanBloc';
   }
   
   // Check for simple MVVM (viewmodels in root)
   if (Directory('${libDir.path}/viewmodels').existsSync()) {
-    return 'MVVM';
-  }
-  
-  // Check for simple MVC (controllers in root)
-  if (Directory('${libDir.path}/controllers').existsSync()) {
-    return 'MVC';
+    return 'SimpleMVVM';
   }
   
   return 'Unknown';
 }
 
 /// ---------------------------------------------------------------------------
-/// 🧩 CLEAN FEATURE-BASED ARCHITECTURE
+/// 🧩 CLEAN FEATURE-BASED ARCHITECTURE (Bloc or MVVM)
 /// ---------------------------------------------------------------------------
 
 void _createCleanFeature(
@@ -88,12 +82,15 @@ void _createCleanFeature(
   String className,
   String fileName,
   Logger logger,
+  {bool useBloc = true}
 ) {
   final featureDir = Directory('${libDir.path}/features/$fileName');
 
   final dataFolders = ['datasources', 'repository_impl', 'models'];
   final domainFolders = ['repositories', 'usecases', 'entities'];
-  final presentationFolders = ['views', 'widgets', 'blocs'];
+  final presentationFolders = useBloc 
+      ? ['views', 'widgets', 'blocs']
+      : ['views', 'widgets', 'viewmodels'];
 
   // ✅ Create base structure
   for (final folder in [
@@ -137,16 +134,35 @@ class ${className}View extends StatelessWidget {
 ''');
   logger.success('🧱 View created.');
 
+  // ✅ ViewModel (if MVVM)
+  if (!useBloc) {
+    File('${featureDir.path}/presentation/viewmodels/${fileName}_viewmodel.dart')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''import 'package:flutter/material.dart';
+
+class ${className}ViewModel {
+  void onActionPressed() {
+    debugPrint('$className ViewModel Action');
+  }
+  
+  void dispose() {
+    // Clean up resources
+  }
+}
+''');
+    logger.success('🧱 ViewModel created.');
+  }
+
   // ✅ Datasource Interface & Implementation
   File('${featureDir.path}/data/datasources/${fileName}_remote_datasource.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''abstract interface class I${className}RemoteDataSource {
-  Future<bool> login(String email, String password);
+  Future<bool> performAction(String param1, String param2);
 }
 
 class ${className}RemoteDataSourceImpl implements I${className}RemoteDataSource {
   @override
-  Future<bool> login(String email, String password) async {
+  Future<bool> performAction(String param1, String param2) async {
     await Future.delayed(const Duration(seconds: 1));
     return true;
   }
@@ -158,9 +174,10 @@ class ${className}RemoteDataSourceImpl implements I${className}RemoteDataSource 
   File('${featureDir.path}/domain/entities/${fileName}_entity.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''class ${className}Entity {
-  final String email;
-  final String password;
-  ${className}Entity({required this.email, required this.password});
+  final String id;
+  final String name;
+  
+  ${className}Entity({required this.id, required this.name});
 }
 ''');
   logger.success('🧱 Entity created.');
@@ -169,7 +186,7 @@ class ${className}RemoteDataSourceImpl implements I${className}RemoteDataSource 
   File('${featureDir.path}/domain/repositories/${fileName}_repository.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''abstract interface class ${className}Repository {
-  Future<bool> signIn(String email, String password);
+  Future<bool> performAction(String param1, String param2);
 }
 ''');
   logger.success('🧱 Repository interface created.');
@@ -186,8 +203,8 @@ class ${className}RepositoryImpl implements ${className}Repository {
   ${className}RepositoryImpl(this.dataSource);
 
   @override
-  Future<bool> signIn(String email, String password) async {
-    return dataSource.login(email, password);
+  Future<bool> performAction(String param1, String param2) async {
+    return dataSource.performAction(param1, param2);
   }
 }
 ''');
@@ -204,17 +221,15 @@ class ${className}RepositoryImpl implements ${className}Repository {
 }
 
 /// ---------------------------------------------------------------------------
-/// 🧩 MVC & MVVM HELPERS
+/// 🧩 SIMPLE MVVM HELPERS
 /// ---------------------------------------------------------------------------
 
 void _createView(
-    Directory currentDir, String className, String fileName, bool isMVVM, Logger logger) {
-  final logicType = isMVVM ? 'ViewModel' : 'Controller';
-  final logicFolder = isMVVM ? 'viewmodels' : 'controllers';
+    Directory currentDir, String className, String fileName, Logger logger) {
   final file = File('${currentDir.path}/lib/views/${fileName}_view.dart');
   file.createSync(recursive: true);
   file.writeAsStringSync('''import 'package:flutter/material.dart';
-import '../$logicFolder/${fileName}_${logicType.toLowerCase()}.dart';
+import '../viewmodels/${fileName}_viewmodel.dart';
 
 class ${className}View extends StatelessWidget {
   const ${className}View({super.key});
@@ -230,23 +245,12 @@ class ${className}View extends StatelessWidget {
   logger.success('🧱 Created: lib/views/${fileName}_view.dart');
 }
 
-void _createController(
-    Directory currentDir, String className, String fileName, Logger logger) {
-  final file = File('${currentDir.path}/lib/controllers/${fileName}_controller.dart');
-  file.createSync(recursive: true);
-  file.writeAsStringSync('''import 'package:flutter/material.dart';
-class ${className}Controller {
-  void onActionPressed() => debugPrint('$className Controller Action');
-}
-''');
-  logger.success('🧱 Controller created.');
-}
-
 void _createViewModel(
     Directory currentDir, String className, String fileName, Logger logger) {
   final file = File('${currentDir.path}/lib/viewmodels/${fileName}_viewmodel.dart');
   file.createSync(recursive: true);
   file.writeAsStringSync('''import 'package:flutter/foundation.dart';
+
 class ${className}ViewModel extends ChangeNotifier {
   void onActionPressed() => debugPrint('$className ViewModel Action');
 }

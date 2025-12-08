@@ -7,42 +7,34 @@ Future<void> run(HookContext context) async {
   // Show numbered options
   logger.info('''
 🔧 Select your project architecture:
-1️⃣  Simple MVC
-2️⃣  Simple MVVM
-3️⃣  Clean Feature-Based
-4️⃣  MVC Feature-Based
-5️⃣  MVVM Feature-Based
+1️⃣  Simple MVVM
+2️⃣  Clean Architecture (with Bloc)
+3️⃣  Clean Architecture (with MVVM)
 ''');
 
   // Read numeric choice
-  stdout.write('Enter your choice (1-5): ');
+  stdout.write('Enter your choice (1-3): ');
   final input = stdin.readLineSync();
 
   final choice = int.tryParse(input ?? '');
-  if (choice == null || choice < 1 || choice > 5) {
-    logger.err('❌ Invalid selection. Please enter a number between 1 and 5.');
+  if (choice == null || choice < 1 || choice > 3) {
+    logger.err('❌ Invalid selection. Please enter a number between 1 and 3.');
     exit(1);
   }
 
   String architecture;
   switch (choice) {
     case 1:
-      architecture = 'simple_mvc';
-      break;
-    case 2:
       architecture = 'simple_mvvm';
       break;
+    case 2:
+      architecture = 'clean_bloc';
+      break;
     case 3:
-      architecture = 'clean_feature';
-      break;
-    case 4:
-      architecture = 'mvc_feature';
-      break;
-    case 5:
-      architecture = 'mvvm_feature';
+      architecture = 'clean_mvvm';
       break;
     default:
-      architecture = 'simple_mvc';
+      architecture = 'simple_mvvm';
   }
 
   logger.info('Setting up $architecture architecture...');
@@ -54,90 +46,18 @@ Future<void> run(HookContext context) async {
   }
 
   switch (architecture) {
-    case 'simple_mvc':
-      _createSimpleMVC(libDir, logger);
-      break;
     case 'simple_mvvm':
       _createSimpleMVVM(libDir, logger);
       break;
-    case 'clean_feature':
-      _createCleanFeature(libDir, logger);
+    case 'clean_bloc':
+      _createCleanFeature(libDir, logger, useBloc: true);
       break;
-    case 'mvc_feature':
-      _createMVCFeature(libDir, logger);
-      break;
-    case 'mvvm_feature':
-      _createMVVMFeature(libDir, logger);
+    case 'clean_mvvm':
+      _createCleanFeature(libDir, logger, useBloc: false);
       break;
   }
 
   logger.success('✅ $architecture architecture setup complete!');
-}
-
-// ------------------------------------------------------------------
-// 🧩 SIMPLE MVC
-// ------------------------------------------------------------------
-void _createSimpleMVC(Directory libDir, Logger logger) {
-  final folders = [
-    'models',
-    'models/request_models',
-    'models/response_models',
-    'views',
-    'controllers',
-    'routes',
-    'repositories'
-  ];
-  for (var folder in folders) {
-    Directory('${libDir.path}/$folder').createSync(recursive: true);
-    logger.success('📁 Created: lib/$folder');
-  }
-
-  // 🧱 HomeView
-  File('${libDir.path}/views/home_view.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-import '../controllers/home_controller.dart';
-
-class HomeView extends StatelessWidget {
-  final controller = HomeController();
-
-  HomeView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: controller.onButtonPressed,
-          child: const Text('Tap Me'),
-        ),
-      ),
-    );
-  }
-}
-''');
-  logger.success('🧱 Created: lib/views/home_view.dart');
-
-  // 🧱 Controller
-  File('${libDir.path}/controllers/home_controller.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-
-class HomeController {
-  void onButtonPressed() {
-    debugPrint('HomeController: Button pressed!');
-  }
-  
-  void dispose() {
-    // Clean up resources
-  }
-}
-''');
-  logger.success('🧱 Created: lib/controllers/home_controller.dart');
-
-  // 🧱 Create separate route files
-  _createSeparateRouteFiles(libDir, 'home', 'Home', 'views', logger);
 }
 
 // ------------------------------------------------------------------
@@ -207,10 +127,11 @@ class HomeViewModel {
 }
 
 // ------------------------------------------------------------------
-// 🧩 CLEAN FEATURE-BASED
+// 🧩 CLEAN FEATURE-BASED (with Bloc or MVVM)
 // ------------------------------------------------------------------
-void _createCleanFeature(Directory libDir, Logger logger) {
-  final featureDir = Directory('${libDir.path}/features/signin');
+void _createCleanFeature(Directory libDir, Logger logger, {bool useBloc = true}) {
+  final featureName = useBloc ? 'signin' : 'home';
+  final featureDir = Directory('${libDir.path}/features/$featureName');
   final dataFolders = [
     'datasources',
     'repository_impl',
@@ -219,15 +140,17 @@ void _createCleanFeature(Directory libDir, Logger logger) {
     'models/response_models'
   ];
   final domainFolders = ['repositories', 'usecases', 'entities'];
-  final presentationFolders = ['views', 'widgets', 'blocs'];
+  final presentationFolders = useBloc 
+      ? ['views', 'widgets', 'blocs'] 
+      : ['views', 'widgets', 'viewmodels'];
 
   // ✅ Create root structure
   for (var folder in [
     'features',
-    'features/signin',
-    'features/signin/data',
-    'features/signin/domain',
-    'features/signin/presentation',
+    'features/$featureName',
+    'features/$featureName/data',
+    'features/$featureName/domain',
+    'features/$featureName/presentation',
   ]) {
     Directory('${libDir.path}/$folder').createSync(recursive: true);
     logger.success('📁 Created: lib/$folder');
@@ -236,22 +159,39 @@ void _createCleanFeature(Directory libDir, Logger logger) {
   // ✅ Create data layer
   for (var folder in dataFolders) {
     Directory('${featureDir.path}/data/$folder').createSync(recursive: true);
-    logger.success('📁 Created: lib/features/signin/data/$folder');
+    logger.success('📁 Created: lib/features/$featureName/data/$folder');
   }
 
   // ✅ Create domain layer
   for (var folder in domainFolders) {
     Directory('${featureDir.path}/domain/$folder').createSync(recursive: true);
-    logger.success('📁 Created: lib/features/signin/domain/$folder');
+    logger.success('📁 Created: lib/features/$featureName/domain/$folder');
   }
 
   // ✅ Create presentation layer
   for (var folder in presentationFolders) {
     Directory('${featureDir.path}/presentation/$folder')
         .createSync(recursive: true);
-    logger.success('📁 Created: lib/features/signin/presentation/$folder');
+    logger.success('📁 Created: lib/features/$featureName/presentation/$folder');
   }
 
+  if (useBloc) {
+    _createBlocFiles(featureDir, logger);
+  } else {
+    _createMVVMFiles(featureDir, logger);
+  }
+
+  // ✅ Create separate route files
+  final className = useBloc ? 'SignIn' : 'Home';
+  final fileName = useBloc ? 'signIn' : 'home';
+  _createSeparateRouteFiles(
+      libDir, fileName, className, 'features/$featureName/presentation/views', logger);
+}
+
+// ------------------------------------------------------------------
+// 🧩 Create Bloc-specific files
+// ------------------------------------------------------------------
+void _createBlocFiles(Directory featureDir, Logger logger) {
   // ✅ Example View File
   File('${featureDir.path}/presentation/views/signin_view.dart')
     ..createSync(recursive: true)
@@ -344,97 +284,14 @@ class SignInRepositoryImpl implements SignInRepository {
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/data/repository_impl/signin_repository_impl.dart');
-
-  // ✅ Create separate route files
-  _createSeparateRouteFiles(
-      libDir, 'signIn', 'SignIn', 'features/signin/presentation/views', logger);
 }
 
 // ------------------------------------------------------------------
-// 🧩 MVC FEATURE BASED
+// 🧩 Create MVVM-specific files
 // ------------------------------------------------------------------
-void _createMVCFeature(Directory libDir, Logger logger) {
-  final featureDir = Directory('${libDir.path}/features/home');
-  final folders = [
-    'models',
-    'models/request_models',
-    'models/response_models',
-    'views',
-    'controllers'
-  ];
-  for (var folder in folders) {
-    Directory('${featureDir.path}/$folder').createSync(recursive: true);
-    logger.success('📁 Created: lib/features/home/$folder');
-  }
-
-  // 🧱 HomeView
-  File('${featureDir.path}/views/home_view.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-import '../controllers/home_controller.dart';
-
-class HomeView extends StatelessWidget {
-  final controller = HomeController();
-
-  HomeView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: controller.onButtonPressed,
-          child: const Text('Tap Me'),
-        ),
-      ),
-    );
-  }
-}
-''');
-  logger.success('🧱 Created: lib/features/home/views/home_view.dart');
-
-  // 🧱 Controller
-  File('${featureDir.path}/controllers/home_controller.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-
-class HomeController {
-  void onButtonPressed() {
-    debugPrint('HomeController: Button pressed!');
-  }
-  
-  void dispose() {
-    // Clean up resources
-  }
-}
-''');
-  logger.success(
-      '🧱 Created: lib/features/home/controllers/home_controller.dart');
-
-  // 🧱 Create separate route files
-  _createSeparateRouteFiles(libDir, 'home', 'Home', 'features/home/views', logger);
-}
-
-// ------------------------------------------------------------------
-// 🧩 MVVM FEATURE BASED
-// ------------------------------------------------------------------
-void _createMVVMFeature(Directory libDir, Logger logger) {
-  final featureDir = Directory('${libDir.path}/features/home');
-  final folders = [
-    'models',
-    'models/request_models',
-    'models/response_models',
-    'views',
-    'viewmodels'
-  ];
-  for (var folder in folders) {
-    Directory('${featureDir.path}/$folder').createSync(recursive: true);
-    logger.success('📁 Created: lib/features/home/$folder');
-  }
-
-  // 🧱 HomeView
-  File('${featureDir.path}/views/home_view.dart')
+void _createMVVMFiles(Directory featureDir, Logger logger) {
+  // ✅ Example View File
+  File('${featureDir.path}/presentation/views/home_view.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:flutter/material.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -458,10 +315,10 @@ class HomeView extends StatelessWidget {
   }
 }
 ''');
-  logger.success('🧱 Created: lib/features/home/views/home_view.dart');
+  logger.success('🧱 Created: lib/features/home/presentation/views/home_view.dart');
 
-  // 🧱 ViewModel
-  File('${featureDir.path}/viewmodels/home_viewmodel.dart')
+  // ✅ ViewModel
+  File('${featureDir.path}/presentation/viewmodels/home_viewmodel.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:flutter/material.dart';
 
@@ -475,11 +332,72 @@ class HomeViewModel {
   }
 }
 ''');
-  logger
-      .success('🧱 Created: lib/features/home/viewmodels/home_viewmodel.dart');
+  logger.success('🧱 Created: lib/features/home/presentation/viewmodels/home_viewmodel.dart');
 
-  // 🧱 Create separate route files
-  _createSeparateRouteFiles(libDir, 'home', 'Home', 'features/home/views', logger);
+  // ✅ DataSource with Interface + Implementation
+  File('${featureDir.path}/data/datasources/remote_home_datasource.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''
+/// Abstract data source defines the contract for remote home operations.
+abstract interface class IRemoteHomeDataSource {
+  Future<String> fetchData();
+}
+
+/// Concrete implementation of the remote home data source.
+class RemoteHomeDataSourceImpl implements IRemoteHomeDataSource {
+  @override
+  Future<String> fetchData() async {
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      return 'Data fetched successfully';
+    } catch (error) {
+      throw Exception('Fetch error: \${error.toString()}');
+    }
+  }
+}
+''');
+  logger.success('🧱 Created: lib/features/home/data/datasources/remote_home_datasource.dart');
+
+  // ✅ Example Entity
+  File('${featureDir.path}/domain/entities/home_entity.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''class HomeEntity {
+  final String id;
+  final String title;
+
+  HomeEntity({required this.id, required this.title});
+}
+''');
+  logger.success('🧱 Created: lib/features/home/domain/entities/home_entity.dart');
+
+  // ✅ Example Repository Interface
+  File('${featureDir.path}/domain/repositories/home_repository.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''abstract interface class HomeRepository {
+  Future<String> getData();
+}
+''');
+  logger.success('🧱 Created: lib/features/home/domain/repositories/home_repository.dart');
+
+  // ✅ Example Repository Implementation
+  File('${featureDir.path}/data/repository_impl/home_repository_impl.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync(
+        '''import '../../domain/repositories/home_repository.dart';
+import '../datasources/remote_home_datasource.dart';
+
+class HomeRepositoryImpl implements HomeRepository {
+  final IRemoteHomeDataSource dataSource;
+
+  HomeRepositoryImpl(this.dataSource);
+
+  @override
+  Future<String> getData() {
+    return dataSource.fetchData();
+  }
+}
+''');
+  logger.success('🧱 Created: lib/features/home/data/repository_impl/home_repository_impl.dart');
 }
 
 // ------------------------------------------------------------------
