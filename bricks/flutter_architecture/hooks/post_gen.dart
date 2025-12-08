@@ -136,37 +136,12 @@ class HomeController {
 ''');
   logger.success('🧱 Created: lib/controllers/home_controller.dart');
 
-  // 🧱 Routes
-  File('${libDir.path}/routes/routes.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:go_router/go_router.dart';
-import '../views/home_view.dart';
-
-class AppRoutes {
-  // Route paths
-  static const String homePath = '/';
-  
-  // Route names
-  static const String homeName = 'home';
-  
-  static final GoRouter router = GoRouter(
-    initialLocation: homePath,
-    routes: [
-      GoRoute(
-        path: homePath,
-        name: homeName,
-        builder: (context, state) => HomeView(),
-      ),
-    ],
-  );
-}
-''');
-  logger.success('🧱 Created: lib/routes/routes.dart');
+  // 🧱 Create separate route files
+  _createSeparateRouteFiles(libDir, 'home', 'Home', 'views', logger);
 }
 
 // ------------------------------------------------------------------
 // 🧩 SIMPLE MVVM
-// (Same as MVC but uses ViewModel instead of Controller)
 // ------------------------------------------------------------------
 void _createSimpleMVVM(Directory libDir, Logger logger) {
   final folders = [
@@ -227,36 +202,12 @@ class HomeViewModel {
 ''');
   logger.success('🧱 Created: lib/viewmodels/home_viewmodel.dart');
 
-  // 🧱 Routes
-  File('${libDir.path}/routes/routes.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:go_router/go_router.dart';
-import '../views/home_view.dart';
-
-class AppRoutes {
-  // Route paths
-  static const String homePath = '/';
-  
-  // Route names
-  static const String homeName = 'home';
-  
-  static final GoRouter router = GoRouter(
-    initialLocation: homePath,
-    routes: [
-      GoRoute(
-        path: homePath,
-        name: homeName,
-        builder: (context, state) => HomeView(),
-      ),
-    ],
-  );
-}
-''');
-  logger.success('🧱 Created: lib/routes/routes.dart');
+  // 🧱 Create separate route files
+  _createSeparateRouteFiles(libDir, 'home', 'Home', 'views', logger);
 }
 
 // ------------------------------------------------------------------
-// 🧩 CLEAN FEATURE-BASED (with routes + datasource)
+// 🧩 CLEAN FEATURE-BASED
 // ------------------------------------------------------------------
 void _createCleanFeature(Directory libDir, Logger logger) {
   final featureDir = Directory('${libDir.path}/features/signin');
@@ -394,36 +345,9 @@ class SignInRepositoryImpl implements SignInRepository {
   logger.success(
       '🧱 Created: lib/features/signin/data/repository_impl/signin_repository_impl.dart');
 
-  // ✅ App Routes File
-  final routesFile = File('${libDir.path}/routes/routes.dart');
-  routesFile
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:go_router/go_router.dart';
-import '../features/signin/presentation/views/signin_view.dart';
-
-class AppRoutes {
-  // Route paths
-  static const String signInPath = '/signin';
-  
-  // Route names
-  static const String signInName = 'signin';
-
-  static final GoRouter router = GoRouter(
-    initialLocation: signInPath,
-    routes: [
-      GoRoute(
-        path: signInPath,
-        name: signInName,
-        builder: (context, state) => const SignInView(),
-      ),
-    ],
-  );
-}
-''');
-  logger.success('🧱 Created: lib/routes/routes.dart');
-
-  logger.success(
-      '✅ Clean Feature-Based architecture setup complete with interface + implementation in datasource!');
+  // ✅ Create separate route files
+  _createSeparateRouteFiles(
+      libDir, 'signIn', 'SignIn', 'features/signin/presentation/views', logger);
 }
 
 // ------------------------------------------------------------------
@@ -488,32 +412,8 @@ class HomeController {
   logger.success(
       '🧱 Created: lib/features/home/controllers/home_controller.dart');
 
-  // 🧱 Routes
-  File('${libDir.path}/routes/routes.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:go_router/go_router.dart';
-import '../features/home/views/home_view.dart';
-
-class AppRoutes {
-  // Route paths
-  static const String homePath = '/';
-  
-  // Route names
-  static const String homeName = 'home';
-  
-  static final GoRouter router = GoRouter(
-    initialLocation: homePath,
-    routes: [
-      GoRoute(
-        path: homePath,
-        name: homeName,
-        builder: (context, state) => HomeView(),
-      ),
-    ],
-  );
-}
-''');
-  logger.success('🧱 Created: lib/routes/routes.dart');
+  // 🧱 Create separate route files
+  _createSeparateRouteFiles(libDir, 'home', 'Home', 'features/home/views', logger);
 }
 
 // ------------------------------------------------------------------
@@ -578,30 +478,60 @@ class HomeViewModel {
   logger
       .success('🧱 Created: lib/features/home/viewmodels/home_viewmodel.dart');
 
-  // 🧱 Routes
-  File('${libDir.path}/routes/routes.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:go_router/go_router.dart';
-import '../features/home/views/home_view.dart';
+  // 🧱 Create separate route files
+  _createSeparateRouteFiles(libDir, 'home', 'Home', 'features/home/views', logger);
+}
+
+// ------------------------------------------------------------------
+// 🧩 SHARED: Create Separate Route Files (Paths, Names, Routes)
+// ------------------------------------------------------------------
+void _createSeparateRouteFiles(
+  Directory libDir,
+  String fileName,
+  String className,
+  String viewPath,
+  Logger logger,
+) {
+  final routesDir = Directory('${libDir.path}/routes');
+  if (!routesDir.existsSync()) {
+    routesDir.createSync(recursive: true);
+  }
+
+  // ✅ 1. Create route_paths.dart
+  final pathsFile = File('${routesDir.path}/route_paths.dart');
+  pathsFile.writeAsStringSync('''class RoutePaths {
+  static const String $fileName = '/$fileName';
+}
+''');
+  logger.success('🧭 Created: lib/routes/route_paths.dart');
+
+  // ✅ 2. Create route_names.dart
+  final namesFile = File('${routesDir.path}/route_names.dart');
+  namesFile.writeAsStringSync('''class RouteNames {
+  static const String $fileName = '$fileName';
+}
+''');
+  logger.success('🧭 Created: lib/routes/route_names.dart');
+
+  // ✅ 3. Create routes.dart
+  final routesFile = File('${routesDir.path}/routes.dart');
+  routesFile.writeAsStringSync('''import 'package:go_router/go_router.dart';
+import 'route_paths.dart';
+import 'route_names.dart';
+import '../$viewPath/${fileName}_view.dart';
 
 class AppRoutes {
-  // Route paths
-  static const String homePath = '/';
-  
-  // Route names
-  static const String homeName = 'home';
-  
   static final GoRouter router = GoRouter(
-    initialLocation: homePath,
+    initialLocation: RoutePaths.$fileName,
     routes: [
       GoRoute(
-        path: homePath,
-        name: homeName,
-        builder: (context, state) => HomeView(),
+        path: RoutePaths.$fileName,
+        name: RouteNames.$fileName,
+        builder: (context, state) => ${className}View(),
       ),
     ],
   );
 }
 ''');
-  logger.success('🧱 Created: lib/routes/routes.dart');
+  logger.success('🧭 Created: lib/routes/routes.dart');
 }

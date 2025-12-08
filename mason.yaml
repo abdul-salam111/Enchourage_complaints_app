@@ -1,5 +1,5 @@
 bricks:
   flutter_architecture:
     path: "bricks\\flutter_architecture"
-  create_page:
-    path: "bricks\\create_page"
+  create_feature:
+    path: "bricks\\create_feature"
