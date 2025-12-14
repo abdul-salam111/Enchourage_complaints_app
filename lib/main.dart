@@ -1,39 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'core/app_dependencies.dart';
+import 'core/theme/theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'routes/routes.dart';
 
 void main() async {
-  runApp(const MyApp());
   WidgetsFlutterBinding.ensureInitialized();
-  await setupLocator();
+  AppBindings().dependencies();
+  runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  final ThemeController _themeController = sl<ThemeController>();
-  @override
-  void initState() {
-    super.initState();
-    _themeController.addListener(() {
-      setState(() {});
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Flutter Project',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: _themeController.themeMode,
-      debugShowCheckedModeBanner: false,
-      routerConfig: AppRoutes.router,
+    return Obx(
+      () => GetMaterialApp(
+        title: 'Flutter Project',
+        theme: AppThemes.lightTheme,
+        darkTheme: AppThemes.darkTheme,
+        themeMode: ThemeController.to.themeMode,
+        debugShowCheckedModeBanner: false,
+        initialRoute: AppRoutes.initialRoute,
+        getPages: AppRoutes.routes,
+      ),
     );
   }
 }
