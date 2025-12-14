@@ -10,7 +10,7 @@ Future<void> run(HookContext context) async {
 🔧 Select your project architecture:
 1️⃣  Simple MVVM
 2️⃣  Clean Architecture (with Bloc)
-3️⃣  Clean Architecture (with MVVM)
+3️⃣  Clean Architecture (with GetX)
 ''');
 
   // Read numeric choice
@@ -25,6 +25,7 @@ Future<void> run(HookContext context) async {
 
   String architecture;
   bool useBloc = false;
+  bool useGetX = false;
 
   switch (choice) {
     case 1:
@@ -35,7 +36,8 @@ Future<void> run(HookContext context) async {
       useBloc = true;
       break;
     case 3:
-      architecture = 'clean_mvvm';
+      architecture = 'clean_getx';
+      useGetX = true;
       break;
     default:
       architecture = 'simple_mvvm';
@@ -43,9 +45,11 @@ Future<void> run(HookContext context) async {
 
   logger.info('Setting up $architecture architecture...');
 
-  // Install Bloc packages if selected
+  // Install packages based on selection
   if (useBloc) {
     await _installBlocDependencies(logger);
+  } else if (useGetX) {
+    await _installGetXDependencies(logger);
   }
 
   final currentDir = Directory.current;
@@ -61,8 +65,8 @@ Future<void> run(HookContext context) async {
     case 'clean_bloc':
       _createCleanFeature(libDir, logger, useBloc: true);
       break;
-    case 'clean_mvvm':
-      _createCleanFeature(libDir, logger, useBloc: false);
+    case 'clean_getx':
+      _createCleanFeature(libDir, logger, useGetX: true);
       break;
   }
 
@@ -79,6 +83,17 @@ Next steps:
 3. Check lib/routes/ for navigation setup
 4. Check lib/core/app_dependencies.dart for dependency injection setup
 ''');
+  } else if (useGetX) {
+    logger.info('''
+📦 GetX packages have been added to your pubspec.yaml.
+
+Next steps:
+1. Run 'flutter pub get' to install dependencies (if not already done)
+2. Start implementing your features in lib/features/
+3. Check lib/routes/ for navigation setup
+4. Each feature has its own Binding for dependency injection in presentation/dependencies/
+5. Update your main.dart to use GetMaterialApp with AppRoutes.routes
+''');
   } else {
     logger.info('''
 Next steps:
@@ -90,7 +105,7 @@ Next steps:
 }
 
 // ------------------------------------------------------------------
-// 🧩 Install Bloc Dependencies (Simpler & More Reliable)
+// 🧩 Install Bloc Dependencies
 // ------------------------------------------------------------------
 Future<void> _installBlocDependencies(Logger logger) async {
   logger.info('📦 Installing Bloc packages...');
@@ -113,19 +128,23 @@ Future<void> _installBlocDependencies(Logger logger) async {
   // Look specifically in the dependencies section
   final lines = content.split('\n');
   bool inDependenciesSection = false;
-  
+
   for (int i = 0; i < lines.length; i++) {
     final line = lines[i].trim();
-    
+
     if (line == 'dependencies:') {
       inDependenciesSection = true;
       continue;
     }
-    
-    if (line == 'dev_dependencies:' || (line.isNotEmpty && !lines[i].startsWith('  ') && !lines[i].startsWith('\t') && inDependenciesSection)) {
+
+    if (line == 'dev_dependencies:' ||
+        (line.isNotEmpty &&
+            !lines[i].startsWith('  ') &&
+            !lines[i].startsWith('\t') &&
+            inDependenciesSection)) {
       inDependenciesSection = false;
     }
-    
+
     if (inDependenciesSection) {
       if (line.contains('flutter_bloc:')) hasFlutterBloc = true;
       if (line.contains('bloc:')) hasBloc = true;
@@ -159,26 +178,28 @@ Future<void> _installBlocDependencies(Logger logger) async {
   final updatedLines = <String>[];
   inDependenciesSection = false;
   bool packagesAdded = false;
-  
+
   for (int i = 0; i < lines.length; i++) {
     final line = lines[i];
     updatedLines.add(line);
-    
+
     final trimmedLine = line.trim();
-    
+
     if (trimmedLine == 'dependencies:') {
       inDependenciesSection = true;
       continue;
     }
-    
+
     if (inDependenciesSection && !packagesAdded) {
       // Check if next line is dev_dependencies or another section
       if (i + 1 < lines.length) {
         final nextLine = lines[i + 1];
         final trimmedNextLine = nextLine.trim();
-        
-        if (trimmedNextLine == 'dev_dependencies:' || 
-            (trimmedNextLine.isNotEmpty && !nextLine.startsWith('  ') && !nextLine.startsWith('\t'))) {
+
+        if (trimmedNextLine == 'dev_dependencies:' ||
+            (trimmedNextLine.isNotEmpty &&
+                !nextLine.startsWith('  ') &&
+                !nextLine.startsWith('\t'))) {
           // Add packages before this line
           for (final package in packagesToAdd) {
             updatedLines.add(package);
@@ -207,8 +228,9 @@ Future<void> _installBlocDependencies(Logger logger) async {
   // Run flutter pub get
   logger.info('\n🔄 Running flutter pub get...');
   try {
-    final process = await Process.start('flutter', ['pub', 'get'], runInShell: true);
-    
+    final process =
+        await Process.start('flutter', ['pub', 'get'], runInShell: true);
+
     // Stream output in real-time
     process.stdout.transform(utf8.decoder).listen((data) {
       final output = data.trim();
@@ -216,14 +238,14 @@ Future<void> _installBlocDependencies(Logger logger) async {
         logger.info(output);
       }
     });
-    
+
     process.stderr.transform(utf8.decoder).listen((data) {
       final output = data.trim();
       if (output.isNotEmpty) {
         logger.err(output);
       }
     });
-    
+
     final exitCode = await process.exitCode;
     if (exitCode == 0) {
       logger.success('✅ Dependencies installed successfully');
@@ -245,8 +267,159 @@ Future<void> _installBlocDependencies(Logger logger) async {
   }
 }
 
+// ------------------------------------------------------------------
+// 🧩 Install GetX Dependencies
+// ------------------------------------------------------------------
+Future<void> _installGetXDependencies(Logger logger) async {
+  logger.info('📦 Installing GetX packages...');
 
+  final pubspecFile = File('pubspec.yaml');
+  if (!pubspecFile.existsSync()) {
+    logger.err('❌ pubspec.yaml not found in current directory.');
+    return;
+  }
 
+  String content = await pubspecFile.readAsString();
+
+  // Check if GetX packages are already in dependencies
+  bool hasGet = false;
+  bool hasGetStorage = false;
+
+  // Look specifically in the dependencies section
+  final lines = content.split('\n');
+  bool inDependenciesSection = false;
+
+  for (int i = 0; i < lines.length; i++) {
+    final line = lines[i].trim();
+
+    if (line == 'dependencies:') {
+      inDependenciesSection = true;
+      continue;
+    }
+
+    if (line == 'dev_dependencies:' ||
+        (line.isNotEmpty &&
+            !lines[i].startsWith('  ') &&
+            !lines[i].startsWith('\t') &&
+            inDependenciesSection)) {
+      inDependenciesSection = false;
+    }
+
+    if (inDependenciesSection) {
+      if (line.contains('get:')) hasGet = true;
+      if (line.contains('get_storage:')) hasGetStorage = true;
+    }
+  }
+
+  // List of packages to add
+  final packagesToAdd = <String>[];
+  if (!hasGet) packagesToAdd.add('  get: ^4.6.6');
+  if (!hasGetStorage) packagesToAdd.add('  get_storage: ^2.1.1');
+
+  if (packagesToAdd.isEmpty) {
+    logger.info('✅ All GetX packages are already installed');
+    return;
+  }
+
+  logger.info('📦 Adding missing packages: ${packagesToAdd.length} package(s)');
+
+  // Create backup
+  final backupFile = File('pubspec.yaml.backup');
+  await backupFile.writeAsString(content);
+  logger.info('📋 Created backup: pubspec.yaml.backup');
+
+  // Add packages directly after the last dependency
+  final updatedLines = <String>[];
+  inDependenciesSection = false;
+  bool packagesAdded = false;
+
+  for (int i = 0; i < lines.length; i++) {
+    final line = lines[i];
+    updatedLines.add(line);
+
+    final trimmedLine = line.trim();
+
+    if (trimmedLine == 'dependencies:') {
+      inDependenciesSection = true;
+      continue;
+    }
+
+    if (inDependenciesSection && !packagesAdded) {
+      // Check if next line is dev_dependencies or another section
+      if (i + 1 < lines.length) {
+        final nextLine = lines[i + 1];
+        final trimmedNextLine = nextLine.trim();
+
+        if (trimmedNextLine == 'dev_dependencies:' ||
+            (trimmedNextLine.isNotEmpty &&
+                !nextLine.startsWith('  ') &&
+                !nextLine.startsWith('\t'))) {
+          // Add packages before this line
+          for (final package in packagesToAdd) {
+            updatedLines.add(package);
+          }
+          packagesAdded = true;
+        }
+      } else {
+        // End of file, add packages here
+        for (final package in packagesToAdd) {
+          updatedLines.add(package);
+        }
+        packagesAdded = true;
+      }
+    }
+  }
+
+  final updatedContent = updatedLines.join('\n');
+  await pubspecFile.writeAsString(updatedContent);
+  logger.success('✅ Added packages to pubspec.yaml');
+
+  // Show what was added
+  for (final package in packagesToAdd) {
+    logger.info('   + $package');
+  }
+
+  // Run flutter pub get
+  logger.info('\n🔄 Running flutter pub get...');
+  try {
+    final process =
+        await Process.start('flutter', ['pub', 'get'], runInShell: true);
+
+    // Stream output in real-time
+    process.stdout.transform(utf8.decoder).listen((data) {
+      final output = data.trim();
+      if (output.isNotEmpty) {
+        logger.info(output);
+      }
+    });
+
+    process.stderr.transform(utf8.decoder).listen((data) {
+      final output = data.trim();
+      if (output.isNotEmpty) {
+        logger.err(output);
+      }
+    });
+
+    final exitCode = await process.exitCode;
+    if (exitCode == 0) {
+      logger.success('✅ Dependencies installed successfully');
+      // Delete backup
+      if (backupFile.existsSync()) {
+        backupFile.deleteSync();
+      }
+    } else {
+      logger.err('❌ Failed to install dependencies');
+      logger.warn('⚠️  Restoring original pubspec.yaml from backup...');
+      await pubspecFile.writeAsString(content);
+      logger.info('Please run "flutter pub get" manually.');
+    }
+  } catch (e) {
+    logger.err('❌ Error running flutter pub get: $e');
+    logger.warn('⚠️  Restoring original pubspec.yaml from backup...');
+    await pubspecFile.writeAsString(content);
+    logger.info('Please run "flutter pub get" manually.');
+  }
+}
 
 // ------------------------------------------------------------------
 // 🧩 SIMPLE MVVM
@@ -311,14 +484,15 @@ class HomeViewModel {
   logger.success('🧱 Created: lib/viewmodels/home_viewmodel.dart');
 
   // 🧱 Create separate route files
-  _createSeparateRouteFiles(libDir, 'home', 'Home', 'views', logger);
+  _createSeparateRouteFiles(libDir, 'home', 'Home', 'views', logger,
+      useGetX: false);
 }
 
 // ------------------------------------------------------------------
-// 🧩 CLEAN FEATURE-BASED (with Bloc or MVVM)
+// 🧩 CLEAN FEATURE-BASED (with Bloc or GetX)
 // ------------------------------------------------------------------
 void _createCleanFeature(Directory libDir, Logger logger,
-    {bool useBloc = true}) {
+    {bool useBloc = false, bool useGetX = false}) {
   final featureName = useBloc ? 'signin' : 'home';
   final featureDir = Directory('${libDir.path}/features/$featureName');
   final dataFolders = [
@@ -331,7 +505,7 @@ void _createCleanFeature(Directory libDir, Logger logger,
   final domainFolders = ['repositories', 'usecases', 'entities'];
   final presentationFolders = useBloc
       ? ['views', 'widgets', 'blocs']
-      : ['views', 'widgets', 'viewmodels'];
+      : ['views', 'widgets', 'viewmodels', 'dependencies'];
 
   // ✅ Create root structure
   for (var folder in [
@@ -368,14 +542,15 @@ void _createCleanFeature(Directory libDir, Logger logger,
   if (useBloc) {
     _createBlocFiles(featureDir, logger);
   } else {
-    _createMVVMFiles(featureDir, logger);
+    _createGetXFiles(featureDir, logger);
   }
 
   // ✅ Create separate route files
   final className = useBloc ? 'SignIn' : 'Home';
   final fileName = useBloc ? 'signIn' : 'home';
   _createSeparateRouteFiles(libDir, fileName, className,
-      'features/$featureName/presentation/views', logger);
+      'features/$featureName/presentation/views', logger,
+      useGetX: useGetX);
 
   // ✅ Update dependency injection file (only for Bloc)
   if (useBloc) {
@@ -605,29 +780,43 @@ class SignInRepositoryImpl implements SignInRepository {
 }
 
 // ------------------------------------------------------------------
-// 🧩 Create MVVM-specific files
+// 🧩 Create GetX-specific files
 // ------------------------------------------------------------------
-void _createMVVMFiles(Directory featureDir, Logger logger) {
-  // ✅ Example View File
+void _createGetXFiles(Directory featureDir, Logger logger) {
+  // ✅ Example View File (using GetView)
   File('${featureDir.path}/presentation/views/home_view.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../viewmodels/home_viewmodel.dart';
 
-class HomeView extends StatelessWidget {
-  final viewModel = HomeViewModel();
-
-  HomeView({super.key});
+class HomeView extends GetView<HomeViewModel> {
+  const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Home')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: viewModel.onButtonPressed,
-          child: const Text('Tap Me'),
-        ),
+        child: Obx(() => Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (controller.isLoading.value)
+              const CircularProgressIndicator()
+            else
+              Text('Data: \${controller.data.value}'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: controller.onButtonPressed,
+              child: Text('Taps: \${controller.tapCount}'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: controller.fetchData,
+              child: const Text('Fetch Data'),
+            ),
+          ],
+        )),
       ),
     );
   }
@@ -636,23 +825,87 @@ class HomeView extends StatelessWidget {
   logger.success(
       '🧱 Created: lib/features/home/presentation/views/home_view.dart');
 
-  // ✅ ViewModel
+  // ✅ ViewModel (GetX Controller)
   File('${featureDir.path}/presentation/viewmodels/home_viewmodel.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
+    ..writeAsStringSync('''import 'package:get/get.dart';
+import '../../domain/repositories/home_repository.dart';
 
-class HomeViewModel {
+class HomeViewModel extends GetxController {
+  final HomeRepository repository;
+  
+  HomeViewModel(this.repository);
+  
+  final tapCount = 0.obs;
+  final RxString data = ''.obs;
+  final RxBool isLoading = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchData();
+  }
+
   void onButtonPressed() {
-    debugPrint('HomeViewModel: Button pressed!');
+    tapCount.value++;
   }
   
-  void dispose() {
+  Future<void> fetchData() async {
+    try {
+      isLoading.value = true;
+      data.value = await repository.getData();
+    } catch (e) {
+      Get.snackbar(
+        'Error', 
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  
+  @override
+  void onClose() {
     // Clean up resources
+    super.onClose();
   }
 }
 ''');
   logger.success(
       '🧱 Created: lib/features/home/presentation/viewmodels/home_viewmodel.dart');
+
+  // ✅ Dependencies Binding
+  File('${featureDir.path}/presentation/dependencies/home_binding.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:get/get.dart';
+import '../../data/datasources/remote_home_datasource.dart';
+import '../../data/repository_impl/home_repository_impl.dart';
+import '../../domain/repositories/home_repository.dart';
+import '../viewmodels/home_viewmodel.dart';
+
+class HomeBinding extends Bindings {
+  @override
+  void dependencies() {
+    // DataSource
+    Get.lazyPut<IRemoteHomeDataSource>(
+      () => RemoteHomeDataSourceImpl(),
+    );
+    
+    // Repository
+    Get.lazyPut<HomeRepository>(
+      () => HomeRepositoryImpl(Get.find()),
+    );
+    
+    // ViewModel/Controller
+    Get.lazyPut<HomeViewModel>(
+      () => HomeViewModel(Get.find()),
+    );
+  }
+}
+''');
+  logger.success(
+      '🧱 Created: lib/features/home/presentation/dependencies/home_binding.dart');
 
   // ✅ DataSource with Interface + Implementation
   File('${featureDir.path}/data/datasources/remote_home_datasource.dart')
@@ -727,13 +980,9 @@ class HomeRepositoryImpl implements HomeRepository {
 // ------------------------------------------------------------------
 // 🧩 SHARED: Create Separate Route Files (Paths, Names, Routes)
 // ------------------------------------------------------------------
-void _createSeparateRouteFiles(
-  Directory libDir,
-  String fileName,
-  String className,
-  String viewPath,
-  Logger logger,
-) {
+void _createSeparateRouteFiles(Directory libDir, String fileName,
+    String className, String viewPath, Logger logger,
+    {bool useGetX = false}) {
   final routesDir = Directory('${libDir.path}/routes');
   if (!routesDir.existsSync()) {
     routesDir.createSync(recursive: true);
@@ -755,9 +1004,32 @@ void _createSeparateRouteFiles(
 ''');
   logger.success('🧭 Created: lib/routes/route_names.dart');
 
-  // ✅ 3. Create routes.dart
+  // ✅ 3. Create routes.dart (GetX or GoRouter based)
   final routesFile = File('${routesDir.path}/routes.dart');
-  routesFile.writeAsStringSync('''import 'package:go_router/go_router.dart';
+
+  if (useGetX) {
+    // GetX routing
+    routesFile.writeAsStringSync('''import 'package:get/get.dart';
+import 'route_paths.dart';
+import 'route_names.dart';
+import '../$viewPath/${fileName}_view.dart';
+import '../$viewPath/../dependencies/${fileName}_binding.dart';
+
+class AppRoutes {
+  static final List<GetPage> routes = [
+    GetPage(
+      name: RoutePaths.$fileName,
+      page: () => const ${className}View(),
+      binding: ${className}Binding(),
+    ),
+  ];
+  
+  static const String initialRoute = RoutePaths.$fileName;
+}
+''');
+  } else {
+    // GoRouter (for Bloc and Simple MVVM)
+    routesFile.writeAsStringSync('''import 'package:go_router/go_router.dart';
 import 'route_paths.dart';
 import 'route_names.dart';
 import '../$viewPath/${fileName}_view.dart';
@@ -775,11 +1047,13 @@ class AppRoutes {
   );
 }
 ''');
+  }
+
   logger.success('🧭 Created: lib/routes/routes.dart');
 }
 
 // ------------------------------------------------------------------
-// 🧩 Update Dependency Injection (GetIt)
+// 🧩 Update Dependency Injection (GetIt for Bloc)
 // ------------------------------------------------------------------
 void _updateDependencyInjection(Directory libDir, Logger logger) {
   // Create core directory if it doesn't exist

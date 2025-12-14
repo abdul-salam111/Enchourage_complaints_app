@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import '../local_storage/storage.dart';
 
 class ThemeController extends ChangeNotifier {
-
   final String _key = 'isDarkMode';
 
   bool _isDarkMode = false;
