@@ -28,9 +28,7 @@ Future<void> run(HookContext context) async {
 
   // 🧱 Step 3: Create structure based on architecture
   if (architecture == 'SimpleMVVM') {
-    _createView(currentDir, className, fileName, logger);
-    _createViewModel(currentDir, className, fileName, logger);
-    _addRouteToExisting(currentDir, className, fileName, 'views', logger);
+    _createSimpleMVVMFeature(libDir, className, fileName, logger);
   } else if (architecture == 'CleanMVVM') {
     _createCleanFeature(libDir, className, fileName, logger);
   }
@@ -49,27 +47,134 @@ String _detectArchitecture(Directory libDir) {
         if (Directory('${firstFeature.path}/data').existsSync() &&
             Directory('${firstFeature.path}/domain').existsSync() &&
             Directory('${firstFeature.path}/presentation').existsSync()) {
-          // Check if it uses MVVM (viewmodels folder)
-          if (Directory('${firstFeature.path}/presentation/viewmodels')
-              .existsSync()) {
-            return 'CleanMVVM';
-          }
-
-          // Default to CleanMVVM if presentation layer exists but no specific pattern detected
           return 'CleanMVVM';
+        }
+
+        // Check for Simple MVVM structure (view, viewmodel, binding in same folder)
+        final files = firstFeature.listSync();
+        bool hasView = files.any((f) => f.path.endsWith('_view.dart'));
+        bool hasViewModel =
+            files.any((f) => f.path.endsWith('_viewmodel.dart'));
+        bool hasBinding = files.any((f) => f.path.endsWith('_binding.dart'));
+
+        if (hasView && hasViewModel && hasBinding) {
+          return 'SimpleMVVM';
         }
       }
     }
-    // Features folder exists but empty, default to CleanMVVM
-    return 'CleanMVVM';
   }
 
-  // Check for simple MVVM (viewmodels in root)
-  if (Directory('${libDir.path}/viewmodels').existsSync()) {
+  // Check for data folder (Simple MVVM indicator)
+  if (Directory('${libDir.path}/data').existsSync()) {
     return 'SimpleMVVM';
   }
 
   return 'Unknown';
+}
+
+/// ---------------------------------------------------------------------------
+/// 🧩 SIMPLE MVVM (NEW STRUCTURE)
+/// ---------------------------------------------------------------------------
+
+void _createSimpleMVVMFeature(
+  Directory libDir,
+  String className,
+  String fileName,
+  Logger logger,
+) {
+  final featureDir = Directory('${libDir.path}/features/$fileName');
+
+  // ✅ Create feature folder
+  featureDir.createSync(recursive: true);
+  logger.success('📁 Created: lib/features/$fileName');
+
+  // 🧱 View (using GetView)
+  File('${featureDir.path}/${fileName}_view.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '${fileName}_viewmodel.dart';
+
+class ${className}View extends GetView<${className}ViewModel> {
+  const ${className}View({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('$className')),
+      body: Center(
+        child: Obx(() => Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Taps: \${controller.tapCount.value}'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: controller.onActionPressed,
+              child: const Text('Tap Me'),
+            ),
+          ],
+        )),
+      ),
+    );
+  }
+}
+''');
+  logger.success('🧱 Created: lib/features/$fileName/${fileName}_view.dart');
+
+  // 🧱 ViewModel (extends GetxController)
+  File('${featureDir.path}/${fileName}_viewmodel.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:get/get.dart';
+
+class ${className}ViewModel extends GetxController {
+  final tapCount = 0.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Initialize data here
+  }
+
+  void onActionPressed() {
+    tapCount.value++;
+  }
+  
+  @override
+  void onClose() {
+    // Clean up resources
+    super.onClose();
+  }
+}
+''');
+  logger
+      .success('🧱 Created: lib/features/$fileName/${fileName}_viewmodel.dart');
+
+  // 🧱 Binding
+  File('${featureDir.path}/${fileName}_binding.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:get/get.dart';
+import '${fileName}_viewmodel.dart';
+
+class ${className}Binding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<${className}ViewModel>(
+      () => ${className}ViewModel(),
+    );
+  }
+}
+''');
+  logger.success('🧱 Created: lib/features/$fileName/${fileName}_binding.dart');
+
+  // ✅ Add route (GetX)
+  _createSeparateRouteFiles(
+    libDir,
+    fileName,
+    className,
+    'features/$fileName',
+    logger,
+    useGetX: true,
+  );
 }
 
 /// ---------------------------------------------------------------------------
@@ -285,61 +390,7 @@ class ${className}RepositoryImpl implements ${className}Repository {
 }
 
 /// ---------------------------------------------------------------------------
-/// 🧩 SIMPLE MVVM HELPERS
-/// ---------------------------------------------------------------------------
-
-void _createView(
-    Directory currentDir, String className, String fileName, Logger logger) {
-  final file = File('${currentDir.path}/lib/views/${fileName}_view.dart');
-  file.createSync(recursive: true);
-  file.writeAsStringSync('''import 'package:flutter/material.dart';
-import '../viewmodels/${fileName}_viewmodel.dart';
-
-class ${className}View extends StatelessWidget {
-  final viewModel = ${className}ViewModel();
-  
-  ${className}View({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('$className')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: viewModel.onActionPressed,
-          child: const Text('Tap Me'),
-        ),
-      ),
-    );
-  }
-}
-''');
-  logger.success('🧱 Created: lib/views/${fileName}_view.dart');
-}
-
-void _createViewModel(
-    Directory currentDir, String className, String fileName, Logger logger) {
-  final file =
-      File('${currentDir.path}/lib/viewmodels/${fileName}_viewmodel.dart');
-  file.createSync(recursive: true);
-  file.writeAsStringSync('''import 'package:flutter/material.dart';
-
-class ${className}ViewModel {
-  void onActionPressed() {
-    debugPrint('$className ViewModel: Action pressed!');
-  }
-  
-  void dispose() {
-    // Clean up resources
-  }
-}
-''');
-  logger.success('🧱 ViewModel created.');
-}
-
-/// ---------------------------------------------------------------------------
 /// 🧩 SHARED: Create Separate Route Files (Paths, Names, Routes)
-/// This uses the same approach as flutter_architecture
 /// ---------------------------------------------------------------------------
 
 void _createSeparateRouteFiles(Directory libDir, String fileName,
@@ -360,24 +411,8 @@ void _createSeparateRouteFiles(Directory libDir, String fileName,
   // ✅ 2. Update or create route_names.dart
   _updateRouteNames(namesFile, fileName, logger);
 
-  // ✅ 3. Update or create routes.dart (GetX or Navigator 2.0 based)
-  if (useGetX) {
-    _updateRoutesFileGetX(routesFile, className, fileName, viewPath, logger);
-  } else {
-    _updateRoutesFile(routesFile, className, fileName, viewPath, logger);
-  }
-}
-
-void _addRouteToExisting(
-  Directory currentDir,
-  String className,
-  String fileName,
-  String viewPath,
-  Logger logger,
-) {
-  final libDir = Directory('${currentDir.path}/lib');
-  _createSeparateRouteFiles(libDir, fileName, className, viewPath, logger,
-      useGetX: false);
+  // ✅ 3. Update or create routes.dart (GetX)
+  _updateRoutesFileGetX(routesFile, className, fileName, viewPath, logger);
 }
 
 void _updateRoutePaths(File pathsFile, String fileName, Logger logger) {
@@ -440,116 +475,6 @@ void _updateRouteNames(File namesFile, String fileName, Logger logger) {
   logger.success('🧭 Added $fileName name to route_names.dart');
 }
 
-void _updateRoutesFile(
-  File routesFile,
-  String className,
-  String fileName,
-  String viewPath,
-  Logger logger,
-) {
-  if (!routesFile.existsSync()) {
-    routesFile.createSync(recursive: true);
-    routesFile.writeAsStringSync('''import 'package:flutter/material.dart';
-import 'route_paths.dart';
-import 'route_names.dart';
-import '../$viewPath/${fileName}_view.dart';
-
-class AppRoutes {
-  static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      case RoutePaths.$fileName:
-        return MaterialPageRoute(
-          builder: (_) => ${className}View(),
-          settings: settings,
-        );
-      default:
-        return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(
-              child: Text('No route defined for \${settings.name}'),
-            ),
-          ),
-          settings: settings,
-        );
-    }
-  }
-}
-''');
-    logger.success('🧭 Created: lib/routes/routes.dart (Simple MVVM)');
-    return;
-  }
-
-  logger.info('📝 Updating existing routes.dart file...');
-  String content = routesFile.readAsStringSync();
-
-  // Check if route already exists
-  if (content.contains("case RoutePaths.$fileName:") ||
-      content.contains('${className}View()')) {
-    logger.warn('⚠️  Route for $fileName already exists in routes.dart');
-    return;
-  }
-
-  // Add import for the new view
-  final importStatement = "import '../$viewPath/${fileName}_view.dart';";
-  bool importAdded = false;
-  if (!content.contains(importStatement)) {
-    logger.info('📦 Adding import: $importStatement');
-    // Find the last import statement
-    final importMatches = RegExp(r"import '.*';").allMatches(content);
-    if (importMatches.isNotEmpty) {
-      final lastImport = importMatches.last;
-      final insertPosition = lastImport.end;
-      content = content.substring(0, insertPosition) +
-          '\n$importStatement' +
-          content.substring(insertPosition);
-      importAdded = true;
-      logger.info('✅ Import added successfully');
-    } else {
-      logger.warn('⚠️  No existing imports found to anchor new import');
-    }
-  }
-
-  // Find the switch statement and add a new case
-  bool routeAdded = false;
-  final switchStart = content.indexOf('switch (settings.name)');
-  if (switchStart != -1) {
-    logger.info('🔍 Found switch statement at position $switchStart');
-    final switchBodyStart = content.indexOf('{', switchStart);
-    if (switchBodyStart != -1) {
-      // Find the default case
-      final defaultIndex = content.indexOf('default:', switchBodyStart);
-      if (defaultIndex != -1) {
-        logger.info('🔍 Found default case at position $defaultIndex');
-        // Insert new case before default
-        final newCase = '''      case RoutePaths.$fileName:
-        return MaterialPageRoute(
-          builder: (_) => ${className}View(),
-          settings: settings,
-        );
-      ''';
-        content = content.substring(0, defaultIndex) +
-            newCase +
-            content.substring(defaultIndex);
-        routeAdded = true;
-        logger.info('✅ Route case added successfully');
-      } else {
-        logger.err('❌ Could not find default case in switch statement');
-      }
-    } else {
-      logger.err('❌ Could not find switch body start');
-    }
-  } else {
-    logger.err('❌ Could not find switch statement');
-  }
-
-  if (importAdded || routeAdded) {
-    routesFile.writeAsStringSync(content);
-    logger.success('🧭 Added $className route to routes.dart (Simple MVVM)');
-  } else {
-    logger.err('❌ Failed to add route to routes.dart');
-  }
-}
-
 void _updateRoutesFileGetX(
   File routesFile,
   String className,
@@ -557,13 +482,27 @@ void _updateRoutesFileGetX(
   String viewPath,
   Logger logger,
 ) {
+  // Determine correct import paths based on architecture
+  String viewImportPath;
+  String bindingImportPath;
+
+  if (viewPath.contains('presentation/views')) {
+    // Clean Architecture
+    viewImportPath = "../$viewPath/${fileName}_view.dart";
+    bindingImportPath = "../$viewPath/../dependencies/${fileName}_binding.dart";
+  } else {
+    // Simple MVVM
+    viewImportPath = "../$viewPath/${fileName}_view.dart";
+    bindingImportPath = "../$viewPath/${fileName}_binding.dart";
+  }
+
   if (!routesFile.existsSync()) {
     routesFile.createSync(recursive: true);
     routesFile.writeAsStringSync('''import 'package:get/get.dart';
 import 'route_paths.dart';
 import 'route_names.dart';
-import '../$viewPath/${fileName}_view.dart';
-import '../$viewPath/../dependencies/${fileName}_binding.dart';
+import '$viewImportPath';
+import '$bindingImportPath';
 
 class AppRoutes {
   static final List<GetPage> routes = [
@@ -591,15 +530,10 @@ class AppRoutes {
     return;
   }
 
-  // Add import for the new view and binding
-  final viewImport = "import '../$viewPath/${fileName}_view.dart';";
-  final bindingImport =
-      "import '../$viewPath/../dependencies/${fileName}_binding.dart';";
-
-  // Add imports if they don't exist
+  // Add imports
   logger.info('📦 Adding imports...');
-  content = _addImportIfMissing(content, viewImport);
-  content = _addImportIfMissing(content, bindingImport);
+  content = _addImportIfMissing(content, "import '$viewImportPath';");
+  content = _addImportIfMissing(content, "import '$bindingImportPath';");
   logger.info('✅ Imports processed');
 
   // Find the routes list
@@ -611,15 +545,13 @@ class AppRoutes {
 
   if (routesMatch == null) {
     logger.err('❌ Could not find routes list in routes.dart');
-    logger
-        .info('💡 Looking for pattern: static final List<GetPage> routes = [');
     return;
   }
 
   logger.info('✅ Found routes list at position ${routesMatch.start}');
   final routesListContentStart = routesMatch.end;
 
-  // Find the matching closing bracket for the routes array
+  // Find the matching closing bracket
   int bracketCount = 1;
   int routesListEnd = routesListContentStart;
 
@@ -642,11 +574,11 @@ class AppRoutes {
 
   logger.info('✅ Found routes list end at position $routesListEnd');
 
-  // Extract the current routes content
+  // Extract current routes content
   final currentRoutesContent =
       content.substring(routesListContentStart, routesListEnd).trim();
 
-  // Create the new GetPage
+  // Create new GetPage
   final newGetPage = '''
     GetPage(
       name: RoutePaths.$fileName,
@@ -654,19 +586,17 @@ class AppRoutes {
       binding: ${className}Binding(),
     ),''';
 
-  // Determine where to insert the new route
+  // Determine where to insert
   String newRoutesContent;
 
   if (currentRoutesContent.isEmpty) {
-    // Routes list is empty
     logger.info('📝 Routes list is empty, adding first route');
     newRoutesContent = newGetPage;
   } else {
     logger.info('📝 Adding route to existing routes list');
-    // Check if we need to add a comma to the last existing route
     String trimmedContent = currentRoutesContent;
 
-    // Find the last non-whitespace character
+    // Find last non-whitespace character
     int lastCharIndex = -1;
     for (int i = trimmedContent.length - 1; i >= 0; i--) {
       if (trimmedContent[i].trim().isNotEmpty) {
@@ -676,18 +606,16 @@ class AppRoutes {
     }
 
     if (lastCharIndex >= 0 && trimmedContent[lastCharIndex] != ',') {
-      // Add comma to the last route
       logger.info('📝 Adding comma to last route');
       trimmedContent = trimmedContent.substring(0, lastCharIndex + 1) +
           ',' +
           trimmedContent.substring(lastCharIndex + 1);
     }
 
-    // Add the new route with proper formatting
     newRoutesContent = '$trimmedContent\n$newGetPage';
   }
 
-  // Reconstruct the content
+  // Reconstruct content
   final newContent = content.substring(0, routesListContentStart) +
       newRoutesContent +
       content.substring(routesListEnd);
@@ -698,7 +626,6 @@ class AppRoutes {
 
 String _addImportIfMissing(String content, String importStatement) {
   if (!content.contains(importStatement)) {
-    // Find the last import statement
     final importMatches = RegExp(r"import '.*';").allMatches(content);
     if (importMatches.isNotEmpty) {
       final lastImport = importMatches.last;

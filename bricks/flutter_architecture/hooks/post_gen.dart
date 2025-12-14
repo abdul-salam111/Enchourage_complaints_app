@@ -8,7 +8,7 @@ Future<void> run(HookContext context) async {
   // Show numbered options
   logger.info('''
 🔧 Select your project architecture:
-1️⃣  Simple MVVM
+1️⃣  Simple MVVM (with GetX)
 2️⃣  Clean Architecture (with GetX)
 ''');
 
@@ -23,7 +23,6 @@ Future<void> run(HookContext context) async {
   }
 
   String architecture;
-  bool useGetX = false;
 
   switch (choice) {
     case 1:
@@ -31,7 +30,6 @@ Future<void> run(HookContext context) async {
       break;
     case 2:
       architecture = 'clean_getx';
-      useGetX = true;
       break;
     default:
       architecture = 'simple_mvvm';
@@ -39,10 +37,8 @@ Future<void> run(HookContext context) async {
 
   logger.info('Setting up $architecture architecture...');
 
-  // Install packages based on selection
-  if (useGetX) {
-    await _installGetXDependencies(logger);
-  }
+  // Install GetX packages
+  await _installGetXDependencies(logger);
 
   final currentDir = Directory.current;
   final libDir = Directory('${currentDir.path}/lib');
@@ -62,7 +58,55 @@ Future<void> run(HookContext context) async {
   logger.success('✅ $architecture architecture setup complete!');
 
   // Show next steps
-  if (useGetX) {
+  if (architecture == 'simple_mvvm') {
+    logger.info('''
+📦 GetX packages have been added to your pubspec.yaml.
+
+Next steps:
+1. Run 'flutter pub get' to install dependencies (if not already done)
+2. Start implementing your features in lib/features/
+3. Check lib/routes/ for navigation setup with GetX
+4. Update your main.dart to use GetMaterialApp with AppRoutes.routes
+
+Example main.dart:
+```dart
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'routes/routes.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      title: 'Flutter App',
+      initialRoute: AppRoutes.initialRoute,
+      getPages: AppRoutes.routes,
+    );
+  }
+}
+```
+
+Folder Structure:
+lib/
+├── data/
+│   ├── models/
+│   │   ├── request_models/
+│   │   └── response_models/
+│   └── repositories/
+├── features/
+│   └── home/
+│       ├── home_view.dart
+│       ├── home_viewmodel.dart
+│       └── home_binding.dart
+└── routes/
+''');
+  } else {
     logger.info('''
 📦 GetX packages have been added to your pubspec.yaml.
 
@@ -72,13 +116,6 @@ Next steps:
 3. Check lib/routes/ for navigation setup
 4. Each feature has its own Binding for dependency injection in presentation/dependencies/
 5. Update your main.dart to use GetMaterialApp with AppRoutes.routes
-''');
-  } else {
-    logger.info('''
-Next steps:
-1. Start implementing your views and viewmodels
-2. Check lib/routes/ for navigation setup
-3. Add any additional dependencies to pubspec.yaml as needed
 ''');
   }
 }
@@ -235,70 +272,117 @@ Future<void> _installGetXDependencies(Logger logger) async {
 }
 
 // ------------------------------------------------------------------
-// 🧩 SIMPLE MVVM
+// 🧩 SIMPLE MVVM (with GetX) - NEW STRUCTURE
 // ------------------------------------------------------------------
 void _createSimpleMVVM(Directory libDir, Logger logger) {
-  final folders = [
-    'models',
-    'models/request_models',
-    'models/response_models',
-    'views',
-    'viewmodels',
-    'routes',
-    'repositories'
+  // Create data folder structure
+  final dataFolders = [
+    'data',
+    'data/models',
+    'data/models/request_models',
+    'data/models/response_models',
+    'data/repositories',
   ];
-  for (var folder in folders) {
+
+  for (var folder in dataFolders) {
     Directory('${libDir.path}/$folder').createSync(recursive: true);
     logger.success('📁 Created: lib/$folder');
   }
 
-  // 🧱 HomeView
-  File('${libDir.path}/views/home_view.dart')
+  // Create features/home folder
+  final homeFolders = [
+    'features',
+    'features/home',
+  ];
+
+  for (var folder in homeFolders) {
+    Directory('${libDir.path}/$folder').createSync(recursive: true);
+    logger.success('📁 Created: lib/$folder');
+  }
+
+  // Create routes folder
+  Directory('${libDir.path}/routes').createSync(recursive: true);
+  logger.success('📁 Created: lib/routes');
+
+  // 🧱 HomeView (using GetView)
+  File('${libDir.path}/features/home/home_view.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:flutter/material.dart';
-import '../viewmodels/home_viewmodel.dart';
+import 'package:get/get.dart';
+import 'home_viewmodel.dart';
 
-class HomeView extends StatelessWidget {
-  final viewModel = HomeViewModel();
-
-  HomeView({super.key});
+class HomeView extends GetView<HomeViewModel> {
+  const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Home')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: viewModel.onButtonPressed,
-          child: const Text('Tap Me'),
-        ),
+        child: Obx(() => Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Taps: \${controller.tapCount.value}'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: controller.onButtonPressed,
+              child: const Text('Tap Me'),
+            ),
+          ],
+        )),
       ),
     );
   }
 }
 ''');
-  logger.success('🧱 Created: lib/views/home_view.dart');
+  logger.success('🧱 Created: lib/features/home/home_view.dart');
 
-  // 🧱 ViewModel
-  File('${libDir.path}/viewmodels/home_viewmodel.dart')
+  // 🧱 HomeViewModel (extends GetxController)
+  File('${libDir.path}/features/home/home_viewmodel.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
+    ..writeAsStringSync('''import 'package:get/get.dart';
 
-class HomeViewModel {
+class HomeViewModel extends GetxController {
+  final tapCount = 0.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Initialize data here
+  }
+
   void onButtonPressed() {
-    debugPrint('HomeViewModel: Button pressed!');
+    tapCount.value++;
   }
   
-  void dispose() {
+  @override
+  void onClose() {
     // Clean up resources
+    super.onClose();
   }
 }
 ''');
-  logger.success('🧱 Created: lib/viewmodels/home_viewmodel.dart');
+  logger.success('🧱 Created: lib/features/home/home_viewmodel.dart');
 
-  // 🧱 Create separate route files
-  _createSeparateRouteFiles(libDir, 'home', 'Home', 'views', logger,
-      useGetX: false);
+  // 🧱 HomeBinding
+  File('${libDir.path}/features/home/home_binding.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:get/get.dart';
+import 'home_viewmodel.dart';
+
+class HomeBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<HomeViewModel>(
+      () => HomeViewModel(),
+    );
+  }
+}
+''');
+  logger.success('🧱 Created: lib/features/home/home_binding.dart');
+
+  // 🧱 Create GetX route files
+  _createGetXRouteFiles(libDir, logger);
 }
 
 // ------------------------------------------------------------------
@@ -367,7 +451,7 @@ void _createCleanFeature(Directory libDir, Logger logger,
 }
 
 // ------------------------------------------------------------------
-// 🧩 Create GetX-specific files
+// 🧩 Create GetX-specific files for Clean Architecture
 // ------------------------------------------------------------------
 void _createGetXFiles(Directory featureDir, Logger logger) {
   // ✅ Example View File (using GetView)
@@ -565,6 +649,54 @@ class HomeRepositoryImpl implements HomeRepository {
 }
 
 // ------------------------------------------------------------------
+// 🧩 Create GetX Route Files for Simple MVVM
+// ------------------------------------------------------------------
+void _createGetXRouteFiles(Directory libDir, Logger logger) {
+  final routesDir = Directory('${libDir.path}/routes');
+  if (!routesDir.existsSync()) {
+    routesDir.createSync(recursive: true);
+  }
+
+  // ✅ 1. Create route_paths.dart
+  final pathsFile = File('${routesDir.path}/route_paths.dart');
+  pathsFile.writeAsStringSync('''class RoutePaths {
+  static const String home = '/home';
+}
+''');
+  logger.success('🧭 Created: lib/routes/route_paths.dart');
+
+  // ✅ 2. Create route_names.dart
+  final namesFile = File('${routesDir.path}/route_names.dart');
+  namesFile.writeAsStringSync('''class RouteNames {
+  static const String home = 'home';
+}
+''');
+  logger.success('🧭 Created: lib/routes/route_names.dart');
+
+  // ✅ 3. Create routes.dart (GetX routing)
+  final routesFile = File('${routesDir.path}/routes.dart');
+  routesFile.writeAsStringSync('''import 'package:get/get.dart';
+import 'route_paths.dart';
+import 'route_names.dart';
+import '../features/home/home_view.dart';
+import '../features/home/home_binding.dart';
+
+class AppRoutes {
+  static final List<GetPage> routes = [
+    GetPage(
+      name: RoutePaths.home,
+      page: () => const HomeView(),
+      binding: HomeBinding(),
+    ),
+  ];
+  
+  static const String initialRoute = RoutePaths.home;
+}
+''');
+  logger.success('🧭 Created: lib/routes/routes.dart');
+}
+
+// ------------------------------------------------------------------
 // 🧩 SHARED: Create Separate Route Files (Paths, Names, Routes)
 // ------------------------------------------------------------------
 void _createSeparateRouteFiles(Directory libDir, String fileName,
@@ -591,12 +723,9 @@ void _createSeparateRouteFiles(Directory libDir, String fileName,
 ''');
   logger.success('🧭 Created: lib/routes/route_names.dart');
 
-  // ✅ 3. Create routes.dart (GetX or GoRouter based)
+  // ✅ 3. Create routes.dart (GetX routing)
   final routesFile = File('${routesDir.path}/routes.dart');
-
-  if (useGetX) {
-    // GetX routing
-    routesFile.writeAsStringSync('''import 'package:get/get.dart';
+  routesFile.writeAsStringSync('''import 'package:get/get.dart';
 import 'route_paths.dart';
 import 'route_names.dart';
 import '../$viewPath/${fileName}_view.dart';
@@ -614,35 +743,5 @@ class AppRoutes {
   static const String initialRoute = RoutePaths.$fileName;
 }
 ''');
-  } else {
-    // Simple routing for MVVM (using Navigator 2.0)
-    routesFile.writeAsStringSync('''import 'package:flutter/material.dart';
-import 'route_paths.dart';
-import 'route_names.dart';
-import '../$viewPath/${fileName}_view.dart';
-
-class AppRoutes {
-  static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      case RoutePaths.$fileName:
-        return MaterialPageRoute(
-          builder: (_) => ${className}View(),
-          settings: settings,
-        );
-      default:
-        return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(
-              child: Text('No route defined for \${settings.name}'),
-            ),
-          ),
-          settings: settings,
-        );
-    }
-  }
-}
-''');
-  }
-
   logger.success('🧭 Created: lib/routes/routes.dart');
 }
