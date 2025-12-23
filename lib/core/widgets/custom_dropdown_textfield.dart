@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_template/core/theme/theme_utils.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core.dart';
 
@@ -8,13 +8,19 @@ class SearchableDropdown extends StatefulWidget {
   final String hintText;
   final Function(String) onChanged;
   final TextEditingController controller;
+  final Color? fillColor;
+  final Color? borderColor;
+  final Color? dropdownBackgroundColor;
 
   const SearchableDropdown({
     super.key,
     required this.items,
     required this.onChanged,
     this.hintText = "Select item",
-    required this.controller
+    required this.controller,
+    this.fillColor,
+    this.borderColor,
+    this.dropdownBackgroundColor,
   });
 
   @override
@@ -22,7 +28,6 @@ class SearchableDropdown extends StatefulWidget {
 }
 
 class _SearchableDropdownState extends State<SearchableDropdown> {
-
   bool _isDropdownOpen = false;
   List<String> _filteredItems = [];
 
@@ -44,12 +49,18 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    // Default colors based on theme
+    final defaultFillColor = widget.fillColor ?? context.surface;
+    final defaultBorderColor =
+        widget.borderColor ?? context.border.withAlpha(50);
+    final defaultDropdownBg =
+        widget.dropdownBackgroundColor ?? context.surfaceElevated;
+
     return Column(
       children: [
+        // Search Input Field
         TextFormField(
-          style: context.bodySmallStyle!.copyWith(
-            color: AppColors.greyTextColor,
-          ),
+          style: context.bodySmall.copyWith(color: context.textPrimary),
           controller: widget.controller,
           validator: (val) =>
               Validator.validateRequired(val, fieldName: "Town"),
@@ -61,63 +72,126 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
           onChanged: (value) {
             _filterItems(value);
           },
-
           decoration: InputDecoration(
-            suffixIcon: Icon(Icons.arrow_drop_down),
             hintText: widget.hintText,
-            hintStyle: context.bodySmallStyle!.copyWith(
-              color: AppColors.greyTextColor,
+            hintStyle: context.bodySmall.copyWith(color: context.textSecondary),
+            prefixIcon: Icon(Iconsax.map, color: context.grey500, size: 20),
+            suffixIcon: Icon(
+              _isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+              color: context.grey500,
             ),
-
-            prefixIcon: Icon(Iconsax.map, color: AppColors.greyColor, size: 20),
-
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: AppColors.lightGreyColor.withOpacity(0.5),
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            fillColor: AppColors.mostLightGreyColor.withOpacity(0.5),
+            fillColor: defaultFillColor,
             filled: true,
+            contentPadding: const EdgeInsets.only(left: 10),
+
+            // Default border
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: defaultBorderColor),
+            ),
+
+            // Enabled border
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: defaultBorderColor),
+            ),
+
+            // Focused border - uses brand color
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.greyColor, width: 2),
+              borderSide: BorderSide(color: context.primary, width: 2),
             ),
-            contentPadding: const EdgeInsets.only(left: 10),
+
+            // Error border
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: context.error),
+            ),
+
+            // Focused error border
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: context.error, width: 2),
+            ),
           ),
         ),
+
+        // Dropdown List
         if (_isDropdownOpen)
           Container(
-            constraints: BoxConstraints(maxHeight: 200),
+            margin: const EdgeInsets.only(top: 4),
+            constraints: const BoxConstraints(maxHeight: 200),
             decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.grey.shade300),
+              color: defaultDropdownBg,
+              border: Border.all(color: context.border),
               borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: context.shadow,
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: ListView(
-              shrinkWrap: true,
-              children: _filteredItems.map((item) {
-                return ListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  title: Text(
-                    item,
-                    style: context.bodyMediumStyle!.copyWith(
-                      color: AppColors.greyColor,
+            child: _filteredItems.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'No items found',
+                        style: context.bodySmall.copyWith(
+                          color: context.textSecondary,
+                        ),
+                      ),
                     ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    itemCount: _filteredItems.length,
+                    separatorBuilder: (context, index) => Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: context.divider,
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = _filteredItems[index];
+                      final isSelected = widget.controller.text == item;
+
+                      return ListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        selected: isSelected,
+                        selectedTileColor: context.primary.withAlpha(10),
+                        title: Text(
+                          item,
+                          style: context.bodyMedium.copyWith(
+                            color: isSelected
+                                ? context.primary
+                                : context.textPrimary,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? Icon(
+                                Icons.check,
+                                color: context.primary,
+                                size: 20,
+                              )
+                            : null,
+                        onTap: () {
+                          widget.controller.text = item;
+                          widget.onChanged(item);
+                          setState(() {
+                            _isDropdownOpen = false;
+                          });
+                          context.focusScope.unfocus();
+                        },
+                      );
+                    },
                   ),
-                  onTap: () {
-                    widget.controller.text = item;
-                    widget.onChanged(item);
-                    setState(() {
-                      _isDropdownOpen = false;
-                    });
-                    context.focusScope.unfocus();
-                  },
-                );
-              }).toList(),
-            ),
           ),
       ],
     );

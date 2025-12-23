@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../core.dart';
+import 'package:flutter_template/core/theme/theme_utils.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -13,13 +12,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       iconTheme: const IconThemeData(color: Colors.white),
       title: Text(
         title,
-        style: context.bodyLargeStyle!.copyWith(
-          color: AppColors.whiteTextColor,
+        style: context.bodyLarge.copyWith(
+          color: context.primary,
           fontWeight: FontWeight.bold,
         ),
       ),
       centerTitle: true,
-      backgroundColor: AppColors.appPrimaryColor,
+      backgroundColor: context.primary,
     );
   }
 

@@ -1,6 +1,4 @@
-
 export './theme/theme.dart';
-export 'utils/alignments.dart';
 export 'theme/colors.dart';
 export 'constants/api_endpoints.dart';
 export 'utils/paddings.dart';
@@ -8,11 +6,10 @@ export 'utils/physics.dart';
 export 'constants/app_conts.dart';
 export './utils/extensions.dart';
 export './utils/unfocus_wrapper.dart';
-export './utils/apptoast.dart';
+export 'utils/apptoast_utils.dart';
 export './utils/validators.dart';
 export 'networks/exceptions/app_exceptions.dart';
 export './services/session_manager.dart';
 export './services/splash_services.dart';
 export 'local_storage/storage.dart';
 export './shared/domain/usecases/usecase.dart';
-
