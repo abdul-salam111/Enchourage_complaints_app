@@ -322,12 +322,9 @@ class HomeView extends GetView<HomeViewModel> {
         child: Obx(() => Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Taps: \${controller.tapCount.value}'),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: controller.onButtonPressed,
-              child: const Text('Tap Me'),
-            ),
+          
+           
+          
           ],
         )),
       ),
@@ -343,7 +340,7 @@ class HomeView extends GetView<HomeViewModel> {
     ..writeAsStringSync('''import 'package:get/get.dart';
 
 class HomeViewModel extends GetxController {
-  final tapCount = 0.obs;
+
 
   @override
   void onInit() {
@@ -351,9 +348,7 @@ class HomeViewModel extends GetxController {
     // Initialize data here
   }
 
-  void onButtonPressed() {
-    tapCount.value++;
-  }
+
   
   @override
   void onClose() {
@@ -496,16 +491,16 @@ class HomeView extends GetView<HomeViewModel> {
   logger.success(
       '🧱 Created: lib/features/home/presentation/views/home_view.dart');
 
-  // ✅ ViewModel (GetX Controller)
+  // ✅ ViewModel (GetX Controller) - CHANGED: Constructor with required named parameter
   File('${featureDir.path}/presentation/viewmodels/home_viewmodel.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:get/get.dart';
 import '../../domain/repositories/home_repository.dart';
 
 class HomeViewModel extends GetxController {
-  final HomeRepository repository;
+  final IHomeRepository repository;
   
-  HomeViewModel(this.repository);
+  HomeViewModel({required this.repository});
   
   final tapCount = 0.obs;
   final RxString data = ''.obs;
@@ -564,13 +559,13 @@ class HomeBinding extends Bindings {
     );
     
     // Repository
-    Get.lazyPut<HomeRepository>(
-      () => HomeRepositoryImpl(Get.find()),
+    Get.lazyPut<IHomeRepository>(
+      () => HomeRepositoryImpl(dataSource: Get.find()),
     );
     
     // ViewModel/Controller
     Get.lazyPut<HomeViewModel>(
-      () => HomeViewModel(Get.find()),
+      () => HomeViewModel(repository: Get.find()),
     );
   }
 }
@@ -616,27 +611,27 @@ class RemoteHomeDataSourceImpl implements IRemoteHomeDataSource {
   logger.success(
       '🧱 Created: lib/features/home/domain/entities/home_entity.dart');
 
-  // ✅ Example Repository Interface
+  // ✅ Example Repository Interface - CHANGED: Added "I" prefix
   File('${featureDir.path}/domain/repositories/home_repository.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''abstract interface class HomeRepository {
+    ..writeAsStringSync('''abstract interface class IHomeRepository {
   Future<String> getData();
 }
 ''');
   logger.success(
       '🧱 Created: lib/features/home/domain/repositories/home_repository.dart');
 
-  // ✅ Example Repository Implementation
+  // ✅ Example Repository Implementation - CHANGED: Constructor with required named parameter
   File('${featureDir.path}/data/repository_impl/home_repository_impl.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync(
         '''import '../../domain/repositories/home_repository.dart';
 import '../datasources/remote_home_datasource.dart';
 
-class HomeRepositoryImpl implements HomeRepository {
+class HomeRepositoryImpl implements IHomeRepository {
   final IRemoteHomeDataSource dataSource;
 
-  HomeRepositoryImpl(this.dataSource);
+  HomeRepositoryImpl({required this.dataSource});
 
   @override
   Future<String> getData() {
@@ -673,11 +668,10 @@ void _createGetXRouteFiles(Directory libDir, Logger logger) {
 ''');
   logger.success('🧭 Created: lib/routes/route_names.dart');
 
-  // ✅ 3. Create routes.dart (GetX routing)
+  // ✅ 3. Create routes.dart (GetX routing) - REMOVED unused import
   final routesFile = File('${routesDir.path}/routes.dart');
   routesFile.writeAsStringSync('''import 'package:get/get.dart';
 import 'route_paths.dart';
-import 'route_names.dart';
 import '../features/home/home_view.dart';
 import '../features/home/home_binding.dart';
 
@@ -723,11 +717,10 @@ void _createSeparateRouteFiles(Directory libDir, String fileName,
 ''');
   logger.success('🧭 Created: lib/routes/route_names.dart');
 
-  // ✅ 3. Create routes.dart (GetX routing)
+  // ✅ 3. Create routes.dart (GetX routing) - REMOVED unused import
   final routesFile = File('${routesDir.path}/routes.dart');
   routesFile.writeAsStringSync('''import 'package:get/get.dart';
 import 'route_paths.dart';
-import 'route_names.dart';
 import '../$viewPath/${fileName}_view.dart';
 import '../$viewPath/../dependencies/${fileName}_binding.dart';
 

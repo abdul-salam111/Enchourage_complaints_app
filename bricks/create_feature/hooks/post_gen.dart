@@ -255,16 +255,16 @@ class ${className}View extends GetView<${className}ViewModel> {
 ''');
   logger.success('🧱 View created.');
 
-  // ✅ ViewModel (GetX Controller)
+  // ✅ ViewModel (GetX Controller) - CHANGED: Constructor with required named parameter
   File('${featureDir.path}/presentation/viewmodels/${fileName}_viewmodel.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:get/get.dart';
 import '../../domain/repositories/${fileName}_repository.dart';
 
 class ${className}ViewModel extends GetxController {
-  final ${className}Repository repository;
+  final I${className}Repository repository;
   
-  ${className}ViewModel(this.repository);
+  ${className}ViewModel({required this.repository});
   
   final tapCount = 0.obs;
 
@@ -287,7 +287,7 @@ class ${className}ViewModel extends GetxController {
 ''');
   logger.success('🧱 ViewModel created.');
 
-  // ✅ Dependencies Binding (GetX)
+  // ✅ Dependencies Binding (GetX) - CHANGED: Named parameters in Get.find() calls
   File('${featureDir.path}/presentation/dependencies/${fileName}_binding.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:get/get.dart';
@@ -305,13 +305,13 @@ class ${className}Binding extends Bindings {
     );
     
     // Repository
-    Get.lazyPut<${className}Repository>(
-      () => ${className}RepositoryImpl(Get.find()),
+    Get.lazyPut<I${className}Repository>(
+      () => ${className}RepositoryImpl(dataSource: Get.find()),
     );
     
     // ViewModel/Controller
     Get.lazyPut<${className}ViewModel>(
-      () => ${className}ViewModel(Get.find()),
+      () => ${className}ViewModel(repository: Get.find()),
     );
   }
 }
@@ -348,16 +348,16 @@ class ${className}RemoteDataSourceImpl implements I${className}RemoteDataSource 
 ''');
   logger.success('🧱 Entity created.');
 
-  // ✅ Repository Interface
+  // ✅ Repository Interface - CHANGED: Added "I" prefix
   File('${featureDir.path}/domain/repositories/${fileName}_repository.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''abstract interface class ${className}Repository {
+    ..writeAsStringSync('''abstract interface class I${className}Repository {
   Future<bool> performAction(String param1, String param2);
 }
 ''');
   logger.success('🧱 Repository interface created.');
 
-  // ✅ Repository Implementation
+  // ✅ Repository Implementation - CHANGED: Constructor with required named parameter
   File(
       '${featureDir.path}/data/repository_impl/${fileName}_repository_impl.dart')
     ..createSync(recursive: true)
@@ -365,10 +365,10 @@ class ${className}RemoteDataSourceImpl implements I${className}RemoteDataSource 
         '''import '../../domain/repositories/${fileName}_repository.dart';
 import '../datasources/${fileName}_remote_datasource.dart';
 
-class ${className}RepositoryImpl implements ${className}Repository {
+class ${className}RepositoryImpl implements I${className}Repository {
   final I${className}RemoteDataSource dataSource;
 
-  ${className}RepositoryImpl(this.dataSource);
+  ${className}RepositoryImpl({required this.dataSource});
 
   @override
   Future<bool> performAction(String param1, String param2) async {
@@ -496,11 +496,11 @@ void _updateRoutesFileGetX(
     bindingImportPath = "../$viewPath/${fileName}_binding.dart";
   }
 
+  // CHANGED: Removed unused import 'route_names.dart'
   if (!routesFile.existsSync()) {
     routesFile.createSync(recursive: true);
     routesFile.writeAsStringSync('''import 'package:get/get.dart';
 import 'route_paths.dart';
-import 'route_names.dart';
 import '$viewImportPath';
 import '$bindingImportPath';
 

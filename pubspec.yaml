@@ -46,6 +46,9 @@ dependencies:
   json_annotation: ^4.9.0
   mason: ^0.1.1
   get: ^4.7.2
+  image_picker: ^1.2.1
+  file_picker: ^10.3.8
+
 
 
 

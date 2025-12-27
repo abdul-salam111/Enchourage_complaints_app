@@ -33,46 +33,17 @@ extension ContextExtensions on BuildContext {
   // Get the current navigator state
   NavigatorState get navigator => Navigator.of(this);
 
+  BouncingScrollPhysics get bouncingScrollPhysics =>
+      const BouncingScrollPhysics();
+
+  NeverScrollableScrollPhysics get neverScrollableScrollPhysics =>
+      const NeverScrollableScrollPhysics();
+
   // Get the current scaffold state
   ScaffoldState get scaffold => Scaffold.of(this);
 
   // Get the current overlay state
   OverlayState? get overlay => Overlay.of(this);
-
-  // Show a snackbar
-  void showSnackBar(
-    String message, {
-    Duration duration = const Duration(seconds: 2),
-  }) {
-    ScaffoldMessenger.of(
-      this,
-    ).showSnackBar(SnackBar(content: Text(message), duration: duration));
-  }
-
-  // Push a new route
-  Future<T?> push<T>(Widget page) {
-    return Navigator.of(
-      this,
-    ).push(MaterialPageRoute(builder: (context) => page));
-  }
-
-  // Push a replacement route
-  Future<T?> pushReplacement<T>(Widget page) {
-    return Navigator.of(
-      this,
-    ).pushReplacement(MaterialPageRoute(builder: (context) => page));
-  }
-
-  // Pop the current route
-  void pop<T>([T? result]) {
-    Navigator.of(this).pop(result);
-  }
-
-  // Check if the current route can be popped
-  bool get canPop => Navigator.of(this).canPop();
-
-  // Get the arguments passed to the current route
-  Object? get routeArguments => ModalRoute.of(this)?.settings.arguments;
 
   // Get the current focus scope
   FocusScopeNode get focusScope => FocusScope.of(this);
@@ -86,79 +57,6 @@ extension ContextExtensions on BuildContext {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////// CHAINS ////////////////////////////////////////////////////////
-
-extension WidgetModifiers on Widget {
-  // Apply padding
-  Widget padding(EdgeInsets padding) {
-    return Padding(padding: padding, child: this);
-  }
-
-  // Apply margin
-  Widget margin(EdgeInsets margin) {
-    return Container(margin: margin, child: this);
-  }
-
-  // Add a border
-  Widget border({
-    Color color = Colors.black,
-    double width = 1.0,
-    BorderRadius borderRadius = BorderRadius.zero,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: color, width: width),
-        borderRadius: borderRadius,
-      ),
-      child: this,
-    );
-  }
-
-  // Add a shadow
-  Widget shadow(List<BoxShadow> shadows) {
-    return Container(
-      decoration: BoxDecoration(boxShadow: shadows),
-      child: this,
-    );
-  }
-
-  // Add a background color
-  Widget backgroundColor(Color color) {
-    return Container(color: color, child: this);
-  }
-
-  // Add rounded corners (small)
-  Widget roundedSm() {
-    return ClipRRect(borderRadius: BorderRadius.circular(4.0), child: this);
-  }
-
-  // Add rounded corners (medium)
-  Widget roundedMd() {
-    return ClipRRect(borderRadius: BorderRadius.circular(8.0), child: this);
-  }
-
-  // Add rounded corners (large)
-  Widget roundedLg() {
-    return ClipRRect(borderRadius: BorderRadius.circular(16.0), child: this);
-  }
-
-  // Add fully rounded corners (circle)
-  Widget roundedFull() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(
-        1000.0,
-      ), // A large value to make it fully rounded
-      child: this,
-    );
-  }
-
-  // Finalize the chain
-  Widget make() {
-    return this;
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 extension StringExtensions on String {
   // Check if the string is empty or blank
   bool get isNullOrEmpty => trim().isEmpty;

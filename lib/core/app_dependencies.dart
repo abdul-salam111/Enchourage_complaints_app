@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import './theme/theme_controller.dart';
 import 'networks/network_manager/dio_helper.dart';
+import 'utils/file_picker.dart';
 
 class AppBindings extends Bindings {
   @override
@@ -9,5 +10,6 @@ class AppBindings extends Bindings {
     // Register services
     Get.put(DioHelper(), permanent: true);
     Get.put(ThemeController(), permanent: true);
+    Get.lazyPut(() => FilePickerController(), fenix: true);
   }
 }
