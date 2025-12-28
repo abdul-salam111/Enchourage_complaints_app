@@ -1,5 +1,4 @@
 class ApiKeys {
-  static const baseUrl ="https://pharma10api.manticapps.com/api";
-  static const loginUrl="$baseUrl/users/login";
-
+  static const baseUrl = "https://api.bigstaruae.com/v1/";
+  static const String loginByUid = "${baseUrl}user/signinUid";
 }

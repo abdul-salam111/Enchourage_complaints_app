@@ -1,29 +1,26 @@
 import 'dart:async';
-
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import '../exceptions/app_exceptions.dart';
-import 'injection_container.dart';
 
 class DioHelper {
-  late Dio dio;
+  final Dio dio;
 
-  DioHelper() {
-    // Initialize fresh Dio instance each time
-    dio = getDio();
-  }
+  // Constructor injection
+  DioHelper(this.dio);
 
-  Options options = Options(
+  Options get options => Options(
     receiveDataWhenStatusError: true,
     contentType: "application/json",
     responseType: ResponseType.json,
-    sendTimeout: const Duration(seconds: 30),
-    receiveTimeout: const Duration(seconds: 30), 
   );
 
   Future<dynamic> getApi({
     required String url,
     bool isAuthRequired = false,
     String? authToken,
+    Object? requestBody,
   }) async {
     Options requestOptions = isAuthRequired
         ? options.copyWith(
@@ -35,10 +32,15 @@ class DioHelper {
         : options;
 
     try {
-      Response response = await dio.get(url, options: requestOptions);
+      Response response = await dio.get(
+        url,
+        options: requestOptions,
+        data: requestBody,
+      );
       return response.data;
     } on DioException catch (error) {
       _handleDioError(error);
+      rethrow;
     } catch (error) {
       throw FetchDataException(error.toString());
     }
@@ -65,12 +67,12 @@ class DioHelper {
         data: requestBody,
         options: requestOptions,
       );
-
       return response.data;
     } on DioException catch (error) {
       _handleDioError(error);
+      rethrow;
     } catch (error) {
-      return null;
+      throw FetchDataException(error.toString());
     }
   }
 
@@ -88,23 +90,19 @@ class DioHelper {
             },
           )
         : options;
+
     try {
-      Response response;
-      if (requestBody == null) {
-        response = await dio.put(url, options: requestOptions);
-      } else {
-        // FIX: Use requestOptions instead of options
-        response = await dio.put(
-          url,
-          options: requestOptions,
-          data: requestBody,
-        );
-      }
+      Response response = await dio.put(
+        url,
+        options: requestOptions,
+        data: requestBody,
+      );
       return response.data;
     } on DioException catch (error) {
       _handleDioError(error);
+      rethrow;
     } catch (error) {
-      return null;
+      throw FetchDataException(error.toString());
     }
   }
 
@@ -124,22 +122,17 @@ class DioHelper {
         : options;
 
     try {
-      Response response;
-      if (requestBody == null) {
-        response = await dio.patch(url, options: requestOptions);
-      } else {
-        // FIX: Use requestOptions instead of options
-        response = await dio.patch(
-          url,
-          options: requestOptions,
-          data: requestBody,
-        );
-      }
+      Response response = await dio.patch(
+        url,
+        options: requestOptions,
+        data: requestBody,
+      );
       return response.data;
     } on DioException catch (error) {
       _handleDioError(error);
+      rethrow;
     } catch (error) {
-      return null;
+      throw FetchDataException(error.toString());
     }
   }
 
@@ -157,18 +150,13 @@ class DioHelper {
             },
           )
         : options;
+
     try {
-      Response response;
-      if (requestBody == null) {
-        response = await dio.delete(url, options: requestOptions);
-      } else {
-        // FIX: Use requestOptions instead of options
-        response = await dio.delete(
-          url,
-          options: requestOptions,
-          data: requestBody,
-        );
-      }
+      Response response = await dio.delete(
+        url,
+        options: requestOptions,
+        data: requestBody,
+      );
       return response.data;
     } on DioException catch (error) {
       _handleDioError(error);
@@ -178,73 +166,256 @@ class DioHelper {
   }
 
   void _handleDioError(DioException error) {
+    // Handle HTTP status codes first
+    final statusCode = error.response?.statusCode;
+
+    if (statusCode != null) {
+      final errorMessage = _extractErrorMessage(error.response);
+
+      switch (statusCode) {
+        case 400:
+          throw BadRequestException(errorMessage ?? 'Bad request');
+        case 401:
+          throw UnauthorizedException(errorMessage ?? 'Unauthorized access');
+        case 403:
+          throw ForbiddenException(errorMessage ?? 'Access forbidden');
+        case 404:
+          throw NotFoundException(errorMessage ?? 'Resource not found');
+        case 405:
+          throw MethodNotAllowedException(errorMessage ?? 'Method not allowed');
+        case 408:
+          throw RequestTimeoutException(errorMessage ?? 'Request timeout');
+        case 422:
+          throw InvalidInputException(errorMessage ?? 'Invalid input data');
+        case 429:
+          throw TooManyRequestsException(errorMessage ?? 'Too many requests');
+        case 500:
+          throw InternalServerErrorException(
+            errorMessage ?? 'Internal server error',
+          );
+        case 502:
+          throw BadRequestException(errorMessage ?? 'Bad gateway');
+        case 503:
+          throw ServiceUnavailableException(
+            errorMessage ?? 'Service unavailable',
+          );
+        case 504:
+          throw RequestTimeoutException(errorMessage ?? 'Gateway timeout');
+        default:
+          // Handle other 4xx errors
+          if (statusCode >= 400 && statusCode < 500) {
+            throw BadRequestException(
+              errorMessage ?? 'Client error: $statusCode',
+            );
+          }
+          // Handle other 5xx errors
+          if (statusCode >= 500) {
+            throw InternalServerErrorException(
+              errorMessage ?? 'Server error: $statusCode',
+            );
+          }
+      }
+    }
+
+    // Handle DioException types (connection issues, timeouts, etc.)
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
-        throw RequestTimeoutException(
-          "Connection time out. Please, check your internet connection.",
-        );
       case DioExceptionType.sendTimeout:
-        throw RequestTimeoutException(
-          "Please, check your internet connection.",
-        );
-
       case DioExceptionType.receiveTimeout:
-        throw RequestTimeoutException(
-          "Please, check your internet connection.",
-        );
+        throw RequestTimeoutException(error.message ?? 'Request timeout');
       case DioExceptionType.badResponse:
-        final statusCode = error.response?.data['Result'];
-        switch (statusCode) {
-          case 401:
-            throw UnauthorizedException(
-              "Session expired. Please log in again to continue.",
-            );
-          case 4012:
-            throw InvalidInputException("InValid Order");
-          default:
-            throw FetchDataException("Error occurred!");
-        }
+        throw FetchDataException(error.message ?? 'Bad response from server');
       case DioExceptionType.cancel:
         throw FetchDataException('Request cancelled');
       case DioExceptionType.connectionError:
-        throw NoInternetException('No internet connection');
+        throw NoInternetException(error.message ?? 'No internet connection');
       case DioExceptionType.badCertificate:
-        throw FetchDataException('Bad certificate');
+        throw BadRequestException(error.message ?? 'SSL certificate error');
       case DioExceptionType.unknown:
-        throw FetchDataException('Unknown error occurred');
+        throw FetchDataException(error.message ?? 'Unknown error occurred');
     }
   }
 
-  /// MULTIPART API
+  /// Extract error message from response
+  String? _extractErrorMessage(Response? response) {
+    if (response?.data == null) return null;
+
+    try {
+      final data = response!.data;
+
+      // Handle different response formats
+      if (data is Map) {
+        // Try common error message keys
+        return data['message'] as String? ??
+            data['error'] as String? ??
+            data['msg'] as String? ??
+            data['detail'] as String? ??
+            data['errorMessage'] as String?;
+      } else if (data is String) {
+        return data;
+      }
+    } catch (e) {
+      // If parsing fails, return null
+      return null;
+    }
+
+    return null;
+  }
+
+  /// Send multipart request with files
+  Future<dynamic> sendMultipartRequest({
+    required String url,
+    Map<String, dynamic>? fields,
+    List<FileUploadModel>? files,
+    bool isAuthRequired = false,
+    String? authToken,
+    ProgressCallback? onSendProgress,
+  }) async {
+    try {
+      // Create FormData
+      FormData formData = FormData();
+
+      // Add text fields
+      if (fields != null) {
+        fields.forEach((key, value) {
+          formData.fields.add(MapEntry(key, value.toString()));
+        });
+      }
+
+      // Add files
+      if (files != null && files.isNotEmpty) {
+        for (var fileModel in files) {
+          File file = File(fileModel.filePath);
+
+          // Check if file exists
+          if (!await file.exists()) {
+            throw Exception('File not found: ${fileModel.filePath}');
+          }
+
+          String fileName = fileModel.fileName ?? file.path.split('/').last;
+
+          formData.files.add(
+            MapEntry(
+              fileModel.fieldName,
+              await MultipartFile.fromFile(
+                file.path,
+                filename: fileName,
+                contentType: fileModel.contentType,
+              ),
+            ),
+          );
+        }
+      }
+
+      // Set up options - DON'T set Content-Type manually, let Dio handle it
+      Options requestOptions = Options(
+        headers: {
+          if (isAuthRequired && authToken != null)
+            "Authorization": "Bearer $authToken",
+        },
+      );
+
+      // Make the request
+      Response response = await dio.post(
+        url,
+        data: formData,
+        options: requestOptions,
+        onSendProgress: onSendProgress,
+      );
+
+      return response.data;
+    } on DioException catch (error) {
+      _handleDioError(error);
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  /// Alternative method for single file upload
+  Future<dynamic> uploadSingleFile({
+    required String url,
+    required String fieldName,
+    required String filePath,
+    Map<String, dynamic>? additionalFields,
+    bool isAuthRequired = false,
+    String? authToken,
+    ProgressCallback? onSendProgress,
+  }) async {
+    return sendMultipartRequest(
+      url: url,
+      fields: additionalFields,
+      files: [FileUploadModel(fieldName: fieldName, filePath: filePath)],
+      isAuthRequired: isAuthRequired,
+      authToken: authToken,
+      onSendProgress: onSendProgress,
+    );
+  }
+
+  /// Upload multiple files under the same field name
+  Future<dynamic> uploadMultipleFiles({
+    required String url,
+    required String fieldName,
+    required List<String> filePaths,
+    Map<String, dynamic>? additionalFields,
+    bool isAuthRequired = false,
+    String? authToken,
+    ProgressCallback? onSendProgress,
+  }) async {
+    return sendMultipartRequest(
+      url: url,
+      fields: additionalFields,
+      files: filePaths
+          .map((path) => FileUploadModel(fieldName: fieldName, filePath: path))
+          .toList(),
+      isAuthRequired: isAuthRequired,
+      authToken: authToken,
+      onSendProgress: onSendProgress,
+    );
+  }
+
+  /// DEPRECATED - Use sendMultipartRequest instead
+  @Deprecated(
+    'Use sendMultipartRequest, uploadSingleFile, or uploadMultipleFiles instead',
+  )
   Future<dynamic> multiPartRequest({
     required String url,
     required Object requestBody,
     bool isAuthRequired = false,
     String? authToken,
   }) async {
-    Options option = Options(
+    Options requestOptions = Options(
       headers: {
-        "Content-Type": "multipart/form-data",
         if (isAuthRequired && authToken != null)
           "Authorization": "Bearer $authToken",
       },
-      sendTimeout: const Duration(
-        seconds: 60,
-      ), // Longer timeout for file uploads
-      receiveTimeout: const Duration(seconds: 60),
     );
 
     try {
       Response response = await dio.post(
         url,
         data: requestBody,
-        options: option,
+        options: requestOptions,
       );
       return response.data;
     } on DioException catch (error) {
       _handleDioError(error);
+      rethrow;
     } catch (error) {
-      return null;
+      throw FetchDataException(error.toString());
     }
   }
+}
+
+class FileUploadModel {
+  final String fieldName;
+  final String filePath;
+  final String? fileName;
+  final MediaType? contentType;
+
+  FileUploadModel({
+    required this.fieldName,
+    required this.filePath,
+    this.fileName,
+    this.contentType,
+  });
 }

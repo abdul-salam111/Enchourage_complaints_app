@@ -116,6 +116,7 @@ Next steps:
 3. Check lib/routes/ for navigation setup
 4. Each feature has its own Binding for dependency injection in presentation/dependencies/
 5. Update your main.dart to use GetMaterialApp with AppRoutes.routes
+6. Make sure you have BaseRemoteDataSource available at: lib/core/shared/datasource/base_datasource.dart
 ''');
   }
 }
@@ -491,7 +492,7 @@ class HomeView extends GetView<HomeViewModel> {
   logger.success(
       '🧱 Created: lib/features/home/presentation/views/home_view.dart');
 
-  // ✅ ViewModel (GetX Controller) - CHANGED: Constructor with required named parameter
+  // ✅ ViewModel (GetX Controller)
   File('${featureDir.path}/presentation/viewmodels/home_viewmodel.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:get/get.dart';
@@ -553,9 +554,9 @@ import '../viewmodels/home_viewmodel.dart';
 class HomeBinding extends Bindings {
   @override
   void dependencies() {
-    // DataSource
+    // DataSource - pass DioHelper instance
     Get.lazyPut<IRemoteHomeDataSource>(
-      () => RemoteHomeDataSourceImpl(),
+      () => RemoteHomeDataSourceImpl(Get.find()),
     );
     
     // Repository
@@ -573,25 +574,28 @@ class HomeBinding extends Bindings {
   logger.success(
       '🧱 Created: lib/features/home/presentation/dependencies/home_binding.dart');
 
-  // ✅ DataSource with Interface + Implementation
+  // ✅ DataSource with Interface + Implementation extending BaseRemoteDataSource
   File('${featureDir.path}/data/datasources/remote_home_datasource.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''
-/// Abstract data source defines the contract for remote home operations.
+    ..writeAsStringSync(
+        '''import '../../../../core/shared/datasource/base_datasource.dart';
+
 abstract interface class IRemoteHomeDataSource {
   Future<String> fetchData();
 }
 
 /// Concrete implementation of the remote home data source.
-class RemoteHomeDataSourceImpl implements IRemoteHomeDataSource {
+/// Extends BaseRemoteDataSource to inherit common API helpers.
+class RemoteHomeDataSourceImpl extends BaseRemoteDataSource
+    implements IRemoteHomeDataSource {
+  RemoteHomeDataSourceImpl(super.dioHelper);
+
   @override
   Future<String> fetchData() async {
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      return 'Data fetched successfully';
-    } catch (error) {
-      throw Exception('Fetch error: \${error.toString()}');
-    }
+    return getApiHelper(
+      url: 'https://jsonplaceholder.typicode.com/posts/1',
+      fromJson: (json) => json['title'] as String,
+    );
   }
 }
 ''');
@@ -611,31 +615,34 @@ class RemoteHomeDataSourceImpl implements IRemoteHomeDataSource {
   logger.success(
       '🧱 Created: lib/features/home/domain/entities/home_entity.dart');
 
-  // ✅ Example Repository Interface - CHANGED: Added "I" prefix
+  // ✅ Example Repository Interface
   File('${featureDir.path}/domain/repositories/home_repository.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''abstract interface class IHomeRepository {
-  Future<String> getData();
+   Future<Either<AppException, dynamic>> getData();
 }
 ''');
   logger.success(
       '🧱 Created: lib/features/home/domain/repositories/home_repository.dart');
 
-  // ✅ Example Repository Implementation - CHANGED: Constructor with required named parameter
+  // ✅ Example Repository Implementation
   File('${featureDir.path}/data/repository_impl/home_repository_impl.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync(
         '''import '../../domain/repositories/home_repository.dart';
 import '../datasources/remote_home_datasource.dart';
+import '../../../../core/shared/domain/repository/base_repository.dart';
 
-class HomeRepositoryImpl implements IHomeRepository {
+class HomeRepositoryImpl extends BaseRepository implements IHomeRepository {
   final IRemoteHomeDataSource dataSource;
 
   HomeRepositoryImpl({required this.dataSource});
 
   @override
-  Future<String> getData() {
-    return dataSource.fetchData();
+ Future<Either<AppException, dynamic>> getData() {
+     return execute(
+      () => dataSource.getData(),
+    );
   }
 }
 ''');
@@ -668,7 +675,7 @@ void _createGetXRouteFiles(Directory libDir, Logger logger) {
 ''');
   logger.success('🧭 Created: lib/routes/route_names.dart');
 
-  // ✅ 3. Create routes.dart (GetX routing) - REMOVED unused import
+  // ✅ 3. Create routes.dart (GetX routing)
   final routesFile = File('${routesDir.path}/routes.dart');
   routesFile.writeAsStringSync('''import 'package:get/get.dart';
 import 'route_paths.dart';
@@ -717,7 +724,7 @@ void _createSeparateRouteFiles(Directory libDir, String fileName,
 ''');
   logger.success('🧭 Created: lib/routes/route_names.dart');
 
-  // ✅ 3. Create routes.dart (GetX routing) - REMOVED unused import
+  // ✅ 3. Create routes.dart (GetX routing)
   final routesFile = File('${routesDir.path}/routes.dart');
   routesFile.writeAsStringSync('''import 'package:get/get.dart';
 import 'route_paths.dart';

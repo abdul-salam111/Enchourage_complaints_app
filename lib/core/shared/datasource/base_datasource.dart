@@ -23,7 +23,7 @@ abstract class BaseRemoteDataSource {
   // ========================================================================
 
   /// GET request - List return karega
-  Future<List<T>> getList<T>({
+  Future<List<T>> getListApiHelper<T>({
     required String url,
     required T Function(Map<String, dynamic>) fromJson,
     String? token,
@@ -47,7 +47,7 @@ abstract class BaseRemoteDataSource {
   }
 
   /// POST request - List return karega
-  Future<List<T>> postList<T>({
+  Future<List<T>> postListApiHelper<T>({
     required String url,
     required T Function(Map<String, dynamic>) fromJson,
     Object? body,
@@ -73,7 +73,7 @@ abstract class BaseRemoteDataSource {
   }
 
   /// GET request - Single object return karega
-  Future<T> getObject<T>({
+  Future<T> getApiHelper<T>({
     required String url,
     required T Function(Map<String, dynamic>) fromJson,
     String? token,
@@ -92,7 +92,7 @@ abstract class BaseRemoteDataSource {
   }
 
   /// POST request - Single object return karega
-  Future<T> postObject<T>({
+  Future<T> postApiHelper<T>({
     required String url,
     required T Function(Map<String, dynamic>) fromJson,
     Object? body,
@@ -113,7 +113,7 @@ abstract class BaseRemoteDataSource {
   }
 
   /// PUT request - Single object return karega
-  Future<T> putObject<T>({
+  Future<T> putApiHelper<T>({
     required String url,
     required T Function(Map<String, dynamic>) fromJson,
     Object? body,
@@ -134,7 +134,7 @@ abstract class BaseRemoteDataSource {
   }
 
   /// DELETE request
-  Future<void> delete({
+  Future<void> deleteApiHelper({
     required String url,
     Object? body,
     String? token,
@@ -152,7 +152,7 @@ abstract class BaseRemoteDataSource {
   }
 
   /// PATCH request
-  Future<T> patchObject<T>({
+  Future<T> patchApiHelper<T>({
     required String url,
     required T Function(Map<String, dynamic>) fromJson,
     Object? body,

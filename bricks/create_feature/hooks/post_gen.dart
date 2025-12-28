@@ -607,9 +607,8 @@ class AppRoutes {
 
     if (lastCharIndex >= 0 && trimmedContent[lastCharIndex] != ',') {
       logger.info('📝 Adding comma to last route');
-      trimmedContent = trimmedContent.substring(0, lastCharIndex + 1) +
-          ',' +
-          trimmedContent.substring(lastCharIndex + 1);
+      trimmedContent =
+          '${trimmedContent.substring(0, lastCharIndex + 1)},${trimmedContent.substring(lastCharIndex + 1)}';
     }
 
     newRoutesContent = '$trimmedContent\n$newGetPage';
@@ -630,9 +629,7 @@ String _addImportIfMissing(String content, String importStatement) {
     if (importMatches.isNotEmpty) {
       final lastImport = importMatches.last;
       final insertPosition = lastImport.end;
-      return content.substring(0, insertPosition) +
-          '\n$importStatement' +
-          content.substring(insertPosition);
+      return '${content.substring(0, insertPosition)}\n$importStatement${content.substring(insertPosition)}';
     }
   }
   return content;
