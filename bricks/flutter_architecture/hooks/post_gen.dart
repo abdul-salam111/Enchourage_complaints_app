@@ -5,125 +5,23 @@ import 'package:mason/mason.dart';
 Future<void> run(HookContext context) async {
   final logger = context.logger;
 
-  // Show numbered options
-  logger.info('''
-🔧 Select your project architecture:
-1️⃣  Simple MVVM (with GetX)
-2️⃣  Clean Architecture (with GetX)
-''');
-
-  // Read numeric choice
-  stdout.write('Enter your choice (1-2): ');
-  final input = stdin.readLineSync();
-
-  final choice = int.tryParse(input ?? '');
-  if (choice == null || choice < 1 || choice > 2) {
-    logger.err('❌ Invalid selection. Please enter a number between 1 and 2.');
-    exit(1);
-  }
-
-  String architecture;
-
-  switch (choice) {
-    case 1:
-      architecture = 'simple_mvvm';
-      break;
-    case 2:
-      architecture = 'clean_getx';
-      break;
-    default:
-      architecture = 'simple_mvvm';
-  }
-
-  logger.info('Setting up $architecture architecture...');
-
-  // Install GetX packages
+  logger.info('🔧 Setting up Clean Architecture with GetX...');
   await _installGetXDependencies(logger);
-
   final currentDir = Directory.current;
   final libDir = Directory('${currentDir.path}/lib');
   if (!libDir.existsSync()) {
     libDir.createSync(recursive: true);
   }
 
-  switch (architecture) {
-    case 'simple_mvvm':
-      _createSimpleMVVM(libDir, logger);
-      break;
-    case 'clean_getx':
-      _createCleanFeature(libDir, logger, useGetX: true);
-      break;
-  }
+  _createCleanFeature(libDir, logger);
 
-  logger.success('✅ $architecture architecture setup complete!');
+  logger.success('✅ Clean Architecture setup complete!');
 
-  // Show next steps
-  if (architecture == 'simple_mvvm') {
-    logger.info('''
+  logger.info('''
 📦 GetX packages have been added to your pubspec.yaml.
-
-Next steps:
-1. Run 'flutter pub get' to install dependencies (if not already done)
-2. Start implementing your features in lib/features/
-3. Check lib/routes/ for navigation setup with GetX
-4. Update your main.dart to use GetMaterialApp with AppRoutes.routes
-
-Example main.dart:
-```dart
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'routes/routes.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Flutter App',
-      initialRoute: AppRoutes.initialRoute,
-      getPages: AppRoutes.routes,
-    );
-  }
-}
-```
-
-Folder Structure:
-lib/
-├── data/
-│   ├── models/
-│   │   ├── request_models/
-│   │   └── response_models/
-│   └── repositories/
-├── features/
-│   └── home/
-│       ├── home_view.dart
-│       ├── home_viewmodel.dart
-│       └── home_binding.dart
-└── routes/
 ''');
-  } else {
-    logger.info('''
-📦 GetX packages have been added to your pubspec.yaml.
-
-Next steps:
-1. Run 'flutter pub get' to install dependencies (if not already done)
-2. Start implementing your features in lib/features/
-3. Check lib/routes/ for navigation setup
-4. Each feature has its own Binding for dependency injection in presentation/dependencies/
-5. Update your main.dart to use GetMaterialApp with AppRoutes.routes
-6. Make sure you have BaseRemoteDataSource available at: lib/core/shared/datasource/base_datasource.dart
-''');
-  }
 }
 
-// ------------------------------------------------------------------
-// 🧩 Install GetX Dependencies
-// ------------------------------------------------------------------
 Future<void> _installGetXDependencies(Logger logger) async {
   logger.info('📦 Installing GetX packages...');
 
@@ -135,10 +33,8 @@ Future<void> _installGetXDependencies(Logger logger) async {
 
   String content = await pubspecFile.readAsString();
 
-  // Check if GetX packages are already in dependencies
   bool hasGet = false;
 
-  // Look specifically in the dependencies section
   final lines = content.split('\n');
   bool inDependenciesSection = false;
 
@@ -163,7 +59,6 @@ Future<void> _installGetXDependencies(Logger logger) async {
     }
   }
 
-  // List of packages to add
   final packagesToAdd = <String>[];
   if (!hasGet) packagesToAdd.add('  get: ^4.6.6');
 
@@ -174,12 +69,10 @@ Future<void> _installGetXDependencies(Logger logger) async {
 
   logger.info('📦 Adding missing packages: ${packagesToAdd.length} package(s)');
 
-  // Create backup
   final backupFile = File('pubspec.yaml.backup');
   await backupFile.writeAsString(content);
   logger.info('📋 Created backup: pubspec.yaml.backup');
 
-  // Add packages directly after the last dependency
   final updatedLines = <String>[];
   inDependenciesSection = false;
   bool packagesAdded = false;
@@ -196,7 +89,6 @@ Future<void> _installGetXDependencies(Logger logger) async {
     }
 
     if (inDependenciesSection && !packagesAdded) {
-      // Check if next line is dev_dependencies or another section
       if (i + 1 < lines.length) {
         final nextLine = lines[i + 1];
         final trimmedNextLine = nextLine.trim();
@@ -205,14 +97,12 @@ Future<void> _installGetXDependencies(Logger logger) async {
             (trimmedNextLine.isNotEmpty &&
                 !nextLine.startsWith('  ') &&
                 !nextLine.startsWith('\t'))) {
-          // Add packages before this line
           for (final package in packagesToAdd) {
             updatedLines.add(package);
           }
           packagesAdded = true;
         }
       } else {
-        // End of file, add packages here
         for (final package in packagesToAdd) {
           updatedLines.add(package);
         }
@@ -225,12 +115,10 @@ Future<void> _installGetXDependencies(Logger logger) async {
   await pubspecFile.writeAsString(updatedContent);
   logger.success('✅ Added packages to pubspec.yaml');
 
-  // Show what was added
   for (final package in packagesToAdd) {
     logger.info('   + $package');
   }
 
-  // Run flutter pub get
   logger.info('\n🔄 Running flutter pub get...');
   try {
     final process =
@@ -273,120 +161,10 @@ Future<void> _installGetXDependencies(Logger logger) async {
 }
 
 // ------------------------------------------------------------------
-// 🧩 SIMPLE MVVM (with GetX) - NEW STRUCTURE
-// ------------------------------------------------------------------
-void _createSimpleMVVM(Directory libDir, Logger logger) {
-  // Create data folder structure
-  final dataFolders = [
-    'data',
-    'data/models',
-    'data/models/request_models',
-    'data/models/response_models',
-    'data/repositories',
-  ];
-
-  for (var folder in dataFolders) {
-    Directory('${libDir.path}/$folder').createSync(recursive: true);
-    logger.success('📁 Created: lib/$folder');
-  }
-
-  // Create features/home folder
-  final homeFolders = [
-    'features',
-    'features/home',
-  ];
-
-  for (var folder in homeFolders) {
-    Directory('${libDir.path}/$folder').createSync(recursive: true);
-    logger.success('📁 Created: lib/$folder');
-  }
-
-  // Create routes folder
-  Directory('${libDir.path}/routes').createSync(recursive: true);
-  logger.success('📁 Created: lib/routes');
-
-  // 🧱 HomeView (using GetView)
-  File('${libDir.path}/features/home/home_view.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'home_viewmodel.dart';
-
-class HomeView extends GetView<HomeViewModel> {
-  const HomeView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
-      body: Center(
-        child: Obx(() => Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-          
-           
-          
-          ],
-        )),
-      ),
-    );
-  }
-}
-''');
-  logger.success('🧱 Created: lib/features/home/home_view.dart');
-
-  // 🧱 HomeViewModel (extends GetxController)
-  File('${libDir.path}/features/home/home_viewmodel.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:get/get.dart';
-
-class HomeViewModel extends GetxController {
-
-
-  @override
-  void onInit() {
-    super.onInit();
-    // Initialize data here
-  }
-
-
-  
-  @override
-  void onClose() {
-    // Clean up resources
-    super.onClose();
-  }
-}
-''');
-  logger.success('🧱 Created: lib/features/home/home_viewmodel.dart');
-
-  // 🧱 HomeBinding
-  File('${libDir.path}/features/home/home_binding.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:get/get.dart';
-import 'home_viewmodel.dart';
-
-class HomeBinding extends Bindings {
-  @override
-  void dependencies() {
-    Get.lazyPut<HomeViewModel>(
-      () => HomeViewModel(),
-    );
-  }
-}
-''');
-  logger.success('🧱 Created: lib/features/home/home_binding.dart');
-
-  // 🧱 Create GetX route files
-  _createGetXRouteFiles(libDir, logger);
-}
-
-// ------------------------------------------------------------------
 // 🧩 CLEAN FEATURE-BASED (with GetX)
 // ------------------------------------------------------------------
-void _createCleanFeature(Directory libDir, Logger logger,
-    {bool useGetX = false}) {
-  final featureName = 'home';
+void _createCleanFeature(Directory libDir, Logger logger) {
+  final featureName = 'signin';
   final featureDir = Directory('${libDir.path}/features/$featureName');
   final dataFolders = [
     'datasources',
@@ -439,11 +217,10 @@ void _createCleanFeature(Directory libDir, Logger logger,
   _createGetXFiles(featureDir, logger);
 
   // ✅ Create separate route files
-  final className = 'Home';
-  final fileName = 'home';
+  final className = 'Signin';
+  final fileName = 'signin';
   _createSeparateRouteFiles(libDir, fileName, className,
-      'features/$featureName/presentation/views', logger,
-      useGetX: useGetX);
+      'features/$featureName/presentation/views', logger);
 }
 
 // ------------------------------------------------------------------
@@ -451,19 +228,19 @@ void _createCleanFeature(Directory libDir, Logger logger,
 // ------------------------------------------------------------------
 void _createGetXFiles(Directory featureDir, Logger logger) {
   // ✅ Example View File (using GetView)
-  File('${featureDir.path}/presentation/views/home_view.dart')
+  File('${featureDir.path}/presentation/views/signin_view.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../viewmodels/home_viewmodel.dart';
+import '../viewmodels/signin_viewmodel.dart';
 
-class HomeView extends GetView<HomeViewModel> {
-  const HomeView({super.key});
+class SigninView extends GetView<SigninViewModel> {
+  const SigninView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
+      appBar: AppBar(title: const Text('Sign In')),
       body: Center(
         child: Obx(() => Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -490,21 +267,21 @@ class HomeView extends GetView<HomeViewModel> {
 }
 ''');
   logger.success(
-      '🧱 Created: lib/features/home/presentation/views/home_view.dart');
+      '🧱 Created: lib/features/signin/presentation/views/signin_view.dart');
 
-  // ✅ ViewModel (GetX Controller)
-  File('${featureDir.path}/presentation/viewmodels/home_viewmodel.dart')
+  // ✅ ViewModel (GetX Controller) - Updated to use UseCase
+  File('${featureDir.path}/presentation/viewmodels/signin_viewmodel.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:get/get.dart';
-import '../../domain/repositories/home_repository.dart';
-
-class HomeViewModel extends GetxController {
-  final IHomeRepository repository;
+import '../../domain/usecases/signin_usecase.dart';
+import '../../../../core/core.dart';
+class SigninViewModel extends GetxController {
+  final SigninUsecase signinUsecase;
   
-  HomeViewModel({required this.repository});
+  SigninViewModel({required this.signinUsecase});
   
   final tapCount = 0.obs;
-  final RxString data = ''.obs;
+  final dynamic data = ''.obs;
   final RxBool isLoading = false.obs;
 
   @override
@@ -518,18 +295,15 @@ class HomeViewModel extends GetxController {
   }
   
   Future<void> fetchData() async {
-    try {
-      isLoading.value = true;
-      data.value = await repository.getData();
-    } catch (e) {
-      Get.snackbar(
-        'Error', 
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } finally {
-      isLoading.value = false;
-    }
+    await executeUseCase(
+      useCase: () => signinUsecase.call(null),
+
+      loadingState: isLoading,
+
+      onSuccess: (result) {
+        data.value = result;
+      },
+    );
   }
   
   @override
@@ -540,55 +314,59 @@ class HomeViewModel extends GetxController {
 }
 ''');
   logger.success(
-      '🧱 Created: lib/features/home/presentation/viewmodels/home_viewmodel.dart');
+      '🧱 Created: lib/features/signin/presentation/viewmodels/signin_viewmodel.dart');
 
-  // ✅ Dependencies Binding
-  File('${featureDir.path}/presentation/dependencies/home_binding.dart')
+  // ✅ Dependencies Binding - Updated to include UseCase
+  File('${featureDir.path}/presentation/dependencies/signin_binding.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:get/get.dart';
-import '../../data/datasources/remote_home_datasource.dart';
-import '../../data/repository_impl/home_repository_impl.dart';
-import '../../domain/repositories/home_repository.dart';
-import '../viewmodels/home_viewmodel.dart';
+import '../../data/datasources/remote_signin_datasource.dart';
+import '../../data/repository_impl/signin_repository_impl.dart';
+import '../../domain/repositories/signin_repository.dart';
+import '../../domain/usecases/signin_usecase.dart';
+import '../viewmodels/signin_viewmodel.dart';
 
-class HomeBinding extends Bindings {
+class SigninBinding extends Bindings {
   @override
   void dependencies() {
     // DataSource - pass DioHelper instance
-    Get.lazyPut<IRemoteHomeDataSource>(
-      () => RemoteHomeDataSourceImpl(Get.find()),
+    Get.lazyPut<IRemoteSigninDataSource>(
+      () => RemoteSigninDataSourceImpl(Get.find()),
     );
     
     // Repository
-    Get.lazyPut<IHomeRepository>(
-      () => HomeRepositoryImpl(dataSource: Get.find()),
+    Get.lazyPut<ISigninRepository>(
+      () => SigninRepositoryImpl(dataSource: Get.find()),
+    );
+    
+    // UseCase
+    Get.lazyPut<SigninUsecase>(
+      () => SigninUsecase(repository: Get.find()),
     );
     
     // ViewModel/Controller
-    Get.lazyPut<HomeViewModel>(
-      () => HomeViewModel(repository: Get.find()),
+    Get.lazyPut<SigninViewModel>(
+      () => SigninViewModel(signinUsecase: Get.find()),
     );
   }
 }
 ''');
   logger.success(
-      '🧱 Created: lib/features/home/presentation/dependencies/home_binding.dart');
+      '🧱 Created: lib/features/signin/presentation/dependencies/signin_binding.dart');
 
   // ✅ DataSource with Interface + Implementation extending BaseRemoteDataSource
-  File('${featureDir.path}/data/datasources/remote_home_datasource.dart')
+  File('${featureDir.path}/data/datasources/remote_signin_datasource.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync(
         '''import '../../../../core/shared/datasource/base_datasource.dart';
 
-abstract interface class IRemoteHomeDataSource {
+abstract interface class IRemoteSigninDataSource {
   Future<String> fetchData();
 }
 
-/// Concrete implementation of the remote home data source.
-/// Extends BaseRemoteDataSource to inherit common API helpers.
-class RemoteHomeDataSourceImpl extends BaseRemoteDataSource
-    implements IRemoteHomeDataSource {
-  RemoteHomeDataSourceImpl(super.dioHelper);
+class RemoteSigninDataSourceImpl extends BaseRemoteDataSource
+    implements IRemoteSigninDataSource {
+  RemoteSigninDataSourceImpl(super.dioHelper);
 
   @override
   Future<String> fetchData() async {
@@ -600,109 +378,88 @@ class RemoteHomeDataSourceImpl extends BaseRemoteDataSource
 }
 ''');
   logger.success(
-      '🧱 Created: lib/features/home/data/datasources/remote_home_datasource.dart');
+      '🧱 Created: lib/features/signin/data/datasources/remote_signin_datasource.dart');
 
   // ✅ Example Entity
-  File('${featureDir.path}/domain/entities/home_entity.dart')
+  File('${featureDir.path}/domain/entities/signin_entity.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''class HomeEntity {
+    ..writeAsStringSync('''class SigninEntity {
   final String id;
   final String title;
 
-  HomeEntity({required this.id, required this.title});
+  SigninEntity({required this.id, required this.title});
 }
 ''');
   logger.success(
-      '🧱 Created: lib/features/home/domain/entities/home_entity.dart');
+      '🧱 Created: lib/features/signin/domain/entities/signin_entity.dart');
+
+  // ✅ UseCase with dynamic params and return type
+  File('${featureDir.path}/domain/usecases/signin_usecase.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:fpdart/fpdart.dart';
+import '../../../../core/networks/exceptions/app_exceptions.dart';
+import '../../../../core/shared/domain/usecase/base_usecase.dart';
+import '../repositories/signin_repository.dart';
+
+class SigninUsecase implements Usecase<dynamic, dynamic> {
+  final ISigninRepository repository;
+
+  SigninUsecase({required this.repository});
+
+  @override
+  Future<Either<AppException, dynamic>> call(dynamic params) {
+    return repository.getData();
+  }
+}
+''');
+  logger.success(
+      '🧱 Created: lib/features/signin/domain/usecases/signin_usecase.dart');
 
   // ✅ Example Repository Interface
-  File('${featureDir.path}/domain/repositories/home_repository.dart')
+  File('${featureDir.path}/domain/repositories/signin_repository.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''abstract interface class IHomeRepository {
+    ..writeAsStringSync('''import 'package:fpdart/fpdart.dart';
+import '../../../../core/networks/exceptions/app_exceptions.dart';
+
+abstract interface class ISigninRepository {
    Future<Either<AppException, dynamic>> getData();
 }
 ''');
   logger.success(
-      '🧱 Created: lib/features/home/domain/repositories/home_repository.dart');
+      '🧱 Created: lib/features/signin/domain/repositories/signin_repository.dart');
 
   // ✅ Example Repository Implementation
-  File('${featureDir.path}/data/repository_impl/home_repository_impl.dart')
+  File('${featureDir.path}/data/repository_impl/signin_repository_impl.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync(
-        '''import '../../domain/repositories/home_repository.dart';
-import '../datasources/remote_home_datasource.dart';
+        '''import '../../domain/repositories/signin_repository.dart';
+import '../datasources/remote_signin_datasource.dart';
 import '../../../../core/shared/domain/repository/base_repository.dart';
+import 'package:fpdart/fpdart.dart';
+import '../../../../core/networks/exceptions/app_exceptions.dart';
 
-class HomeRepositoryImpl extends BaseRepository implements IHomeRepository {
-  final IRemoteHomeDataSource dataSource;
+class SigninRepositoryImpl extends BaseRepository implements ISigninRepository {
+  final IRemoteSigninDataSource dataSource;
 
-  HomeRepositoryImpl({required this.dataSource});
+  SigninRepositoryImpl({required this.dataSource});
 
   @override
  Future<Either<AppException, dynamic>> getData() {
      return execute(
-      () => dataSource.getData(),
+      () => dataSource.fetchData(),
     );
   }
 }
 ''');
   logger.success(
-      '🧱 Created: lib/features/home/data/repository_impl/home_repository_impl.dart');
+      '🧱 Created: lib/features/signin/data/repository_impl/signin_repository_impl.dart');
 }
 
 // ------------------------------------------------------------------
-// 🧩 Create GetX Route Files for Simple MVVM
-// ------------------------------------------------------------------
-void _createGetXRouteFiles(Directory libDir, Logger logger) {
-  final routesDir = Directory('${libDir.path}/routes');
-  if (!routesDir.existsSync()) {
-    routesDir.createSync(recursive: true);
-  }
-
-  // ✅ 1. Create route_paths.dart
-  final pathsFile = File('${routesDir.path}/route_paths.dart');
-  pathsFile.writeAsStringSync('''class RoutePaths {
-  static const String home = '/home';
-}
-''');
-  logger.success('🧭 Created: lib/routes/route_paths.dart');
-
-  // ✅ 2. Create route_names.dart
-  final namesFile = File('${routesDir.path}/route_names.dart');
-  namesFile.writeAsStringSync('''class RouteNames {
-  static const String home = 'home';
-}
-''');
-  logger.success('🧭 Created: lib/routes/route_names.dart');
-
-  // ✅ 3. Create routes.dart (GetX routing)
-  final routesFile = File('${routesDir.path}/routes.dart');
-  routesFile.writeAsStringSync('''import 'package:get/get.dart';
-import 'route_paths.dart';
-import '../features/home/home_view.dart';
-import '../features/home/home_binding.dart';
-
-class AppRoutes {
-  static final List<GetPage> routes = [
-    GetPage(
-      name: RoutePaths.home,
-      page: () => const HomeView(),
-      binding: HomeBinding(),
-    ),
-  ];
-  
-  static const String initialRoute = RoutePaths.home;
-}
-''');
-  logger.success('🧭 Created: lib/routes/routes.dart');
-}
-
-// ------------------------------------------------------------------
-// 🧩 SHARED: Create Separate Route Files (Paths, Names, Routes)
+// 🧩 Create Separate Route Files (Paths, Names, Routes)
 // ------------------------------------------------------------------
 void _createSeparateRouteFiles(Directory libDir, String fileName,
-    String className, String viewPath, Logger logger,
-    {bool useGetX = false}) {
+    String className, String viewPath, Logger logger) {
   final routesDir = Directory('${libDir.path}/routes');
   if (!routesDir.existsSync()) {
     routesDir.createSync(recursive: true);

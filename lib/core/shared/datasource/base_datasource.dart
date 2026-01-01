@@ -1,6 +1,4 @@
-import 'package:flutter_template/core/core.dart';
-
-import '../../networks/network_manager/dio_helper.dart';
+import '../../../app_exports.dart';
 
 // ============================================================================
 // STEP 1: Simple Base Class

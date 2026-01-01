@@ -5,3 +5,5 @@ bricks:
     path: "bricks\\create_feature"
   asset_generator:
     path: "bricks\\asset_generator"
+  export_generator:
+    path: "bricks\\export_generator"
