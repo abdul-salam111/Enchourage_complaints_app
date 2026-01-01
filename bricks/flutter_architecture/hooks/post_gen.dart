@@ -274,7 +274,8 @@ class SigninView extends GetView<SigninViewModel> {
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:get/get.dart';
 import '../../domain/usecases/signin_usecase.dart';
-import '../../../../core/core.dart';
+import '../../../../app_exports.dart';
+
 class SigninViewModel extends GetxController {
   final SigninUsecase signinUsecase;
   
