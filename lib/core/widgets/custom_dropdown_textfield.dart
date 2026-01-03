@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:iconsax/iconsax.dart';
-import '../../app_exports.dart';
+import '../../app_exports.dart' hide State;
 
 class SearchableDropdown extends StatefulWidget {
   final List<String> items;

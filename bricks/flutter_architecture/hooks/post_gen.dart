@@ -231,8 +231,7 @@ void _createGetXFiles(Directory featureDir, Logger logger) {
   File('${featureDir.path}/presentation/views/signin_view.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../viewmodels/signin_viewmodel.dart';
+import '../../../../app_exports.dart';
 
 class SigninView extends GetView<SigninViewModel> {
   const SigninView({super.key});
@@ -242,29 +241,38 @@ class SigninView extends GetView<SigninViewModel> {
     return Scaffold(
       appBar: AppBar(title: const Text('Sign In')),
       body: Center(
-        child: Obx(() => Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (controller.isLoading.value)
-              const CircularProgressIndicator()
-            else
-              Text('Data: \${controller.data.value}'),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: controller.onButtonPressed,
-              child: Text('Taps: \${controller.tapCount}'),
+            CustomTextFormField(
+              label: "Email",
+              hintText: "Enter your email",
+              controller: controller.emailController,
             ),
+            const SizedBox(height: 20),
+            CustomTextFormField(
+              controller: controller.passwordController,
+              label: "Password",
+              hintText: "Enter your password",
+              obscureText: true,
+            ),
+
             const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: controller.fetchData,
-              child: const Text('Fetch Data'),
+            Obx(
+              () => CustomButton(
+                text: "Login",
+                onPressed: controller.signinUserById,
+                isLoading: controller.isLoading.value,
+              ),
             ),
           ],
-        )),
-      ),
+        ),
+      ).paddingAll(16),
     );
   }
 }
+
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/presentation/views/signin_view.dart');
@@ -272,41 +280,36 @@ class SigninView extends GetView<SigninViewModel> {
   // ✅ ViewModel (GetX Controller) - Updated to use UseCase
   File('${featureDir.path}/presentation/viewmodels/signin_viewmodel.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:get/get.dart';
-import '../../domain/usecases/signin_usecase.dart';
+    ..writeAsStringSync('''
+import 'package:flutter/material.dart';
+
 import '../../../../app_exports.dart';
 
 class SigninViewModel extends GetxController {
   final SigninUsecase signinUsecase;
-  
+
   SigninViewModel({required this.signinUsecase});
-  
-  final tapCount = 0.obs;
-  final dynamic data = ''.obs;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  final Rx<UserToken> data = UserToken().obs;
   final RxBool isLoading = false.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    fetchData();
-  }
-
-  void onButtonPressed() {
-    tapCount.value++;
-  }
-  
-  Future<void> fetchData() async {
+  Future<void> signinUserById() async {
     await executeUseCase(
-      useCase: () => signinUsecase.call(null),
-
+      useCase: () => signinUsecase.call(
+        LoginUserById(
+          uid: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        ),
+      ),
       loadingState: isLoading,
-
       onSuccess: (result) {
         data.value = result;
       },
     );
   }
-  
+
   @override
   void onClose() {
     // Clean up resources
@@ -332,7 +335,7 @@ class SigninBinding extends Bindings {
   void dependencies() {
     // DataSource - pass DioHelper instance
     Get.lazyPut<IRemoteSigninDataSource>(
-      () => RemoteSigninDataSourceImpl(Get.find()),
+      () => RemoteSigninDataSourceImpl(dioHelper: Get.find()),
     );
     
     // Repository
@@ -358,25 +361,28 @@ class SigninBinding extends Bindings {
   // ✅ DataSource with Interface + Implementation extending BaseRemoteDataSource
   File('${featureDir.path}/data/datasources/remote_signin_datasource.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync(
-        '''import '../../../../core/shared/datasource/base_datasource.dart';
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
 
 abstract interface class IRemoteSigninDataSource {
-  Future<String> fetchData();
+  Future<UserToken> loginUserById({required LoginUserById loginUserById});
 }
 
-class RemoteSigninDataSourceImpl extends BaseRemoteDataSource
+class RemoteSigninDataSourceImpl extends BaseRemoteDatasource
     implements IRemoteSigninDataSource {
-  RemoteSigninDataSourceImpl(super.dioHelper);
+  RemoteSigninDataSourceImpl({required super.dioHelper});
 
   @override
-  Future<String> fetchData() async {
-    return getApiHelper(
-      url: 'https://jsonplaceholder.typicode.com/posts/1',
-      fromJson: (json) => json['title'] as String,
+  Future<UserToken> loginUserById({
+    required LoginUserById loginUserById,
+  }) async {
+    return post(
+      url: ApiEndPoints.loginByUid,
+      parser: (json) => UserToken.fromJson(json),
+      body: loginUserById.toJson(),
     );
   }
 }
+
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/data/datasources/remote_signin_datasource.dart');
@@ -397,21 +403,19 @@ class RemoteSigninDataSourceImpl extends BaseRemoteDataSource
   // ✅ UseCase with dynamic params and return type
   File('${featureDir.path}/domain/usecases/signin_usecase.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:fpdart/fpdart.dart';
-import '../../../../core/networks/exceptions/app_exceptions.dart';
-import '../../../../core/shared/domain/usecase/base_usecase.dart';
-import '../repositories/signin_repository.dart';
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
 
-class SigninUsecase implements Usecase<dynamic, dynamic> {
+class SigninUsecase implements Usecase<UserToken, LoginUserById> {
   final ISigninRepository repository;
 
   SigninUsecase({required this.repository});
 
   @override
-  Future<Either<AppException, dynamic>> call(dynamic params) {
-    return repository.getData();
+  Future<Either<AppException, UserToken>> call(LoginUserById loginUserById) {
+    return repository.signinUserById(loginUserById: loginUserById);
   }
 }
+
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/domain/usecases/signin_usecase.dart');
@@ -419,12 +423,14 @@ class SigninUsecase implements Usecase<dynamic, dynamic> {
   // ✅ Example Repository Interface
   File('${featureDir.path}/domain/repositories/signin_repository.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:fpdart/fpdart.dart';
-import '../../../../core/networks/exceptions/app_exceptions.dart';
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
 
 abstract interface class ISigninRepository {
-   Future<Either<AppException, dynamic>> getData();
+  Future<Either<AppException, UserToken>> signinUserById({
+    required LoginUserById loginUserById,
+  });
 }
+
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/domain/repositories/signin_repository.dart');
@@ -432,12 +438,7 @@ abstract interface class ISigninRepository {
   // ✅ Example Repository Implementation
   File('${featureDir.path}/data/repository_impl/signin_repository_impl.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync(
-        '''import '../../domain/repositories/signin_repository.dart';
-import '../datasources/remote_signin_datasource.dart';
-import '../../../../core/shared/domain/repository/base_repository.dart';
-import 'package:fpdart/fpdart.dart';
-import '../../../../core/networks/exceptions/app_exceptions.dart';
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
 
 class SigninRepositoryImpl extends BaseRepository implements ISigninRepository {
   final IRemoteSigninDataSource dataSource;
@@ -445,12 +446,15 @@ class SigninRepositoryImpl extends BaseRepository implements ISigninRepository {
   SigninRepositoryImpl({required this.dataSource});
 
   @override
- Future<Either<AppException, dynamic>> getData() {
-     return execute(
-      () => dataSource.fetchData(),
+  Future<Either<AppException, UserToken>> signinUserById({
+    required LoginUserById loginUserById,
+  }) {
+    return execute(
+      call: () => dataSource.loginUserById(loginUserById: loginUserById),
     );
   }
 }
+
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/data/repository_impl/signin_repository_impl.dart');

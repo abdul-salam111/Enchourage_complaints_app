@@ -1,193 +1,207 @@
-import '../../../app_exports.dart';
+import 'package:flutter_template/app_exports.dart';
 
-// ============================================================================
-// STEP 1: Simple Base Class
-// ============================================================================
+/* -------------------------------------------------------------------------- */
+/*                         Base Remote Datasource                              */
+/* -------------------------------------------------------------------------- */
 
-abstract class BaseRemoteDataSource {
+abstract class BaseRemoteDatasource {
   final DioHelper dioHelper;
 
-  BaseRemoteDataSource(this.dioHelper);
+  const BaseRemoteDatasource({required this.dioHelper});
 
-  /// Override karke token provide karo (optional)
-  /// Example: () => yourCubit.token or () => prefs.getString('token')
-  String? getAuthToken() => null;
-
-  /// Override karke custom error handling (optional)
-  Exception handleError(dynamic error) => AppException(error.toString());
-
-  // ========================================================================
-  // Core Methods - Bas 4 methods, super simple! 🚀
-  // ========================================================================
-
-  /// GET request - List return karega
-  Future<List<T>> getListApiHelper<T>({
+  /// POST request with single object response
+  Future<T> post<T>({
     required String url,
-    required T Function(Map<String, dynamic>) fromJson,
-    String? token,
-  }) async {
-    try {
-      final response = await dioHelper.getApi(
-        url: url,
-        isAuthRequired: token != null || getAuthToken() != null,
-        authToken: token ?? getAuthToken(),
-      );
-
-      if (response is List) {
-        return response
-            .map((e) => fromJson(e as Map<String, dynamic>))
-            .toList();
-      }
-      throw Exception("Expected List but got ${response.runtimeType}");
-    } catch (e) {
-      throw handleError(e);
-    }
-  }
-
-  /// POST request - List return karega
-  Future<List<T>> postListApiHelper<T>({
-    required String url,
-    required T Function(Map<String, dynamic>) fromJson,
-    Object? body,
-    String? token,
+    required Map<String, dynamic> body,
+    required T Function(dynamic response) parser,
+    String? authToken,
   }) async {
     try {
       final response = await dioHelper.postApi(
         url: url,
-        isAuthRequired: token != null || getAuthToken() != null,
-        authToken: token ?? getAuthToken(),
         requestBody: body,
+        authToken: authToken,
+        isAuthRequired: authToken != null,
       );
-
-      if (response is List) {
-        return response
-            .map((e) => fromJson(e as Map<String, dynamic>))
-            .toList();
-      }
-      throw Exception("Expected List but got ${response.runtimeType}");
+      return parser(response);
+    } on AppException {
+      rethrow;
     } catch (e) {
-      throw handleError(e);
+      throw AppException(e.toString());
     }
   }
 
-  /// GET request - Single object return karega
-  Future<T> getApiHelper<T>({
+  /// POST request with list response
+  Future<List<T>> postList<T>({
     required String url,
-    required T Function(Map<String, dynamic>) fromJson,
-    String? token,
-  }) async {
-    try {
-      final response = await dioHelper.getApi(
-        url: url,
-        isAuthRequired: token != null || getAuthToken() != null,
-        authToken: token ?? getAuthToken(),
-      );
-
-      return fromJson(response as Map<String, dynamic>);
-    } catch (e) {
-      throw handleError(e);
-    }
-  }
-
-  /// POST request - Single object return karega
-  Future<T> postApiHelper<T>({
-    required String url,
-    required T Function(Map<String, dynamic>) fromJson,
-    Object? body,
-    String? token,
+    required Map<String, dynamic> body,
+    required T Function(dynamic json) parser,
+    String? authToken,
   }) async {
     try {
       final response = await dioHelper.postApi(
         url: url,
-        isAuthRequired: token != null || getAuthToken() != null,
-        authToken: token ?? getAuthToken(),
         requestBody: body,
+        authToken: authToken,
+        isAuthRequired: authToken != null,
       );
-
-      return fromJson(response as Map<String, dynamic>);
+      return List<T>.from(response.map((json) => parser(json)));
+    } on AppException {
+      rethrow;
     } catch (e) {
-      throw handleError(e);
+      throw AppException(e.toString());
     }
   }
 
-  /// PUT request - Single object return karega
-  Future<T> putApiHelper<T>({
+  /// GET request with single object response
+  Future<T> get<T>({
     required String url,
-    required T Function(Map<String, dynamic>) fromJson,
-    Object? body,
-    String? token,
+    required T Function(dynamic response) parser,
+    Map<String, dynamic>? queryParams,
+    String? authToken,
+  }) async {
+    try {
+      final response = await dioHelper.getApi(
+        url: url,
+        authToken: authToken,
+        isAuthRequired: authToken != null,
+      );
+      return parser(response);
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException(e.toString());
+    }
+  }
+
+  /// GET request with list response
+  Future<List<T>> getList<T>({
+    required String url,
+    required T Function(dynamic json) parser,
+    Map<String, dynamic>? queryParams,
+    String? authToken,
+  }) async {
+    try {
+      final response = await dioHelper.getApi(
+        url: url,
+
+        authToken: authToken,
+        isAuthRequired: authToken != null,
+      );
+      return List<T>.from(response.map((json) => parser(json)));
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException(e.toString());
+    }
+  }
+
+  /// PUT request with single object response
+  Future<T> put<T>({
+    required String url,
+    required Map<String, dynamic> body,
+    required T Function(dynamic response) parser,
+    String? authToken,
   }) async {
     try {
       final response = await dioHelper.putApi(
         url: url,
-        isAuthRequired: token != null || getAuthToken() != null,
-        authToken: token ?? getAuthToken(),
         requestBody: body,
+        authToken: authToken,
+        isAuthRequired: authToken != null,
       );
-
-      return fromJson(response as Map<String, dynamic>);
+      return parser(response);
+    } on AppException {
+      rethrow;
     } catch (e) {
-      throw handleError(e);
+      throw AppException(e.toString());
     }
   }
 
-  /// DELETE request
-  Future<void> deleteApiHelper({
+  /// PUT request with list response
+  Future<List<T>> putList<T>({
     required String url,
-    Object? body,
-    String? token,
+    required Map<String, dynamic> body,
+    required T Function(dynamic json) parser,
+    String? authToken,
   }) async {
     try {
-      await dioHelper.deleteApi(
+      final response = await dioHelper.putApi(
         url: url,
-        isAuthRequired: token != null || getAuthToken() != null,
-        authToken: token ?? getAuthToken(),
         requestBody: body,
+        authToken: authToken,
+        isAuthRequired: authToken != null,
       );
+      return List<T>.from(response.map((json) => parser(json)));
+    } on AppException {
+      rethrow;
     } catch (e) {
-      throw handleError(e);
+      throw AppException(e.toString());
     }
   }
 
-  /// PATCH request
-  Future<T> patchApiHelper<T>({
+  /// DELETE request with single object response
+  Future<T> delete<T>({
     required String url,
-    required T Function(Map<String, dynamic>) fromJson,
-    Object? body,
-    String? token,
+    required T Function(dynamic response) parser,
+    Map<String, dynamic>? queryParams,
+    String? authToken,
+  }) async {
+    try {
+      final response = await dioHelper.deleteApi(
+        url: url,
+        authToken: authToken,
+        isAuthRequired: authToken != null,
+      );
+      return parser(response);
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException(e.toString());
+    }
+  }
+
+  /// DELETE request with list response
+  Future<List<T>> deleteList<T>({
+    required String url,
+    required T Function(dynamic json) parser,
+    Map<String, dynamic>? queryParams,
+    String? authToken,
+  }) async {
+    try {
+      final response = await dioHelper.deleteApi(
+        url: url,
+
+        authToken: authToken,
+        isAuthRequired: authToken != null,
+      );
+      return List<T>.from(response.map((json) => parser(json)));
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException(e.toString());
+    }
+  }
+
+  /// PATCH request with single object response
+  Future<T> patch<T>({
+    required String url,
+    required Map<String, dynamic> body,
+    required T Function(dynamic response) parser,
+    String? authToken,
   }) async {
     try {
       final response = await dioHelper.patchApi(
         url: url,
-        isAuthRequired: token != null || getAuthToken() != null,
-        authToken: token ?? getAuthToken(),
         requestBody: body,
+        authToken: authToken,
+        isAuthRequired: authToken != null,
       );
-
-      return fromJson(response as Map<String, dynamic>);
+      return parser(response);
+    } on AppException {
+      rethrow;
     } catch (e) {
-      throw handleError(e);
-    }
-  }
-
-  /// Multipart request (for file uploads)
-  Future<T> multipart<T>({
-    required String url,
-    required T Function(Map<String, dynamic>) fromJson,
-    required Object body,
-    String? token,
-  }) async {
-    try {
-      final response = await dioHelper.multiPartRequest(
-        url: url,
-        requestBody: body,
-        isAuthRequired: token != null || getAuthToken() != null,
-        authToken: token ?? getAuthToken(),
-      );
-
-      return fromJson(response as Map<String, dynamic>);
-    } catch (e) {
-      throw handleError(e);
+      throw AppException(e.toString());
     }
   }
 }
