@@ -27,11 +27,7 @@ Future<void> run(HookContext context) async {
   logger.info('Creating feature/page: $pageName\n');
 
   // 🧱 Step 3: Create structure based on architecture
-  if (architecture == 'SimpleMVVM') {
-    _createSimpleMVVMFeature(libDir, className, fileName, logger);
-  } else if (architecture == 'CleanMVVM') {
-    _createCleanFeature(libDir, className, fileName, logger);
-  }
+  _createCleanFeature(libDir, className, fileName, logger);
 
   logger.success('\n✅ $className ($architecture) setup complete!');
 }
@@ -49,132 +45,11 @@ String _detectArchitecture(Directory libDir) {
             Directory('${firstFeature.path}/presentation').existsSync()) {
           return 'CleanMVVM';
         }
-
-        // Check for Simple MVVM structure (view, viewmodel, binding in same folder)
-        final files = firstFeature.listSync();
-        bool hasView = files.any((f) => f.path.endsWith('_view.dart'));
-        bool hasViewModel =
-            files.any((f) => f.path.endsWith('_viewmodel.dart'));
-        bool hasBinding = files.any((f) => f.path.endsWith('_binding.dart'));
-
-        if (hasView && hasViewModel && hasBinding) {
-          return 'SimpleMVVM';
-        }
       }
     }
   }
 
-  // Check for data folder (Simple MVVM indicator)
-  if (Directory('${libDir.path}/data').existsSync()) {
-    return 'SimpleMVVM';
-  }
-
   return 'Unknown';
-}
-
-/// ---------------------------------------------------------------------------
-/// 🧩 SIMPLE MVVM (NEW STRUCTURE)
-/// ---------------------------------------------------------------------------
-
-void _createSimpleMVVMFeature(
-  Directory libDir,
-  String className,
-  String fileName,
-  Logger logger,
-) {
-  final featureDir = Directory('${libDir.path}/features/$fileName');
-
-  // ✅ Create feature folder
-  featureDir.createSync(recursive: true);
-  logger.success('📁 Created: lib/features/$fileName');
-
-  // 🧱 View (using GetView)
-  File('${featureDir.path}/${fileName}_view.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '${fileName}_viewmodel.dart';
-
-class ${className}View extends GetView<${className}ViewModel> {
-  const ${className}View({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('$className')),
-      body: Center(
-        child: Obx(() => Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Taps: \${controller.tapCount.value}'),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: controller.onActionPressed,
-              child: const Text('Tap Me'),
-            ),
-          ],
-        )),
-      ),
-    );
-  }
-}
-''');
-  logger.success('🧱 Created: lib/features/$fileName/${fileName}_view.dart');
-
-  // 🧱 ViewModel (extends GetxController)
-  File('${featureDir.path}/${fileName}_viewmodel.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:get/get.dart';
-
-class ${className}ViewModel extends GetxController {
-  final tapCount = 0.obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-    // Initialize data here
-  }
-
-  void onActionPressed() {
-    tapCount.value++;
-  }
-  
-  @override
-  void onClose() {
-    // Clean up resources
-    super.onClose();
-  }
-}
-''');
-  logger
-      .success('🧱 Created: lib/features/$fileName/${fileName}_viewmodel.dart');
-
-  // 🧱 Binding
-  File('${featureDir.path}/${fileName}_binding.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:get/get.dart';
-import '${fileName}_viewmodel.dart';
-
-class ${className}Binding extends Bindings {
-  @override
-  void dependencies() {
-    Get.lazyPut<${className}ViewModel>(
-      () => ${className}ViewModel(),
-    );
-  }
-}
-''');
-  logger.success('🧱 Created: lib/features/$fileName/${fileName}_binding.dart');
-
-  // ✅ Add route (GetX)
-  _createSeparateRouteFiles(
-    libDir,
-    fileName,
-    className,
-    'features/$fileName',
-    logger,
-    useGetX: true,
-  );
 }
 
 /// ---------------------------------------------------------------------------
@@ -189,7 +64,13 @@ void _createCleanFeature(
 ) {
   final featureDir = Directory('${libDir.path}/features/$fileName');
 
-  final dataFolders = ['datasources', 'repository_impl', 'models'];
+  final dataFolders = [
+    'datasources',
+    'repository_impl',
+    'models',
+    'models/request_models',
+    'models/response_models'
+  ];
   final domainFolders = ['repositories', 'usecases', 'entities'];
   final presentationFolders = [
     'views',
@@ -210,24 +91,53 @@ void _createCleanFeature(
     logger.success('📁 Created: lib/$folder');
   }
 
-  // ✅ Subfolders
+  // ✅ Create data layer
   for (final folder in dataFolders) {
     Directory('${featureDir.path}/data/$folder').createSync(recursive: true);
+    logger.success('📁 Created: lib/features/$fileName/data/$folder');
   }
+
+  // ✅ Create domain layer
   for (final folder in domainFolders) {
     Directory('${featureDir.path}/domain/$folder').createSync(recursive: true);
+    logger.success('📁 Created: lib/features/$fileName/domain/$folder');
   }
+
+  // ✅ Create presentation layer
   for (final folder in presentationFolders) {
     Directory('${featureDir.path}/presentation/$folder')
         .createSync(recursive: true);
+    logger.success('📁 Created: lib/features/$fileName/presentation/$folder');
   }
 
-  // ✅ View (using GetView for GetX)
+  // ✅ Create GetX files for clean architecture
+  _createGetXFiles(featureDir, className, fileName, logger);
+
+  // ✅ Create separate route files
+  _createSeparateRouteFiles(
+    libDir,
+    fileName,
+    className,
+    'features/$fileName/presentation/views',
+    logger,
+  );
+}
+
+/// ---------------------------------------------------------------------------
+/// 🧩 Create GetX-specific files for Clean Architecture
+/// ---------------------------------------------------------------------------
+
+void _createGetXFiles(
+  Directory featureDir,
+  String className,
+  String fileName,
+  Logger logger,
+) {
+  // ✅ View File (using GetView)
   File('${featureDir.path}/presentation/views/${fileName}_view.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../viewmodels/${fileName}_viewmodel.dart';
+import '../../../../app_exports.dart';
 
 class ${className}View extends GetView<${className}ViewModel> {
   const ${className}View({super.key});
@@ -240,33 +150,38 @@ class ${className}View extends GetView<${className}ViewModel> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Obx(() => Text('Tap count: \${controller.tapCount.value}')),
+            Obx(() => Text('Count: \${controller.count.value}')),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: controller.onActionPressed,
-              child: const Text('Tap Me'),
+            Obx(
+              () => CustomButton(
+                text: "Perform Action",
+                onPressed: controller.performAction,
+                isLoading: controller.isLoading.value,
+              ),
             ),
           ],
         ),
-      ),
+      ).paddingAll(16),
     );
   }
 }
 ''');
-  logger.success('🧱 View created.');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/presentation/views/${fileName}_view.dart');
 
-  // ✅ ViewModel (GetX Controller) - CHANGED: Constructor with required named parameter
+  // ✅ ViewModel (GetX Controller) - Using UseCase
   File('${featureDir.path}/presentation/viewmodels/${fileName}_viewmodel.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:get/get.dart';
-import '../../domain/repositories/${fileName}_repository.dart';
+    ..writeAsStringSync('''import 'package:flutter/material.dart';
+import '../../../../app_exports.dart';
 
 class ${className}ViewModel extends GetxController {
-  final I${className}Repository repository;
-  
-  ${className}ViewModel({required this.repository});
-  
-  final tapCount = 0.obs;
+  final ${className}Usecase ${_toCamelCase(fileName)}Usecase;
+
+  ${className}ViewModel({required this.${_toCamelCase(fileName)}Usecase});
+
+  final RxInt count = 0.obs;
+  final RxBool isLoading = false.obs;
 
   @override
   void onInit() {
@@ -274,10 +189,22 @@ class ${className}ViewModel extends GetxController {
     // Initialize here
   }
 
-  void onActionPressed() {
-    tapCount.value++;
+  Future<void> performAction() async {
+    await executeUseCase(
+      useCase: () => ${_toCamelCase(fileName)}Usecase.call(
+        ${className}Params(
+          param1: 'value1',
+          param2: 'value2',
+        ),
+      ),
+      loadingState: isLoading,
+      onSuccess: (result) {
+        count.value++;
+        // Handle success
+      },
+    );
   }
-  
+
   @override
   void onClose() {
     // Clean up resources
@@ -285,23 +212,25 @@ class ${className}ViewModel extends GetxController {
   }
 }
 ''');
-  logger.success('🧱 ViewModel created.');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/presentation/viewmodels/${fileName}_viewmodel.dart');
 
-  // ✅ Dependencies Binding (GetX) - CHANGED: Named parameters in Get.find() calls
+  // ✅ Dependencies Binding - Including UseCase
   File('${featureDir.path}/presentation/dependencies/${fileName}_binding.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import 'package:get/get.dart';
-import '../../data/datasources/${fileName}_remote_datasource.dart';
+import '../../data/datasources/remote_${fileName}_datasource.dart';
 import '../../data/repository_impl/${fileName}_repository_impl.dart';
 import '../../domain/repositories/${fileName}_repository.dart';
+import '../../domain/usecases/${fileName}_usecase.dart';
 import '../viewmodels/${fileName}_viewmodel.dart';
 
 class ${className}Binding extends Bindings {
   @override
   void dependencies() {
-    // DataSource
-    Get.lazyPut<I${className}RemoteDataSource>(
-      () => ${className}RemoteDataSourceImpl(),
+    // DataSource - pass DioHelper instance
+    Get.lazyPut<IRemote${className}DataSource>(
+      () => Remote${className}DataSourceImpl(dioHelper: Get.find()),
     );
     
     // Repository
@@ -309,32 +238,48 @@ class ${className}Binding extends Bindings {
       () => ${className}RepositoryImpl(dataSource: Get.find()),
     );
     
+    // UseCase
+    Get.lazyPut<${className}Usecase>(
+      () => ${className}Usecase(repository: Get.find()),
+    );
+    
     // ViewModel/Controller
     Get.lazyPut<${className}ViewModel>(
-      () => ${className}ViewModel(repository: Get.find()),
+      () => ${className}ViewModel(${_toCamelCase(fileName)}Usecase: Get.find()),
     );
   }
 }
 ''');
-  logger.success('🧱 Binding created.');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/presentation/dependencies/${fileName}_binding.dart');
 
-  // ✅ Datasource Interface & Implementation
-  File('${featureDir.path}/data/datasources/${fileName}_remote_datasource.dart')
+  // ✅ DataSource with Interface + Implementation extending BaseRemoteDataSource
+  File('${featureDir.path}/data/datasources/remote_${fileName}_datasource.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync(
-        '''abstract interface class I${className}RemoteDataSource {
-  Future<bool> performAction(String param1, String param2);
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
+
+abstract interface class IRemote${className}DataSource {
+  Future<${className}Response> performAction({required ${className}Params params});
 }
 
-class ${className}RemoteDataSourceImpl implements I${className}RemoteDataSource {
+class Remote${className}DataSourceImpl extends BaseRemoteDatasource
+    implements IRemote${className}DataSource {
+  Remote${className}DataSourceImpl({required super.dioHelper});
+
   @override
-  Future<bool> performAction(String param1, String param2) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return true;
+  Future<${className}Response> performAction({
+    required ${className}Params params,
+  }) async {
+    return post(
+      url: ApiEndPoints.${_toCamelCase(fileName)},
+      parser: (json) => ${className}Response.fromJson(json),
+      body: params.toJson(),
+    );
   }
 }
 ''');
-  logger.success('🧱 Datasource created.');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/data/datasources/remote_${fileName}_datasource.dart');
 
   // ✅ Entity
   File('${featureDir.path}/domain/entities/${fileName}_entity.dart')
@@ -342,60 +287,140 @@ class ${className}RemoteDataSourceImpl implements I${className}RemoteDataSource 
     ..writeAsStringSync('''class ${className}Entity {
   final String id;
   final String name;
-  
+
   ${className}Entity({required this.id, required this.name});
 }
 ''');
-  logger.success('🧱 Entity created.');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/domain/entities/${fileName}_entity.dart');
 
-  // ✅ Repository Interface - CHANGED: Added "I" prefix
-  File('${featureDir.path}/domain/repositories/${fileName}_repository.dart')
+  // ✅ UseCase with dynamic params and return type
+  File('${featureDir.path}/domain/usecases/${fileName}_usecase.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''abstract interface class I${className}Repository {
-  Future<bool> performAction(String param1, String param2);
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
+
+class ${className}Usecase implements Usecase<${className}Response, ${className}Params> {
+  final I${className}Repository repository;
+
+  ${className}Usecase({required this.repository});
+
+  @override
+  Future<Either<AppException, ${className}Response>> call(${className}Params params) {
+    return repository.performAction(params: params);
+  }
 }
 ''');
-  logger.success('🧱 Repository interface created.');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/domain/usecases/${fileName}_usecase.dart');
 
-  // ✅ Repository Implementation - CHANGED: Constructor with required named parameter
+  // ✅ Repository Interface
+  File('${featureDir.path}/domain/repositories/${fileName}_repository.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
+
+abstract interface class I${className}Repository {
+  Future<Either<AppException, ${className}Response>> performAction({
+    required ${className}Params params,
+  });
+}
+''');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/domain/repositories/${fileName}_repository.dart');
+
+  // ✅ Repository Implementation extending BaseRepository
   File(
       '${featureDir.path}/data/repository_impl/${fileName}_repository_impl.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync(
-        '''import '../../domain/repositories/${fileName}_repository.dart';
-import '../datasources/${fileName}_remote_datasource.dart';
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
 
-class ${className}RepositoryImpl implements I${className}Repository {
-  final I${className}RemoteDataSource dataSource;
+class ${className}RepositoryImpl extends BaseRepository implements I${className}Repository {
+  final IRemote${className}DataSource dataSource;
 
   ${className}RepositoryImpl({required this.dataSource});
 
   @override
-  Future<bool> performAction(String param1, String param2) async {
-    return dataSource.performAction(param1, param2);
+  Future<Either<AppException, ${className}Response>> performAction({
+    required ${className}Params params,
+  }) {
+    return execute(
+      call: () => dataSource.performAction(params: params),
+    );
   }
 }
 ''');
-  logger.success('🧱 Repository implementation created.');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/data/repository_impl/${fileName}_repository_impl.dart');
 
-  // ✅ Add route using the same approach as flutter_architecture
-  _createSeparateRouteFiles(
-    libDir,
-    fileName,
-    className,
-    'features/$fileName/presentation/views',
-    logger,
-    useGetX: true,
-  );
+  // ✅ Request Model (Params)
+  File('${featureDir.path}/data/models/request_models/${fileName}_params.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''class ${className}Params {
+  final String param1;
+  final String param2;
+
+  ${className}Params({
+    required this.param1,
+    required this.param2,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'param1': param1,
+      'param2': param2,
+    };
+  }
+}
+''');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/data/models/request_models/${fileName}_params.dart');
+
+  // ✅ Response Model
+  File(
+      '${featureDir.path}/data/models/response_models/${fileName}_response.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''class ${className}Response {
+  final String id;
+  final String message;
+  final bool success;
+
+  ${className}Response({
+    required this.id,
+    required this.message,
+    required this.success,
+  });
+
+  factory ${className}Response.fromJson(Map<String, dynamic> json) {
+    return ${className}Response(
+      id: json['id'] ?? '',
+      message: json['message'] ?? '',
+      success: json['success'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'message': message,
+      'success': success,
+    };
+  }
+}
+''');
+  logger.success(
+      '🧱 Created: lib/features/$fileName/data/models/response_models/${fileName}_response.dart');
 }
 
 /// ---------------------------------------------------------------------------
 /// 🧩 SHARED: Create Separate Route Files (Paths, Names, Routes)
 /// ---------------------------------------------------------------------------
 
-void _createSeparateRouteFiles(Directory libDir, String fileName,
-    String className, String viewPath, Logger logger,
-    {bool useGetX = false}) {
+void _createSeparateRouteFiles(
+  Directory libDir,
+  String fileName,
+  String className,
+  String viewPath,
+  Logger logger,
+) {
   final routesDir = Directory('${libDir.path}/routes');
   if (!routesDir.existsSync()) {
     routesDir.createSync(recursive: true);
@@ -482,21 +507,11 @@ void _updateRoutesFileGetX(
   String viewPath,
   Logger logger,
 ) {
-  // Determine correct import paths based on architecture
-  String viewImportPath;
-  String bindingImportPath;
+  // Determine correct import paths for Clean Architecture
+  String viewImportPath = "../$viewPath/${fileName}_view.dart";
+  String bindingImportPath =
+      "../$viewPath/../dependencies/${fileName}_binding.dart";
 
-  if (viewPath.contains('presentation/views')) {
-    // Clean Architecture
-    viewImportPath = "../$viewPath/${fileName}_view.dart";
-    bindingImportPath = "../$viewPath/../dependencies/${fileName}_binding.dart";
-  } else {
-    // Simple MVVM
-    viewImportPath = "../$viewPath/${fileName}_view.dart";
-    bindingImportPath = "../$viewPath/${fileName}_binding.dart";
-  }
-
-  // CHANGED: Removed unused import 'route_names.dart'
   if (!routesFile.existsSync()) {
     routesFile.createSync(recursive: true);
     routesFile.writeAsStringSync('''import 'package:get/get.dart';
@@ -651,4 +666,14 @@ String _toSnakeCase(String text) {
       .replaceAllMapped(RegExp(r'[A-Z]'), (match) => '_${match.group(0)}')
       .toLowerCase()
       .replaceAll(RegExp(r'^_'), '');
+}
+
+String _toCamelCase(String text) {
+  final words = text.split('_');
+  if (words.isEmpty) return '';
+  return words.first.toLowerCase() +
+      words.skip(1).map((word) {
+        if (word.isEmpty) return '';
+        return word[0].toUpperCase() + word.substring(1).toLowerCase();
+      }).join('');
 }

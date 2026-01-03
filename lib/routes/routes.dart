@@ -11,6 +11,6 @@ class AppRoutes {
       binding: SigninBinding(),
     ),
   ];
-  
+
   static const String initialRoute = RoutePaths.signin;
 }
