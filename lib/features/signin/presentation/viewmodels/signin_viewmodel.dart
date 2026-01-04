@@ -8,7 +8,7 @@ class SigninViewModel extends GetxController {
   SigninViewModel({required this.signinUsecase});
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
+  final formKey = GlobalKey<FormState>();
   final Rx<UserToken> data = UserToken().obs;
   final RxBool isLoading = false.obs;
 

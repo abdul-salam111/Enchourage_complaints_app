@@ -6,38 +6,47 @@ class SigninView extends GetView<SigninViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            CustomTextFormField(
-              label: "Email",
-              hintText: "Enter your email",
-              controller: controller.emailController,
-            ),
-            const SizedBox(height: 20),
-            CustomTextFormField(
-              controller: controller.passwordController,
-              label: "Password",
-              hintText: "Enter your password",
-              obscureText: true,
-            ),
+    return UnfocusWrapper(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Sign In')),
+        body: Form(
+          key: controller.formKey,
+          child: Center(
+            child: ListView(
+              children: [
+                AppLogo(),
+                const SizedBox(height: 20),
+                CustomTextFormField(
+                  label: "Email",
+                  hintText: "Enter your email",
+                  controller: controller.emailController,
+                ),
+                const SizedBox(height: 20),
+                CustomTextFormField(
+                  controller: controller.passwordController,
+                  label: "Password",
+                  hintText: "Enter your password",
+                  obscureText: true,
+                ),
 
-            const SizedBox(height: 10),
-            Obx(
-              () => CustomButton(
-                text: "Login",
-                onPressed: controller.signinUserById,
-                isLoading: controller.isLoading.value,
-              ),
+                const SizedBox(height: 10),
+                Obx(
+                  () => CustomButton(
+                    radius: 10,
+                    text: "Login",
+                    onPressed: () {
+                      if (controller.formKey.currentState!.validate()) {
+                        controller.signinUserById();
+                      }
+                    },
+                    isLoading: controller.isLoading.value,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ).paddingAll(16),
         ),
-      ).paddingAll(16),
+      ),
     );
   }
 }
-

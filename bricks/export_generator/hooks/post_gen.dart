@@ -36,39 +36,68 @@ void run(HookContext context) async {
 
     // Read existing exports if file exists
     final exportFile = File(exportFilePath);
-    final existingExports = <String>{};
+    final existingPackageExports = <String>[]; // External packages (full line)
+    final existingFileExports = <String>[]; // Project files
 
     if (exportFile.existsSync()) {
       final content = exportFile.readAsStringSync();
-      final exportPattern = RegExp(r"export\s+'([^']+)';");
-      final matches = exportPattern.allMatches(content);
+      // Updated regex to capture entire export statement including hide/show
+      final exportPattern = RegExp(r"export\s+'([^']+)'[^;]*;");
+      final lines = content.split('\n');
 
-      for (final match in matches) {
-        existingExports.add(match.group(1)!);
+      for (final line in lines) {
+        final trimmedLine = line.trim();
+        if (trimmedLine.startsWith('export ')) {
+          final match = exportPattern.firstMatch(trimmedLine);
+          if (match != null) {
+            final exportPath = match.group(1)!;
+            if (exportPath.startsWith('package:')) {
+              // Store the entire export line for packages (preserve hide/show)
+              existingPackageExports.add(trimmedLine);
+            } else {
+              // Store just the path for project files
+              existingFileExports.add(exportPath);
+            }
+          }
+        }
       }
     }
 
-    // Find new exports (files not already exported)
-    final newExports =
-        dartFiles.where((file) => !existingExports.contains(file)).toList();
+    // Find changes
+    final currentFiles = dartFiles.toSet();
+    final existingFiles = existingFileExports.toSet();
+    final newExports = currentFiles.difference(existingFiles).toList();
+    final removedExports = existingFiles.difference(currentFiles).toList();
 
-    if (newExports.isEmpty && exportFile.existsSync()) {
-      progress.complete('No new files to export');
+    if (newExports.isEmpty &&
+        removedExports.isEmpty &&
+        exportFile.existsSync()) {
+      progress.complete('No changes detected');
       context.logger.info('✓ app_exports.dart is up to date');
       return;
     }
 
-    // Generate export statements for all files (existing + new)
-    final allExports = <String>[...existingExports, ...newExports];
-    allExports.sort();
-
+    // Generate export statements
     final buffer = StringBuffer();
     buffer.writeln('// Generated file - exports all library files');
     buffer.writeln('// Run: mason make export_generator to update');
     buffer.writeln();
 
-    for (final file in allExports) {
-      buffer.writeln("export '$file';");
+    // First add package exports (preserve entire line with hide/show)
+    if (existingPackageExports.isNotEmpty) {
+      buffer.writeln('// External packages');
+      for (final pkgLine in existingPackageExports) {
+        buffer.writeln(pkgLine);
+      }
+      buffer.writeln();
+    }
+
+    // Then add project file exports
+    if (dartFiles.isNotEmpty) {
+      buffer.writeln('// Project files');
+      for (final file in dartFiles) {
+        buffer.writeln("export '$file';");
+      }
     }
 
     // Write to file
@@ -76,6 +105,7 @@ void run(HookContext context) async {
 
     progress.complete('Export file updated');
 
+    // Show added files
     if (newExports.isNotEmpty) {
       context.logger.info('✓ Added ${newExports.length} new export(s):');
       for (final file in newExports) {
@@ -83,7 +113,20 @@ void run(HookContext context) async {
       }
     }
 
-    context.logger.info('✓ Total exports: ${allExports.length}');
+    // Show removed files
+    if (removedExports.isNotEmpty) {
+      context.logger
+          .info('✓ Removed ${removedExports.length} deleted file(s):');
+      for (final file in removedExports) {
+        context.logger.info('  - $file');
+      }
+    }
+
+    context.logger.info(
+        '✓ Total exports: ${existingPackageExports.length + dartFiles.length}');
+    context.logger
+        .info('  - Package exports: ${existingPackageExports.length}');
+    context.logger.info('  - File exports: ${dartFiles.length}');
     context.logger.success('app_exports.dart updated successfully');
   } catch (e) {
     progress.fail('Error generating exports');

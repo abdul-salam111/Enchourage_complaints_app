@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_template/app_exports.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'loading_indicator.dart';
 
@@ -15,12 +16,13 @@ class CustomButton extends StatelessWidget {
   final Color iconColor;
   final bool isLoading;
   final int fontsize;
+  final Size size;
 
   const CustomButton({
     super.key,
     required this.text,
     required this.onPressed,
-    this.backgroundColor = Colors.blue,
+    this.backgroundColor = AppColors.primary,
     this.textColor = Colors.white,
     this.radius = 50.0,
     this.padding = 0.0,
@@ -30,6 +32,7 @@ class CustomButton extends StatelessWidget {
     this.iconSize = 24.0,
     this.iconColor = Colors.white,
     this.isLoading = false,
+    this.size = const Size(double.infinity, 50),
   });
 
   @override
@@ -44,20 +47,14 @@ class CustomButton extends StatelessWidget {
         ),
         padding: EdgeInsets.all(padding),
         elevation: elevation,
+        minimumSize: size,
       ),
       child: isLoading
-          ? LoadingIndicator(
-              size: 30,
-            )
+          ? LoadingIndicator(size: 30)
           : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (icon != null)
-                  Icon(
-                    icon,
-                    size: iconSize,
-                    color: iconColor,
-                  ),
+                if (icon != null) Icon(icon, size: iconSize, color: iconColor),
                 if (icon != null) SizedBox(width: 8),
                 Text(
                   text,
