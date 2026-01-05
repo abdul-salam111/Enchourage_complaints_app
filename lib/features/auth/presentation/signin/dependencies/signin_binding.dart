@@ -1,16 +1,16 @@
-import '../../../../app_exports.dart';
+import '../../../../../app_exports.dart';
 
 class SigninBinding extends Bindings {
   @override
   void dependencies() {
     // DataSource - pass DioHelper instance
-    Get.lazyPut<IRemoteSigninDataSource>(
-      () => RemoteSigninDataSourceImpl(dioHelper: Get.find()),
+    Get.lazyPut<IRemoteAuthDataSource>(
+      () => AuthRemoteDataSourceImpl(dioHelper: Get.find()),
     );
 
     // Repository
-    Get.lazyPut<ISigninRepository>(
-      () => SigninRepositoryImpl(dataSource: Get.find()),
+    Get.lazyPut<IAuthRepository>(
+      () => AuthRepositoryImpl(dataSource: Get.find()),
     );
 
     // UseCase

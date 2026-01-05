@@ -1,7 +1,8 @@
+import 'package:flutter_template/features/splash/splash_view.dart';
 import 'package:get/get.dart';
 import 'route_paths.dart';
-import '../features/signin/presentation/views/signin_view.dart';
-import '../features/signin/presentation/views/../dependencies/signin_binding.dart';
+import '../features/auth/presentation/signin/views/signin_view.dart';
+import '../features/auth/presentation/signin/dependencies/signin_binding.dart';
 
 class AppRoutes {
   static final List<GetPage> routes = [
@@ -10,7 +11,8 @@ class AppRoutes {
       page: () => const SigninView(),
       binding: SigninBinding(),
     ),
+    GetPage(name: RoutePaths.splash, page: () => const SplashView()),
   ];
-  
-  static const String initialRoute = RoutePaths.signin;
+
+  static const String initialRoute = RoutePaths.splash;
 }

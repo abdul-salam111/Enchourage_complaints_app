@@ -1,12 +1,12 @@
 import '../../../../app_exports.dart';
 
-abstract interface class IRemoteSigninDataSource {
+abstract interface class IRemoteAuthDataSource {
   Future<UserToken> loginUserById({required LoginUserById loginUserById});
 }
 
-class RemoteSigninDataSourceImpl extends BaseRemoteDatasource
-    implements IRemoteSigninDataSource {
-  RemoteSigninDataSourceImpl({required super.dioHelper});
+class AuthRemoteDataSourceImpl extends BaseRemoteDatasource
+    implements IRemoteAuthDataSource {
+  AuthRemoteDataSourceImpl({required super.dioHelper});
 
   @override
   Future<UserToken> loginUserById({
@@ -19,4 +19,3 @@ class RemoteSigninDataSourceImpl extends BaseRemoteDatasource
     );
   }
 }
-

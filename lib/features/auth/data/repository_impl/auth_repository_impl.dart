@@ -1,9 +1,9 @@
 import '../../../../app_exports.dart';
 
-class SigninRepositoryImpl extends BaseRepository implements ISigninRepository {
-  final IRemoteSigninDataSource dataSource;
+class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
+  final IRemoteAuthDataSource dataSource;
 
-  SigninRepositoryImpl({required this.dataSource});
+  AuthRepositoryImpl({required this.dataSource});
 
   @override
   Future<Either<AppException, UserToken>> signinUserById({
@@ -14,4 +14,3 @@ class SigninRepositoryImpl extends BaseRepository implements ISigninRepository {
     );
   }
 }
-

@@ -1,7 +1,7 @@
 import '../../../../app_exports.dart';
 
 class SigninUsecase implements Usecase<UserToken, LoginUserById> {
-  final ISigninRepository repository;
+  final IAuthRepository repository;
 
   SigninUsecase({required this.repository});
 
@@ -10,4 +10,3 @@ class SigninUsecase implements Usecase<UserToken, LoginUserById> {
     return repository.signinUserById(loginUserById: loginUserById);
   }
 }
-

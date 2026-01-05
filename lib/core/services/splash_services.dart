@@ -1,27 +1,27 @@
 import 'dart:async';
-// import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 
-// import 'session_manager.dart';
+import '../../app_exports.dart';
 
 class SplashServices {
-  void isLoggedIn() {
-  Future.delayed(Duration(seconds: 2),(){
-    //  checkLoginStatus();
-  });
+  void isLoggedIn(BuildContext context) {
+    Future.delayed(Duration(seconds: 2), () {
+      checkLoginStatus(context);
+    });
   }
 
-  // Future<void> checkLoginStatus() async {
-  //   try {
-  //     await SessionController().getUserfromSharedpref();
+  Future<void> checkLoginStatus(BuildContext context) async {
+    try {
+      await SessionController().getUserfromSharedpref();
 
-  //     if (SessionController().islogin == true) {
-  //       Get.offAllNamed(Routes.HOME);
-  //     } else {
-  //       Get.offAllNamed(Routes.LOGIN_SCREEN);
-  //     }
-  //   } catch (e) {
-  //     debugPrint('Error in checkLoginStatus: $e');
-  //   }
-  // }
+      if (SessionController().islogin == true) {
+        Get.offAllNamed(RouteNames.signin);
+      } else {
+        Get.offAllNamed(RouteNames.signin);
+      }
+    } catch (e) {
+      debugPrint('Error in checkLoginStatus: $e');
+    }
+  }
 }
