@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
-
-import 'package:flutter/material.dart';
 import 'package:another_flushbar/flushbar.dart';
+
+import '../../app_exports.dart';
 
 // ============================================================================
 // TOAST POSITION ENUM 📍
@@ -181,6 +181,112 @@ class AppToastsUtils {
   // ========================================================================
   // DIRECTION-SPECIFIC METHODS 📍
   // ========================================================================
+  static BuildContext? get _context => AppNavigator.navigatorKey.currentContext;
+
+  // SUCCESS
+  static void success(
+    String message, {
+    String? title,
+    ToastPosition? position,
+  }) {
+    if (_context != null) {
+      showSuccess(
+        _context!,
+        message,
+        title: title,
+        position: position ?? ToastPosition.top,
+      );
+    }
+  }
+
+  // ERROR
+  static void error(String message, {String? title, ToastPosition? position}) {
+    if (_context != null) {
+      showError(
+        _context!,
+        message,
+        title: title,
+        position: position ?? ToastPosition.top,
+      );
+    }
+  }
+
+  // WARNING
+  static void warning(
+    String message, {
+    String? title,
+    ToastPosition? position,
+  }) {
+    if (_context != null) {
+      showWarning(
+        _context!,
+        message,
+        title: title,
+        position: position ?? ToastPosition.top,
+      );
+    }
+  }
+
+  // INFO
+  static void info(String message, {String? title, ToastPosition? position}) {
+    if (_context != null) {
+      showInfo(
+        _context!,
+        message,
+        title: title,
+        position: position ?? ToastPosition.top,
+      );
+    }
+  }
+
+  // LOADING
+  static void loading(String message, {ToastPosition? position}) {
+    if (_context != null) {
+      showLoading(_context!, message, position: position ?? ToastPosition.top);
+    }
+  }
+
+  // WITH ACTION
+  static void withAction({
+    required String message,
+    required String actionText,
+    required VoidCallback onActionPressed,
+    ToastType? type,
+  }) {
+    if (_context != null) {
+      showWithAction(
+        _context!,
+        message: message,
+        actionText: actionText,
+        onActionPressed: onActionPressed,
+        type: type ?? ToastType.info,
+      );
+    }
+  }
+
+  // CUSTOM
+  static void custom({
+    required String message,
+    String? title,
+    Color? backgroundColor,
+    IconData? icon,
+    Color? iconColor,
+    ToastPosition? position,
+    Duration? duration,
+  }) {
+    if (_context != null) {
+      show(
+        _context!,
+        message: message,
+        title: title,
+        backgroundColor: backgroundColor,
+        icon: icon,
+        iconColor: iconColor,
+        position: position ?? ToastPosition.top,
+        duration: duration ?? const Duration(seconds: 3),
+      );
+    }
+  }
 
   // TOP TOASTS
   static void showSuccessTop(BuildContext context, String message) {

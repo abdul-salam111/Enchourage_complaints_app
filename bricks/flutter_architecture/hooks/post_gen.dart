@@ -5,8 +5,8 @@ import 'package:mason/mason.dart';
 Future<void> run(HookContext context) async {
   final logger = context.logger;
 
-  logger.info('🔧 Setting up Clean Architecture with GetX...');
-  await _installGetXDependencies(logger);
+  logger.info('🔧 Setting up Clean Architecture with Provider...');
+  await _installProviderDependencies(logger);
   final currentDir = Directory.current;
   final libDir = Directory('${currentDir.path}/lib');
   if (!libDir.existsSync()) {
@@ -18,12 +18,12 @@ Future<void> run(HookContext context) async {
   logger.success('✅ Clean Architecture setup complete!');
 
   logger.info('''
-📦 GetX packages have been added to your pubspec.yaml.
+📦 Provider, GetIt, and GoRouter packages have been added to your pubspec.yaml.
 ''');
 }
 
-Future<void> _installGetXDependencies(Logger logger) async {
-  logger.info('📦 Installing GetX packages...');
+Future<void> _installProviderDependencies(Logger logger) async {
+  logger.info('📦 Installing Provider packages...');
 
   final pubspecFile = File('pubspec.yaml');
   if (!pubspecFile.existsSync()) {
@@ -33,7 +33,9 @@ Future<void> _installGetXDependencies(Logger logger) async {
 
   String content = await pubspecFile.readAsString();
 
-  bool hasGet = false;
+  bool hasProvider = false;
+  bool hasGetIt = false;
+  bool hasGoRouter = false;
 
   final lines = content.split('\n');
   bool inDependenciesSection = false;
@@ -55,15 +57,19 @@ Future<void> _installGetXDependencies(Logger logger) async {
     }
 
     if (inDependenciesSection) {
-      if (line.contains('get:')) hasGet = true;
+      if (line.contains('provider:')) hasProvider = true;
+      if (line.contains('get_it:')) hasGetIt = true;
+      if (line.contains('go_router:')) hasGoRouter = true;
     }
   }
 
   final packagesToAdd = <String>[];
-  if (!hasGet) packagesToAdd.add('  get: ^4.6.6');
+  if (!hasProvider) packagesToAdd.add('  provider: ^6.1.1');
+  if (!hasGetIt) packagesToAdd.add('  get_it: ^7.6.7');
+  if (!hasGoRouter) packagesToAdd.add('  go_router: ^13.0.0');
 
   if (packagesToAdd.isEmpty) {
-    logger.info('✅ All GetX packages are already installed');
+    logger.info('✅ All required packages are already installed');
     return;
   }
 
@@ -124,7 +130,6 @@ Future<void> _installGetXDependencies(Logger logger) async {
     final process =
         await Process.start('flutter', ['pub', 'get'], runInShell: true);
 
-    // Stream output in real-time
     process.stdout.transform(utf8.decoder).listen((data) {
       final output = data.trim();
       if (output.isNotEmpty) {
@@ -142,7 +147,6 @@ Future<void> _installGetXDependencies(Logger logger) async {
     final exitCode = await process.exitCode;
     if (exitCode == 0) {
       logger.success('✅ Dependencies installed successfully');
-      // Delete backup
       if (backupFile.existsSync()) {
         backupFile.deleteSync();
       }
@@ -161,7 +165,7 @@ Future<void> _installGetXDependencies(Logger logger) async {
 }
 
 // ------------------------------------------------------------------
-// 🧩 CLEAN FEATURE-BASED (with GetX)
+// 🧩 CLEAN FEATURE-BASED (with Provider + GetIt + GoRouter)
 // ------------------------------------------------------------------
 void _createCleanFeature(Directory libDir, Logger logger) {
   final featureName = 'signin';
@@ -175,10 +179,9 @@ void _createCleanFeature(Directory libDir, Logger logger) {
   ];
   final domainFolders = ['repositories', 'usecases', 'entities'];
   final presentationFolders = [
-    'views',
+    'pages',
     'widgets',
     'viewmodels',
-    'dependencies'
   ];
 
   // ✅ Create root structure
@@ -213,152 +216,139 @@ void _createCleanFeature(Directory libDir, Logger logger) {
         .success('📁 Created: lib/features/$featureName/presentation/$folder');
   }
 
-  // Create GetX files for clean architecture
-  _createGetXFiles(featureDir, logger);
+  // ✅ Create core folders
+  _createCoreFolders(libDir, logger);
 
-  // ✅ Create separate route files
+  // Create Provider files for clean architecture
+  _createProviderFiles(featureDir, logger);
+
+  // ✅ Create routing files
   final className = 'Signin';
   final fileName = 'signin';
-  _createSeparateRouteFiles(libDir, fileName, className,
-      'features/$featureName/presentation/views', logger);
+  _createRouteFiles(libDir, fileName, className,
+      'features/$featureName/presentation/pages', logger);
+
+  // ✅ Create dependency injection file
+  _createDependencyInjection(libDir, logger);
 }
 
 // ------------------------------------------------------------------
-// 🧩 Create GetX-specific files for Clean Architecture
+// 🧩 Create Core Folders
 // ------------------------------------------------------------------
-void _createGetXFiles(Directory featureDir, Logger logger) {
-  // ✅ Example View File (using GetView)
-  File('${featureDir.path}/presentation/views/signin_view.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-import '../../../../app_exports.dart';
+void _createCoreFolders(Directory libDir, Logger logger) {
+  final coreFolders = [
+    'core/routes',
+    'core/di',
+  ];
 
-class SigninView extends GetView<SigninViewModel> {
-  const SigninView({super.key});
+  for (var folder in coreFolders) {
+    Directory('${libDir.path}/$folder').createSync(recursive: true);
+    logger.success('📁 Created: lib/$folder');
+  }
+}
+
+// ------------------------------------------------------------------
+// 🧩 Create Provider-specific files for Clean Architecture
+// ------------------------------------------------------------------
+void _createProviderFiles(Directory featureDir, Logger logger) {
+  // ✅ Page File (using Provider)
+  File('${featureDir.path}/presentation/pages/signin_page.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
+
+class SigninPage extends StatefulWidget {
+  const SigninPage({super.key});
+
+  @override
+  State<SigninPage> createState() => _SigninPageState();
+}
+
+class _SigninPageState extends State<SigninPage> {
+  final _userIdController = TextEditingController();
+  final _passwordController = TextEditingController();
+  @override
+  void dispose() {
+    super.dispose();
+    _userIdController.dispose();
+    _passwordController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: Center(
-        child: Column(
+    return ChangeNotifierProvider(
+      create: (_) => sl<SigninViewModel>(),
+      child: Scaffold(
+        body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
-            CustomTextFormField(
-              label: "Email",
-              hintText: "Enter your email",
-              controller: controller.emailController,
+            TextField(
+              controller: _userIdController,
+              decoration: InputDecoration(labelText: 'User ID'),
             ),
-            const SizedBox(height: 20),
-            CustomTextFormField(
-              controller: controller.passwordController,
-              label: "Password",
-              hintText: "Enter your password",
+            heightBox(20),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
+            heightBox(20),
 
-            const SizedBox(height: 10),
-            Obx(
-              () => CustomButton(
-                text: "Login",
-                onPressed: controller.signinUserById,
-                isLoading: controller.isLoading.value,
-              ),
+            Consumer<SigninViewModel>(
+              builder: (context, vm, _) {
+                return ElevatedButton(
+                  onPressed: vm.isLoading
+                      ? null
+                      : () => vm.signin(
+                          _userIdController.text,
+                          _passwordController.text,
+                        ),
+                  child: vm.isLoading
+                      ? CircularProgressIndicator()
+                      : Text('Sign In'),
+                );
+              },
             ),
           ],
         ),
-      ).paddingAll(16),
+      ),
     );
   }
 }
 
 ''');
   logger.success(
-      '🧱 Created: lib/features/signin/presentation/views/signin_view.dart');
+      '🧱 Created: lib/features/signin/presentation/pages/signin_page.dart');
 
-  // ✅ ViewModel (GetX Controller) - Updated to use UseCase
+  // ✅ ViewModel (Provider + UseCaseExecutor)
   File('${featureDir.path}/presentation/viewmodels/signin_viewmodel.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''
-import 'package:flutter/material.dart';
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
 
-import '../../../../app_exports.dart';
+class SigninViewModel extends ChangeNotifier with UseCaseExecutor {
+  final SigninUsecase _signinUsecase;
 
-class SigninViewModel extends GetxController {
-  final SigninUsecase signinUsecase;
+  SigninViewModel({required SigninUsecase signinUsecase})
+    : _signinUsecase = signinUsecase;
 
-  SigninViewModel({required this.signinUsecase});
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  UserToken? _userToken;
+  UserToken? get userToken => _userToken;
 
-  final Rx<UserToken> data = UserToken().obs;
-  final RxBool isLoading = false.obs;
-
-  Future<void> signinUserById() async {
-    await executeUseCase(
-      useCase: () => signinUsecase.call(
-        LoginUserById(
-          uid: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        ),
-      ),
-      loadingState: isLoading,
-      onSuccess: (result) {
-        data.value = result;
+  Future<void> signin(String userId, String password) async {
+    await execute(
+      call: () =>
+          _signinUsecase(LoginUserById(uid: userId, password: password)),
+      onSuccess: (token) {
+        _userToken = token;
       },
     );
   }
-
-  @override
-  void onClose() {
-    // Clean up resources
-    super.onClose();
-  }
 }
+
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/presentation/viewmodels/signin_viewmodel.dart');
 
-  // ✅ Dependencies Binding - Updated to include UseCase
-  File('${featureDir.path}/presentation/dependencies/signin_binding.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:get/get.dart';
-import '../../data/datasources/remote_signin_datasource.dart';
-import '../../data/repository_impl/signin_repository_impl.dart';
-import '../../domain/repositories/signin_repository.dart';
-import '../../domain/usecases/signin_usecase.dart';
-import '../viewmodels/signin_viewmodel.dart';
-
-class SigninBinding extends Bindings {
-  @override
-  void dependencies() {
-    // DataSource - pass DioHelper instance
-    Get.lazyPut<IRemoteSigninDataSource>(
-      () => RemoteSigninDataSourceImpl(dioHelper: Get.find()),
-    );
-    
-    // Repository
-    Get.lazyPut<ISigninRepository>(
-      () => SigninRepositoryImpl(dataSource: Get.find()),
-    );
-    
-    // UseCase
-    Get.lazyPut<SigninUsecase>(
-      () => SigninUsecase(repository: Get.find()),
-    );
-    
-    // ViewModel/Controller
-    Get.lazyPut<SigninViewModel>(
-      () => SigninViewModel(signinUsecase: Get.find()),
-    );
-  }
-}
-''');
-  logger.success(
-      '🧱 Created: lib/features/signin/presentation/dependencies/signin_binding.dart');
-
-  // ✅ DataSource with Interface + Implementation extending BaseRemoteDataSource
+  // ✅ DataSource
   File('${featureDir.path}/data/datasources/remote_signin_datasource.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import '../../../../app_exports.dart';
@@ -382,12 +372,11 @@ class RemoteSigninDataSourceImpl extends BaseRemoteDatasource
     );
   }
 }
-
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/data/datasources/remote_signin_datasource.dart');
 
-  // ✅ Example Entity
+  // ✅ Entity
   File('${featureDir.path}/domain/entities/signin_entity.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''class SigninEntity {
@@ -400,7 +389,7 @@ class RemoteSigninDataSourceImpl extends BaseRemoteDatasource
   logger.success(
       '🧱 Created: lib/features/signin/domain/entities/signin_entity.dart');
 
-  // ✅ UseCase with dynamic params and return type
+  // ✅ UseCase
   File('${featureDir.path}/domain/usecases/signin_usecase.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import '../../../../app_exports.dart';
@@ -415,12 +404,11 @@ class SigninUsecase implements Usecase<UserToken, LoginUserById> {
     return repository.signinUserById(loginUserById: loginUserById);
   }
 }
-
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/domain/usecases/signin_usecase.dart');
 
-  // ✅ Example Repository Interface
+  // ✅ Repository Interface
   File('${featureDir.path}/domain/repositories/signin_repository.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import '../../../../app_exports.dart';
@@ -430,12 +418,11 @@ abstract interface class ISigninRepository {
     required LoginUserById loginUserById,
   });
 }
-
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/domain/repositories/signin_repository.dart');
 
-  // ✅ Example Repository Implementation
+  // ✅ Repository Implementation
   File('${featureDir.path}/data/repository_impl/signin_repository_impl.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import '../../../../app_exports.dart';
@@ -454,56 +441,115 @@ class SigninRepositoryImpl extends BaseRepository implements ISigninRepository {
     );
   }
 }
-
 ''');
   logger.success(
       '🧱 Created: lib/features/signin/data/repository_impl/signin_repository_impl.dart');
 }
 
 // ------------------------------------------------------------------
-// 🧩 Create Separate Route Files (Paths, Names, Routes)
+// 🧩 Create Route Files (GoRouter)
 // ------------------------------------------------------------------
-void _createSeparateRouteFiles(Directory libDir, String fileName,
-    String className, String viewPath, Logger logger) {
-  final routesDir = Directory('${libDir.path}/routes');
-  if (!routesDir.existsSync()) {
-    routesDir.createSync(recursive: true);
-  }
+void _createRouteFiles(Directory libDir, String fileName, String className,
+    String pagePath, Logger logger) {
+  final routesDir = Directory('${libDir.path}/core/routes');
 
   // ✅ 1. Create route_paths.dart
-  final pathsFile = File('${routesDir.path}/route_paths.dart');
-  pathsFile.writeAsStringSync('''class RoutePaths {
-  static const String $fileName = '/$fileName';
+  final pathsFile = File('${routesDir.path}/route_names.dart');
+  pathsFile.writeAsStringSync('''
+class RouteNames {
+  static const String signin = "signin";
 }
 ''');
-  logger.success('🧭 Created: lib/routes/route_paths.dart');
+  logger.success('🧭 Created: lib/core/routes/route_names.dart');
 
-  // ✅ 2. Create route_names.dart
-  final namesFile = File('${routesDir.path}/route_names.dart');
-  namesFile.writeAsStringSync('''class RouteNames {
-  static const String $fileName = '$fileName';
+  // ✅ 2. Create app_router.dart
+  final routerFile = File('${routesDir.path}/app_router.dart');
+  routerFile.writeAsStringSync('''
+import '../../app_exports.dart';
+
+class AppNavigator {
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+  static BuildContext? get context => navigatorKey.currentContext;
 }
-''');
-  logger.success('🧭 Created: lib/routes/route_names.dart');
-
-  // ✅ 3. Create routes.dart (GetX routing)
-  final routesFile = File('${routesDir.path}/routes.dart');
-  routesFile.writeAsStringSync('''import 'package:get/get.dart';
-import 'route_paths.dart';
-import '../$viewPath/${fileName}_view.dart';
-import '../$viewPath/../dependencies/${fileName}_binding.dart';
 
 class AppRoutes {
-  static final List<GetPage> routes = [
-    GetPage(
-      name: RoutePaths.$fileName,
-      page: () => const ${className}View(),
-      binding: ${className}Binding(),
-    ),
-  ];
-  
-  static const String initialRoute = RoutePaths.$fileName;
+  static final GoRouter router = GoRouter(
+    initialLocation: RoutePaths.initialRoute,
+    navigatorKey: AppNavigator.navigatorKey,
+    routes: [
+      GoRoute(
+        path: RoutePaths.signin,
+        name: RouteNames.signin,
+        builder: (context, state) => const SigninPage(),
+      ),
+    ],
+  );
 }
+
 ''');
-  logger.success('🧭 Created: lib/routes/routes.dart');
+  logger.success('🧭 Created: lib/core/routes/app_router.dart');
+
+  // ✅ 3. Create route_paths.dart
+  final appRoutesFile = File('${routesDir.path}/route_paths.dart');
+  appRoutesFile.writeAsStringSync('''
+class RoutePaths {
+  static const String initialRoute = signin;
+  static const String signin = "/signin";
+}
+
+''');
+  logger.success('🧭 Created: lib/core/routes/app_routes.dart');
+}
+
+// ------------------------------------------------------------------
+// 🧩 Create Dependency Injection (GetIt)
+// ------------------------------------------------------------------
+void _createDependencyInjection(Directory libDir, Logger logger) {
+  File('${libDir.path}/core/di/injection_container.dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''import 'package:dio/dio.dart';
+
+import '../../app_exports.dart';
+
+
+final sl = GetIt.instance;
+
+Future<void> setupLocator() async {
+  await coreDependencies();
+
+  await authDependencies();
+}
+
+Future<void> coreDependencies() async {
+  sl.registerLazySingleton<Dio>(() => getDio());
+  sl.registerLazySingleton(() => DioHelper(sl()));
+}
+
+/// SignIn Feature Dependencies
+Future<void> authDependencies() async {
+  // DataSource
+  sl.registerLazySingleton<IRemoteSigninDataSource>(
+    () => RemoteSigninDataSourceImpl(dioHelper: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<ISigninRepository>(
+    () => SigninRepositoryImpl(dataSource: sl()),
+  );
+
+  // UseCase
+  sl.registerLazySingleton<SigninUsecase>(
+    () => SigninUsecase(repository: sl()),
+  );
+
+  // provider
+  sl.registerFactory<SigninViewModel>(
+    () => SigninViewModel(signinUsecase: sl()),
+  );
+}
+
+
+''');
+  logger.success('🧱 Created: lib/core/di/injection_container.dart');
 }

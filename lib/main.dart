@@ -1,24 +1,20 @@
-import 'package:flutter/material.dart';
-
-import 'core/app_dependencies.dart';
-import 'core/theme/theme.dart';
+import 'app_exports.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  AppBindings().dependencies();
+  await setupLocator();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Project with provider and clean mvvm structure',
+    return MaterialApp.router(
+      title: 'Provider and Clean MVVM Structure',
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
-
+      routerConfig: AppRoutes.router,
       debugShowCheckedModeBanner: false,
     );
   }
