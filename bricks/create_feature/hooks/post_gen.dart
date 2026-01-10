@@ -1,49 +1,62 @@
 import 'dart:io';
-
 import 'package:mason/mason.dart';
 
 Future<void> run(HookContext context) async {
   final logger = context.logger;
 
-  // 🧠 Step 1: Ask for feature or page name
-  final pageName =
-      context.vars['page_name'] ?? logger.prompt('Enter feature/page name:');
-  final className = _toPascalCase(pageName);
-  final fileName = _toSnakeCase(pageName);
+  // 🧠 Step 1: Get feature name from vars
+  final featureName = context.vars['page_name'] as String;
+
+  final className = _toPascalCase(featureName);
+  final fileName = _toSnakeCase(featureName);
 
   final currentDir = Directory.current;
   final libDir = Directory('${currentDir.path}/lib');
+
+  if (!libDir.existsSync()) {
+    libDir.createSync(recursive: true);
+  }
 
   // 🧠 Step 2: Auto-detect architecture type
   final architecture = _detectArchitecture(libDir);
 
   if (architecture == 'Unknown') {
-    logger.err(
-        '❌ Could not detect architecture. Please run setup_architecture first.');
+    logger.err('❌ Could not detect Clean Architecture with Provider.');
+    logger.info('💡 Please run setup_architecture first.');
     exit(1);
   }
 
   logger.info('\n🧠 Detected architecture: $architecture');
-  logger.info('Creating feature/page: $pageName\n');
+  logger.info('Creating feature: $featureName\n');
 
-  // 🧱 Step 3: Create structure based on architecture
+  // 🧱 Step 3: Create feature structure
   _createCleanFeature(libDir, className, fileName, logger);
 
-  logger.success('\n✅ $className ($architecture) setup complete!');
+  // 🧱 Step 4: Update routes automatically
+  _updateRoutes(libDir, className, fileName, logger);
+
+  // 🧱 Step 5: Update dependency injection automatically
+  _updateDependencyInjection(libDir, className, fileName, logger);
+
+  logger.success('\n✅ $className feature created successfully!');
+  logger.info(
+      '\n🎉 All files, routes, and dependencies configured automatically!');
 }
 
 String _detectArchitecture(Directory libDir) {
-  // Check for feature-based Clean Architecture
-  if (Directory('${libDir.path}/features').existsSync()) {
+  // Check for Clean Architecture with Provider setup
+  if (Directory('${libDir.path}/features').existsSync() &&
+      Directory('${libDir.path}/core/di').existsSync() &&
+      Directory('${libDir.path}/core/routes').existsSync()) {
     final features = Directory('${libDir.path}/features').listSync();
     if (features.isNotEmpty) {
       final firstFeature = features.first;
       if (firstFeature is Directory) {
-        // Check if it has data/domain/presentation structure (Clean Architecture)
+        // Check for Clean Architecture structure
         if (Directory('${firstFeature.path}/data').existsSync() &&
             Directory('${firstFeature.path}/domain').existsSync() &&
             Directory('${firstFeature.path}/presentation').existsSync()) {
-          return 'CleanMVVM';
+          return 'CleanArchitecture-Provider';
         }
       }
     }
@@ -52,10 +65,9 @@ String _detectArchitecture(Directory libDir) {
   return 'Unknown';
 }
 
-/// ---------------------------------------------------------------------------
-/// 🧩 CLEAN FEATURE-BASED ARCHITECTURE (MVVM with GetX)
-/// ---------------------------------------------------------------------------
-
+// ------------------------------------------------------------------
+// 🧩 CREATE CLEAN FEATURE WITH PROVIDER
+// ------------------------------------------------------------------
 void _createCleanFeature(
   Directory libDir,
   String className,
@@ -72,16 +84,10 @@ void _createCleanFeature(
     'models/response_models'
   ];
   final domainFolders = ['repositories', 'usecases', 'entities'];
-  final presentationFolders = [
-    'views',
-    'widgets',
-    'viewmodels',
-    'dependencies'
-  ];
+  final presentationFolders = ['pages', 'widgets', 'viewmodels'];
 
-  // ✅ Create base structure
-  for (final folder in [
-    'features',
+  // ✅ Create root structure
+  for (var folder in [
     'features/$fileName',
     'features/$fileName/data',
     'features/$fileName/domain',
@@ -92,168 +98,135 @@ void _createCleanFeature(
   }
 
   // ✅ Create data layer
-  for (final folder in dataFolders) {
+  for (var folder in dataFolders) {
     Directory('${featureDir.path}/data/$folder').createSync(recursive: true);
     logger.success('📁 Created: lib/features/$fileName/data/$folder');
   }
 
   // ✅ Create domain layer
-  for (final folder in domainFolders) {
+  for (var folder in domainFolders) {
     Directory('${featureDir.path}/domain/$folder').createSync(recursive: true);
     logger.success('📁 Created: lib/features/$fileName/domain/$folder');
   }
 
   // ✅ Create presentation layer
-  for (final folder in presentationFolders) {
+  for (var folder in presentationFolders) {
     Directory('${featureDir.path}/presentation/$folder')
         .createSync(recursive: true);
     logger.success('📁 Created: lib/features/$fileName/presentation/$folder');
   }
 
-  // ✅ Create GetX files for clean architecture
-  _createGetXFiles(featureDir, className, fileName, logger);
+  // ✅ Create Provider files for clean architecture
+  _createProviderFiles(featureDir, className, fileName, logger);
 
-  // ✅ Create separate route files
-  _createSeparateRouteFiles(
-    libDir,
-    fileName,
-    className,
-    'features/$fileName/presentation/views',
-    logger,
-  );
+  logger.info('\n📋 Feature structure created for: $className');
 }
 
-/// ---------------------------------------------------------------------------
-/// 🧩 Create GetX-specific files for Clean Architecture
-/// ---------------------------------------------------------------------------
-
-void _createGetXFiles(
+// ------------------------------------------------------------------
+// 🧩 CREATE PROVIDER FILES
+// ------------------------------------------------------------------
+void _createProviderFiles(
   Directory featureDir,
   String className,
   String fileName,
   Logger logger,
 ) {
-  // ✅ View File (using GetView)
-  File('${featureDir.path}/presentation/views/${fileName}_view.dart')
+  // ✅ 1. Page File (using Provider)
+  File('${featureDir.path}/presentation/pages/${fileName}_page.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-import '../../../../app_exports.dart';
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
 
-class ${className}View extends GetView<${className}ViewModel> {
-  const ${className}View({super.key});
+class ${className}Page extends StatefulWidget {
+  const ${className}Page({super.key});
 
   @override
+  State<${className}Page> createState() => _${className}PageState();
+}
+
+class _${className}PageState extends State<${className}Page> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('$className')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Obx(() => Text('Count: \${controller.count.value}')),
-            const SizedBox(height: 20),
-            Obx(
-              () => CustomButton(
-                text: "Perform Action",
-                onPressed: controller.performAction,
-                isLoading: controller.isLoading.value,
-              ),
-            ),
-          ],
+    return ChangeNotifierProvider(
+      create: (_) => sl<${className}ViewModel>(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('$className'),
         ),
-      ).paddingAll(16),
+        body: Consumer<${className}ViewModel>(
+          builder: (context, viewModel, child) {
+            if (viewModel.isLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '$className Page',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => viewModel.performAction(),
+                    child: const Text('Perform Action'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }
 ''');
   logger.success(
-      '🧱 Created: lib/features/$fileName/presentation/views/${fileName}_view.dart');
+      '🧱 Created: lib/features/$fileName/presentation/pages/${fileName}_page.dart');
 
-  // ✅ ViewModel (GetX Controller) - Using UseCase
+  // ✅ 2. ViewModel (Provider + UseCaseExecutor) - Using Response Model
   File('${featureDir.path}/presentation/viewmodels/${fileName}_viewmodel.dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:flutter/material.dart';
-import '../../../../app_exports.dart';
+    ..writeAsStringSync('''import '../../../../app_exports.dart';
 
-class ${className}ViewModel extends GetxController {
-  final ${className}Usecase ${_toCamelCase(fileName)}Usecase;
+class ${className}ViewModel extends ChangeNotifier with UseCaseExecutor {
+  final ${className}Usecase _${_toCamelCase(fileName)}Usecase;
 
-  ${className}ViewModel({required this.${_toCamelCase(fileName)}Usecase});
+  ${className}ViewModel({required ${className}Usecase ${_toCamelCase(fileName)}Usecase})
+      : _${_toCamelCase(fileName)}Usecase = ${_toCamelCase(fileName)}Usecase;
 
-  final RxInt count = 0.obs;
-  final RxBool isLoading = false.obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-    // Initialize here
-  }
+  ${className}Response? _data;
+  ${className}Response? get data => _data;
 
   Future<void> performAction() async {
-    await executeUseCase(
-      useCase: () => ${_toCamelCase(fileName)}Usecase.call(
+    await execute(
+      call: () => _${_toCamelCase(fileName)}Usecase(
         ${className}Params(
           param1: 'value1',
           param2: 'value2',
         ),
       ),
-      loadingState: isLoading,
       onSuccess: (result) {
-        count.value++;
-        // Handle success
+        _data = result;
+        notifyListeners();
       },
     );
   }
 
   @override
-  void onClose() {
-    // Clean up resources
-    super.onClose();
+  void dispose() {
+    super.dispose();
   }
 }
 ''');
   logger.success(
       '🧱 Created: lib/features/$fileName/presentation/viewmodels/${fileName}_viewmodel.dart');
 
-  // ✅ Dependencies Binding - Including UseCase
-  File('${featureDir.path}/presentation/dependencies/${fileName}_binding.dart')
-    ..createSync(recursive: true)
-    ..writeAsStringSync('''import 'package:get/get.dart';
-import '../../data/datasources/remote_${fileName}_datasource.dart';
-import '../../data/repository_impl/${fileName}_repository_impl.dart';
-import '../../domain/repositories/${fileName}_repository.dart';
-import '../../domain/usecases/${fileName}_usecase.dart';
-import '../viewmodels/${fileName}_viewmodel.dart';
-
-class ${className}Binding extends Bindings {
-  @override
-  void dependencies() {
-    // DataSource - pass DioHelper instance
-    Get.lazyPut<IRemote${className}DataSource>(
-      () => Remote${className}DataSourceImpl(dioHelper: Get.find()),
-    );
-    
-    // Repository
-    Get.lazyPut<I${className}Repository>(
-      () => ${className}RepositoryImpl(dataSource: Get.find()),
-    );
-    
-    // UseCase
-    Get.lazyPut<${className}Usecase>(
-      () => ${className}Usecase(repository: Get.find()),
-    );
-    
-    // ViewModel/Controller
-    Get.lazyPut<${className}ViewModel>(
-      () => ${className}ViewModel(${_toCamelCase(fileName)}Usecase: Get.find()),
-    );
-  }
-}
-''');
-  logger.success(
-      '🧱 Created: lib/features/$fileName/presentation/dependencies/${fileName}_binding.dart');
-
-  // ✅ DataSource with Interface + Implementation extending BaseRemoteDataSource
+  // ✅ 3. DataSource
   File('${featureDir.path}/data/datasources/remote_${fileName}_datasource.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import '../../../../app_exports.dart';
@@ -281,20 +254,25 @@ class Remote${className}DataSourceImpl extends BaseRemoteDatasource
   logger.success(
       '🧱 Created: lib/features/$fileName/data/datasources/remote_${fileName}_datasource.dart');
 
-  // ✅ Entity
+  // ✅ 4. Entity (created but not used)
   File('${featureDir.path}/domain/entities/${fileName}_entity.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''class ${className}Entity {
   final String id;
   final String name;
+  final String description;
 
-  ${className}Entity({required this.id, required this.name});
+  ${className}Entity({
+    required this.id,
+    required this.name,
+    required this.description,
+  });
 }
 ''');
   logger.success(
       '🧱 Created: lib/features/$fileName/domain/entities/${fileName}_entity.dart');
 
-  // ✅ UseCase with dynamic params and return type
+  // ✅ 5. UseCase - Using Response Model instead of Entity
   File('${featureDir.path}/domain/usecases/${fileName}_usecase.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import '../../../../app_exports.dart';
@@ -313,7 +291,7 @@ class ${className}Usecase implements Usecase<${className}Response, ${className}P
   logger.success(
       '🧱 Created: lib/features/$fileName/domain/usecases/${fileName}_usecase.dart');
 
-  // ✅ Repository Interface
+  // ✅ 6. Repository Interface - Using Response Model
   File('${featureDir.path}/domain/repositories/${fileName}_repository.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''import '../../../../app_exports.dart';
@@ -327,7 +305,7 @@ abstract interface class I${className}Repository {
   logger.success(
       '🧱 Created: lib/features/$fileName/domain/repositories/${fileName}_repository.dart');
 
-  // ✅ Repository Implementation extending BaseRepository
+  // ✅ 7. Repository Implementation - Using Response Model directly
   File(
       '${featureDir.path}/data/repository_impl/${fileName}_repository_impl.dart')
     ..createSync(recursive: true)
@@ -351,7 +329,7 @@ class ${className}RepositoryImpl extends BaseRepository implements I${className}
   logger.success(
       '🧱 Created: lib/features/$fileName/data/repository_impl/${fileName}_repository_impl.dart');
 
-  // ✅ Request Model (Params)
+  // ✅ 8. Request Model (Params)
   File('${featureDir.path}/data/models/request_models/${fileName}_params.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''class ${className}Params {
@@ -374,25 +352,28 @@ class ${className}RepositoryImpl extends BaseRepository implements I${className}
   logger.success(
       '🧱 Created: lib/features/$fileName/data/models/request_models/${fileName}_params.dart');
 
-  // ✅ Response Model
+  // ✅ 9. Response Model
   File(
       '${featureDir.path}/data/models/response_models/${fileName}_response.dart')
     ..createSync(recursive: true)
     ..writeAsStringSync('''class ${className}Response {
   final String id;
-  final String message;
+  final String name;
+  final String description;
   final bool success;
 
   ${className}Response({
     required this.id,
-    required this.message,
+    required this.name,
+    required this.description,
     required this.success,
   });
 
   factory ${className}Response.fromJson(Map<String, dynamic> json) {
     return ${className}Response(
       id: json['id'] ?? '',
-      message: json['message'] ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
       success: json['success'] ?? false,
     );
   }
@@ -400,7 +381,8 @@ class ${className}RepositoryImpl extends BaseRepository implements I${className}
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'message': message,
+      'name': name,
+      'description': description,
       'success': success,
     };
   }
@@ -410,250 +392,215 @@ class ${className}RepositoryImpl extends BaseRepository implements I${className}
       '🧱 Created: lib/features/$fileName/data/models/response_models/${fileName}_response.dart');
 }
 
-/// ---------------------------------------------------------------------------
-/// 🧩 SHARED: Create Separate Route Files (Paths, Names, Routes)
-/// ---------------------------------------------------------------------------
-
-void _createSeparateRouteFiles(
+// ------------------------------------------------------------------
+// 🧩 UPDATE ROUTES AUTOMATICALLY
+// ------------------------------------------------------------------
+void _updateRoutes(
   Directory libDir,
-  String fileName,
   String className,
-  String viewPath,
+  String fileName,
   Logger logger,
 ) {
-  final routesDir = Directory('${libDir.path}/routes');
-  if (!routesDir.existsSync()) {
-    routesDir.createSync(recursive: true);
-  }
+  final routesDir = Directory('${libDir.path}/core/routes');
 
-  final routesFile = File('${routesDir.path}/routes.dart');
-  final pathsFile = File('${routesDir.path}/route_paths.dart');
+  // ✅ 1. Update route_names.dart
   final namesFile = File('${routesDir.path}/route_names.dart');
+  if (namesFile.existsSync()) {
+    String content = namesFile.readAsStringSync();
 
-  // ✅ 1. Update or create route_paths.dart
-  _updateRoutePaths(pathsFile, fileName, logger);
+    if (!content.contains('static const String $fileName')) {
+      final closingBrace = content.lastIndexOf('}');
+      final newName = '  static const String $fileName = "$fileName";\n';
+      content = content.substring(0, closingBrace) +
+          newName +
+          content.substring(closingBrace);
 
-  // ✅ 2. Update or create route_names.dart
-  _updateRouteNames(namesFile, fileName, logger);
-
-  // ✅ 3. Update or create routes.dart (GetX)
-  _updateRoutesFileGetX(routesFile, className, fileName, viewPath, logger);
-}
-
-void _updateRoutePaths(File pathsFile, String fileName, Logger logger) {
-  if (!pathsFile.existsSync()) {
-    pathsFile.createSync(recursive: true);
-    pathsFile.writeAsStringSync('''class RoutePaths {
-  static const String $fileName = '/$fileName';
-}
-''');
-    logger.success('🧭 Created: lib/routes/route_paths.dart');
-    return;
+      namesFile.writeAsStringSync(content);
+      logger.success('🧭 Updated: lib/core/routes/route_names.dart');
+    } else {
+      logger.warn('⚠️  Route name "$fileName" already exists');
+    }
   }
 
-  String content = pathsFile.readAsStringSync();
+  // ✅ 2. Update route_paths.dart
+  final pathsFile = File('${routesDir.path}/route_paths.dart');
+  if (pathsFile.existsSync()) {
+    String content = pathsFile.readAsStringSync();
 
-  // Check if path already exists
-  if (content.contains("static const String $fileName")) {
-    logger.warn('⚠️  Path for $fileName already exists in route_paths.dart');
-    return;
+    if (!content.contains('static const String $fileName')) {
+      final closingBrace = content.lastIndexOf('}');
+      final newPath = '  static const String $fileName = "/$fileName";\n';
+      content = content.substring(0, closingBrace) +
+          newPath +
+          content.substring(closingBrace);
+
+      pathsFile.writeAsStringSync(content);
+      logger.success('🧭 Updated: lib/core/routes/route_paths.dart');
+    } else {
+      logger.warn('⚠️  Route path "/$fileName" already exists');
+    }
   }
 
-  // Add new path before the closing brace
-  final closingBrace = content.lastIndexOf('}');
-  final newPath = "  static const String $fileName = '/$fileName';\n";
-  content = content.substring(0, closingBrace) +
-      newPath +
-      content.substring(closingBrace);
+  // ✅ 3. Update app_router.dart
+  final routerFile = File('${routesDir.path}/app_router.dart');
+  if (routerFile.existsSync()) {
+    String content = routerFile.readAsStringSync();
 
-  pathsFile.writeAsStringSync(content);
-  logger.success('🧭 Added $fileName path to route_paths.dart');
-}
+    if (!content.contains('${className}Page()')) {
+      // Find the routes array
+      final routesStart = content.indexOf('routes: [');
+      if (routesStart != -1) {
+        final routesEnd = content.indexOf('],', routesStart);
 
-void _updateRouteNames(File namesFile, String fileName, Logger logger) {
-  if (!namesFile.existsSync()) {
-    namesFile.createSync(recursive: true);
-    namesFile.writeAsStringSync('''class RouteNames {
-  static const String $fileName = '$fileName';
-}
-''');
-    logger.success('🧭 Created: lib/routes/route_names.dart');
-    return;
+        final newRoute = '''
+      GoRoute(
+        path: RoutePaths.$fileName,
+        name: RouteNames.$fileName,
+        builder: (context, state) => const ${className}Page(),
+      ),''';
+
+        content = content.substring(0, routesEnd) +
+            newRoute +
+            '\n    ' +
+            content.substring(routesEnd);
+
+        routerFile.writeAsStringSync(content);
+        logger.success('🧭 Updated: lib/core/routes/app_router.dart');
+      }
+    } else {
+      logger.warn('⚠️  Route for ${className}Page already exists');
+    }
   }
-
-  String content = namesFile.readAsStringSync();
-
-  // Check if name already exists
-  if (content.contains("static const String $fileName")) {
-    logger.warn('⚠️  Name for $fileName already exists in route_names.dart');
-    return;
-  }
-
-  // Add new name before the closing brace
-  final closingBrace = content.lastIndexOf('}');
-  final newName = "  static const String $fileName = '$fileName';\n";
-  content = content.substring(0, closingBrace) +
-      newName +
-      content.substring(closingBrace);
-
-  namesFile.writeAsStringSync(content);
-  logger.success('🧭 Added $fileName name to route_names.dart');
 }
 
-void _updateRoutesFileGetX(
-  File routesFile,
+// ------------------------------------------------------------------
+// 🧩 UPDATE DEPENDENCY INJECTION AUTOMATICALLY
+// ------------------------------------------------------------------
+void _updateDependencyInjection(
+  Directory libDir,
   String className,
   String fileName,
-  String viewPath,
   Logger logger,
 ) {
-  // Determine correct import paths for Clean Architecture
-  String viewImportPath = "../$viewPath/${fileName}_view.dart";
-  String bindingImportPath =
-      "../$viewPath/../dependencies/${fileName}_binding.dart";
+  final diFile = File('${libDir.path}/core/di/injection_container.dart');
 
-  if (!routesFile.existsSync()) {
-    routesFile.createSync(recursive: true);
-    routesFile.writeAsStringSync('''import 'package:get/get.dart';
-import 'route_paths.dart';
-import '$viewImportPath';
-import '$bindingImportPath';
+  if (!diFile.existsSync()) {
+    logger.err('❌ injection_container.dart not found');
+    return;
+  }
 
-class AppRoutes {
-  static final List<GetPage> routes = [
-    GetPage(
-      name: RoutePaths.$fileName,
-      page: () => const ${className}View(),
-      binding: ${className}Binding(),
-    ),
-  ];
-  
-  static const String initialRoute = RoutePaths.$fileName;
+  String content = diFile.readAsStringSync();
+
+  // Check if dependencies already exist
+  if (content.contains('${_toCamelCase(fileName)}Dependencies')) {
+    logger.warn('⚠️  Dependencies for $fileName already exist');
+    return;
+  }
+
+  // ✅ 1. Add the dependency function at the end of file (after all functions, before final closing brace)
+  final newDependencyFunction = '''
+
+/// $className Feature Dependencies
+Future<void> ${_toCamelCase(fileName)}Dependencies() async {
+  // DataSource
+  sl.registerLazySingleton<IRemote${className}DataSource>(
+    () => Remote${className}DataSourceImpl(dioHelper: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<I${className}Repository>(
+    () => ${className}RepositoryImpl(dataSource: sl()),
+  );
+
+  // UseCase
+  sl.registerLazySingleton<${className}Usecase>(
+    () => ${className}Usecase(repository: sl()),
+  );
+
+  // ViewModel
+  sl.registerFactory<${className}ViewModel>(
+    () => ${className}ViewModel(${_toCamelCase(fileName)}Usecase: sl()),
+  );
 }
-''');
-    logger.success('🧭 Created: lib/routes/routes.dart (GetX)');
-    return;
-  }
+''';
 
-  logger.info('📝 Updating existing routes.dart file (GetX)...');
-  String content = routesFile.readAsStringSync();
+  // Find ALL top-level closing braces (}) and add after the last function
+  final lines = content.split('\n');
+  int lastFunctionEnd = -1;
+  int braceCount = 0;
+  bool inFunction = false;
 
-  // Check if route already exists
-  if (content.contains("name: RoutePaths.$fileName,") ||
-      content.contains('${className}View()')) {
-    logger.warn('⚠️  Route for $fileName already exists in routes.dart');
-    return;
-  }
+  for (int i = 0; i < lines.length; i++) {
+    final line = lines[i].trim();
 
-  // Add imports
-  logger.info('📦 Adding imports...');
-  content = _addImportIfMissing(content, "import '$viewImportPath';");
-  content = _addImportIfMissing(content, "import '$bindingImportPath';");
-  logger.info('✅ Imports processed');
+    // Check if this is a function start
+    if (line.contains('Future<void>') && line.contains('async')) {
+      inFunction = true;
+      braceCount = 0;
+    }
 
-  // Find the routes list
-  logger.info('🔍 Searching for routes list...');
-  final routesListRegex = RegExp(
-      r'static\s+final\s+List<GetPage>\s+routes\s*=\s*\[',
-      multiLine: true);
-  final routesMatch = routesListRegex.firstMatch(content);
+    if (inFunction) {
+      // Count braces
+      braceCount += '{'.allMatches(line).length;
+      braceCount -= '}'.allMatches(line).length;
 
-  if (routesMatch == null) {
-    logger.err('❌ Could not find routes list in routes.dart');
-    return;
-  }
-
-  logger.info('✅ Found routes list at position ${routesMatch.start}');
-  final routesListContentStart = routesMatch.end;
-
-  // Find the matching closing bracket
-  int bracketCount = 1;
-  int routesListEnd = routesListContentStart;
-
-  for (int i = routesListContentStart; i < content.length; i++) {
-    if (content[i] == '[') {
-      bracketCount++;
-    } else if (content[i] == ']') {
-      bracketCount--;
-      if (bracketCount == 0) {
-        routesListEnd = i;
-        break;
+      // If braces balanced, function ended
+      if (braceCount == 0 && line.contains('}')) {
+        lastFunctionEnd = i;
+        inFunction = false;
       }
     }
   }
 
-  if (routesListEnd <= routesListContentStart) {
-    logger.err('❌ Could not find end of routes list');
-    return;
-  }
-
-  logger.info('✅ Found routes list end at position $routesListEnd');
-
-  // Extract current routes content
-  final currentRoutesContent =
-      content.substring(routesListContentStart, routesListEnd).trim();
-
-  // Create new GetPage
-  final newGetPage = '''
-    GetPage(
-      name: RoutePaths.$fileName,
-      page: () => const ${className}View(),
-      binding: ${className}Binding(),
-    ),''';
-
-  // Determine where to insert
-  String newRoutesContent;
-
-  if (currentRoutesContent.isEmpty) {
-    logger.info('📝 Routes list is empty, adding first route');
-    newRoutesContent = newGetPage;
+  // Insert new function after last function
+  if (lastFunctionEnd != -1) {
+    lines.insert(lastFunctionEnd + 1, newDependencyFunction);
+    content = lines.join('\n');
   } else {
-    logger.info('📝 Adding route to existing routes list');
-    String trimmedContent = currentRoutesContent;
+    // Fallback: add before last closing brace
+    final lastBrace = content.lastIndexOf('}');
+    content = content.substring(0, lastBrace) +
+        newDependencyFunction +
+        content.substring(lastBrace);
+  }
 
-    // Find last non-whitespace character
-    int lastCharIndex = -1;
-    for (int i = trimmedContent.length - 1; i >= 0; i--) {
-      if (trimmedContent[i].trim().isNotEmpty) {
-        lastCharIndex = i;
-        break;
+  // ✅ 2. Add the function call in setupLocator
+  final setupLocatorMatch =
+      RegExp(r'Future<void> setupLocator\(\) async \{').firstMatch(content);
+
+  if (setupLocatorMatch != null) {
+    // Find the end of setupLocator function
+    int braceCount = 0;
+    int searchStart = setupLocatorMatch.end;
+    int setupLocatorEnd = -1;
+
+    for (int i = searchStart; i < content.length; i++) {
+      if (content[i] == '{') {
+        braceCount++;
+      } else if (content[i] == '}') {
+        if (braceCount == 0) {
+          setupLocatorEnd = i;
+          break;
+        }
+        braceCount--;
       }
     }
 
-    if (lastCharIndex >= 0 && trimmedContent[lastCharIndex] != ',') {
-      logger.info('📝 Adding comma to last route');
-      trimmedContent =
-          '${trimmedContent.substring(0, lastCharIndex + 1)},${trimmedContent.substring(lastCharIndex + 1)}';
-    }
-
-    newRoutesContent = '$trimmedContent\n$newGetPage';
-  }
-
-  // Reconstruct content
-  final newContent = content.substring(0, routesListContentStart) +
-      newRoutesContent +
-      content.substring(routesListEnd);
-
-  routesFile.writeAsStringSync(newContent);
-  logger.success('🧭 Added $className route to routes.dart (GetX)');
-}
-
-String _addImportIfMissing(String content, String importStatement) {
-  if (!content.contains(importStatement)) {
-    final importMatches = RegExp(r"import '.*';").allMatches(content);
-    if (importMatches.isNotEmpty) {
-      final lastImport = importMatches.last;
-      final insertPosition = lastImport.end;
-      return '${content.substring(0, insertPosition)}\n$importStatement${content.substring(insertPosition)}';
+    if (setupLocatorEnd != -1) {
+      final functionCall = '  await ${_toCamelCase(fileName)}Dependencies();\n';
+      content = content.substring(0, setupLocatorEnd) +
+          functionCall +
+          content.substring(setupLocatorEnd);
     }
   }
-  return content;
+
+  diFile.writeAsStringSync(content);
+  logger.success('🧱 Updated: lib/core/di/injection_container.dart');
 }
 
-/// ---------------------------------------------------------------------------
-/// 🧩 Naming helpers
-/// ---------------------------------------------------------------------------
-
+// ------------------------------------------------------------------
+// 🧩 HELPER FUNCTIONS
+// ------------------------------------------------------------------
 String _toPascalCase(String text) {
   return text.split('_').map((word) {
     if (word.isEmpty) return '';

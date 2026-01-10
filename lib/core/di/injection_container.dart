@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../../app_exports.dart';
 
-
 final sl = GetIt.instance;
 
 Future<void> setupLocator() async {
@@ -38,5 +37,3 @@ Future<void> authDependencies() async {
     () => SigninViewModel(signinUsecase: sl()),
   );
 }
-
-
