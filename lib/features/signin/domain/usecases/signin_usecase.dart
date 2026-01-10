@@ -1,12 +1,12 @@
 import '../../../../app_exports.dart';
 
-class SigninUsecase implements Usecase<UserToken, LoginUserById> {
+class SigninUsecase implements Usecase<UserModel, LoginUser> {
   final ISigninRepository repository;
 
   SigninUsecase({required this.repository});
 
   @override
-  Future<Either<AppException, UserToken>> call(LoginUserById loginUserById) {
-    return repository.signinUserById(loginUserById: loginUserById);
+  Future<Either<AppException, UserModel>> call(LoginUser loginUserById) {
+    return repository.signinUser(loginUserById: loginUserById);
   }
 }

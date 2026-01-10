@@ -16,6 +16,11 @@ class AppRoutes {
         name: RouteNames.signin,
         builder: (context, state) => const SigninPage(),
       ),
+      GoRoute(
+        path: RoutePaths.splash,
+        name: RouteNames.splash,
+        builder: (context, state) => const SigninPage(),
+      ),
     ],
   );
 }

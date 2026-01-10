@@ -11,9 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Provider and Clean MVVM Structure',
-      theme: AppThemes.lightTheme,
-      darkTheme: AppThemes.darkTheme,
+      title: 'Enchourage Complaints App',
       routerConfig: AppRoutes.router,
       debugShowCheckedModeBanner: false,
     );

@@ -1,7 +1,7 @@
 import '../../../../app_exports.dart';
 
 abstract interface class IRemoteSigninDataSource {
-  Future<UserToken> loginUserById({required LoginUserById loginUserById});
+  Future<UserModel> loginUser({required LoginUser loginUser});
 }
 
 class RemoteSigninDataSourceImpl extends BaseRemoteDatasource
@@ -9,13 +9,11 @@ class RemoteSigninDataSourceImpl extends BaseRemoteDatasource
   RemoteSigninDataSourceImpl({required super.dioHelper});
 
   @override
-  Future<UserToken> loginUserById({
-    required LoginUserById loginUserById,
-  }) async {
+  Future<UserModel> loginUser({required LoginUser loginUser}) async {
     return post(
-      url: ApiEndPoints.loginByUid,
-      parser: (json) => UserToken.fromJson(json),
-      body: loginUserById.toJson(),
+      url: ApiEndPoints.loginEndpoint,
+      parser: (json) => UserModel.fromJson(json),
+      body: loginUser.toJson(),
     );
   }
 }

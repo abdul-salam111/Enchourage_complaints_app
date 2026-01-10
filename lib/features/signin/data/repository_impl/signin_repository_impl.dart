@@ -6,11 +6,9 @@ class SigninRepositoryImpl extends BaseRepository implements ISigninRepository {
   SigninRepositoryImpl({required this.dataSource});
 
   @override
-  Future<Either<AppException, UserToken>> signinUserById({
-    required LoginUserById loginUserById,
+  Future<Either<AppException, UserModel>> signinUser({
+    required LoginUser loginUserById,
   }) {
-    return execute(
-      call: () => dataSource.loginUserById(loginUserById: loginUserById),
-    );
+    return execute(call: () => dataSource.loginUser(loginUser: loginUserById));
   }
 }
