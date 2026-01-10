@@ -459,10 +459,8 @@ void _updateRoutes(
         builder: (context, state) => const ${className}Page(),
       ),''';
 
-        content = content.substring(0, routesEnd) +
-            newRoute +
-            '\n    ' +
-            content.substring(routesEnd);
+        content =
+            '${content.substring(0, routesEnd)}$newRoute\n    ${content.substring(routesEnd)}';
 
         routerFile.writeAsStringSync(content);
         logger.success('🧭 Updated: lib/core/routes/app_router.dart');

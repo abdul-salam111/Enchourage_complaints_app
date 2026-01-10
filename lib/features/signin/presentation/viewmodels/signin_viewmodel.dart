@@ -12,8 +12,11 @@ class SigninViewModel extends ChangeNotifier with UseCaseExecutor {
   Future<void> signin(String userId, String password) async {
     await execute(
       call: () => _signinUsecase(LoginUser(email: userId, password: password)),
-      onSuccess: (token) {
-        _userModel = token;
+      onSuccess: (user) async {
+        _userModel = user;
+        await SessionController.instance.saveUserInStorage(user);
+        await SessionController.instance.getUserfromSharedpref();
+        AppNavigator.goNamed(RouteNames.signin);
       },
     );
   }

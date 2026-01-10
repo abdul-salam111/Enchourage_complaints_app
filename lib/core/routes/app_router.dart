@@ -1,11 +1,37 @@
-import 'package:flutter_template/features/splash/splash_view.dart';
-
 import '../../app_exports.dart';
 
 class AppNavigator {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
-  static BuildContext? get context => navigatorKey.currentContext;
+
+  // Safe navigation methods
+  static void goNamed(String name, {Object? extra}) {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      context.goNamed(name, extra: extra);
+    }
+  }
+
+  static void pushNamed(String name, {Object? extra}) {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      context.pushNamed(name, extra: extra);
+    }
+  }
+
+  static void replaceTo(String name, {Object? extra}) {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      context.replaceNamed(name, extra: extra);
+    }
+  }
+
+  static void pop() {
+    final context = navigatorKey.currentContext;
+    if (context != null && context.canPop()) {
+      context.pop();
+    }
+  }
 }
 
 class AppRoutes {
@@ -22,6 +48,11 @@ class AppRoutes {
         path: RoutePaths.splash,
         name: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.dashboard,
+        name: RouteNames.dashboard,
+        builder: (context, state) => const DashboardPage(),
       ),
     ],
   );

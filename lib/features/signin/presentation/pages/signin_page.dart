@@ -8,12 +8,13 @@ class SigninPage extends StatefulWidget {
 }
 
 class _SigninPageState extends State<SigninPage> {
-  final _userIdController = TextEditingController();
+  final _userEmailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
   @override
   void dispose() {
     super.dispose();
-    _userIdController.dispose();
+    _userEmailController.dispose();
     _passwordController.dispose();
   }
 
@@ -21,41 +22,57 @@ class _SigninPageState extends State<SigninPage> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => sl<SigninViewModel>(),
-      child: Scaffold(
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _userIdController,
-              decoration: InputDecoration(labelText: 'User ID'),
+      child: UnfocusWrapper(
+        child: Scaffold(
+          body: Form(
+            key: formKey,
+            child: Padding(
+              padding: .all(12),
+              child: ListView(
+                children: [
+                  heightBox(context.screenHeight * 0.05),
+                  AppLogo(),
+                  heightBox(context.screenHeight * 0.05),
+                  CustomTextFormField(
+                    prefixIcon: Iconsax.sms,
+                    hintText: "Enter your email",
+                    controller: _userEmailController,
+                    label: "Email",
+                    validator: Validator.validateEmail,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  heightBox(20),
+                  CustomTextFormField(
+                    hintText: "Enter your Password",
+                    prefixIcon: Iconsax.lock,
+                    controller: _passwordController,
+                    obscureText: true,
+                    label: "Password",
+                    validator: Validator.validatePassword,
+                    keyboardType: TextInputType.visiblePassword,
+                  ),
+                  heightBox(40),
+                  Consumer<SigninViewModel>(
+                    builder: (context, vm, _) {
+                      return CustomButton(
+                        radius: 10,
+                        onPressed: vm.isLoading
+                            ? null
+                            : () => vm.signin(
+                                _userEmailController.text,
+                                _passwordController.text,
+                              ),
+                        isLoading: vm.isLoading,
+                        text: "Sign In",
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-            heightBox(20),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            heightBox(20),
-
-            Consumer<SigninViewModel>(
-              builder: (context, vm, _) {
-                return ElevatedButton(
-                  onPressed: vm.isLoading
-                      ? null
-                      : () => vm.signin(
-                          _userIdController.text,
-                          _passwordController.text,
-                        ),
-                  child: vm.isLoading
-                      ? CircularProgressIndicator()
-                      : Text('Sign In'),
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-

@@ -1,11 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_template/app_exports.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'loading_indicator.dart';
+import '../../app_exports.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color backgroundColor;
   final Color textColor;
   final double radius;

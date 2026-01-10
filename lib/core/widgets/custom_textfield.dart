@@ -1,7 +1,3 @@
-import 'package:flutter/material.dart';
-
-import 'package:iconsax/iconsax.dart';
-
 import '../../app_exports.dart';
 
 class CustomTextFormField extends StatefulWidget {
@@ -60,7 +56,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     // Default colors based on theme
     final defaultFillColor = widget.fillColor ?? context.surface;
     final defaultBorderColor = widget.borderColor ?? context.border;
-    final defaultLabelColor = widget.labelColor ?? context.textSecondary;
+    final defaultLabelColor = widget.labelColor ?? context.textPrimary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,14 +93,16 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           autofocus: false,
           textCapitalization: TextCapitalization.words,
           readOnly: widget.readOnly,
-          style: context.bodySmall.copyWith(color: context.textPrimary),
+          style: context.bodyMedium.copyWith(color: context.textPrimary),
           controller: widget.controller,
           obscureText: isObscure,
           keyboardType: widget.keyboardType,
           maxLines: widget.obscureText ? 1 : widget.maxLines,
           decoration: InputDecoration(
             hintText: widget.hintText,
-            hintStyle: context.bodySmall.copyWith(color: context.textSecondary),
+            hintStyle: context.bodyMedium.copyWith(
+              color: context.textSecondary,
+            ),
             prefixIcon: widget.prefixIcon != null
                 ? Icon(widget.prefixIcon, color: context.grey500, size: 20)
                 : null,

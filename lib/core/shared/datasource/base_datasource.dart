@@ -1,8 +1,8 @@
-import 'package:flutter_template/app_exports.dart';
-
 /* -------------------------------------------------------------------------- */
 /*                         Base Remote Datasource                              */
 /* -------------------------------------------------------------------------- */
+
+import '../../../app_exports.dart';
 
 abstract class BaseRemoteDatasource {
   final DioHelper dioHelper;

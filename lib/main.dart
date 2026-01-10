@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Enchourage Complaints App',
       routerConfig: AppRoutes.router,
+      theme: AppThemes.lightTheme,
       debugShowCheckedModeBanner: false,
     );
   }

@@ -54,14 +54,14 @@ class AppThemes {
     appBarTheme: AppBarTheme(
       centerTitle: true,
       elevation: 0,
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.primaryDark,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: GoogleFonts.montserrat(
-        color: AppColors.textPrimaryLight,
+        color: AppColors.textPrimaryDark,
         fontWeight: FontWeight.bold,
         fontSize: 18,
       ),
-      iconTheme: IconThemeData(color: AppColors.textPrimaryLight),
+      iconTheme: IconThemeData(color: AppColors.textPrimaryDark),
     ),
 
     textTheme: _textTheme(AppColors.textPrimaryLight),

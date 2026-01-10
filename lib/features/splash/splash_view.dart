@@ -1,4 +1,4 @@
-import 'package:flutter_template/app_exports.dart';
+import '../../app_exports.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -8,8 +8,18 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  SplashServices splashServices = SplashServices();
+  @override
+  void initState() {
+    super.initState();
+    splashServices.isLoggedIn();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: AppLogo());
+    return Scaffold(
+      backgroundColor: AppColors.primaryDark,
+      body: Center(child: AppLogo(isSplash: true)),
+    );
   }
 }

@@ -8,6 +8,7 @@ Future<void> setupLocator() async {
   await coreDependencies();
 
   await authDependencies();
+  await dashboardDependencies();
 }
 
 Future<void> coreDependencies() async {
@@ -36,4 +37,10 @@ Future<void> authDependencies() async {
   sl.registerFactory<SigninViewModel>(
     () => SigninViewModel(signinUsecase: sl()),
   );
+}
+
+/// Dashboard Feature Dependencies
+Future<void> dashboardDependencies() async {
+  // ViewModel
+  sl.registerFactory<DashboardViewModel>(() => DashboardViewModel());
 }

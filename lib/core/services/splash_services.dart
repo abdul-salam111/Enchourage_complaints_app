@@ -1,27 +1,24 @@
-// import 'dart:async';
+import 'dart:async';
+import '../../app_exports.dart';
 
-// import 'package:flutter/material.dart';
+class SplashServices {
+  void isLoggedIn() {
+    Future.delayed(Duration(seconds: 2), () {
+      checkLoginStatus();
+    });
+  }
 
-// import '../../app_exports.dart';
+  Future<void> checkLoginStatus() async {
+    try {
+      await SessionController().getUserfromSharedpref();
 
-// class SplashServices {
-//   void isLoggedIn(BuildContext context) {
-//     Future.delayed(Duration(seconds: 2), () {
-//       checkLoginStatus(context);
-//     });
-//   }
-
-//   Future<void> checkLoginStatus(BuildContext context) async {
-//     try {
-//       await SessionController().getUserfromSharedpref();
-
-//       if (SessionController().islogin == true) {
-//         Get.offAllNamed(RouteNames.signin);
-//       } else {
-//         Get.offAllNamed(RouteNames.signin);
-//       }
-//     } catch (e) {
-//       debugPrint('Error in checkLoginStatus: $e');
-//     }
-//   }
-// }
+      if (SessionController().islogin == true) {
+        AppNavigator.goNamed(RouteNames.dashboard);
+      } else {
+        AppNavigator.goNamed(RouteNames.signin);
+      }
+    } catch (e) {
+      debugPrint('Error in checkLoginStatus: $e');
+    }
+  }
+}

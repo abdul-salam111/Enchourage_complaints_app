@@ -1,39 +1,44 @@
-// import 'dart:convert';
+import 'dart:convert';
 
-// import '../../app_exports.dart';
+import '../../app_exports.dart';
 
-// class SessionController {
-//   UserToken getUserDetails = UserToken();
+class SessionController {
+  UserModel getUserDetails = UserModel();
 
-//   static final SessionController _session = SessionController._internal();
-//   bool islogin = false;
-//   String? userId;
-//   SessionController._internal();
+  static final SessionController _session = SessionController._internal();
+  bool islogin = false;
+  String? userId;
+  String? userToken;
 
-//   static SessionController get instance => _session;
+  SessionController._internal();
 
-//   factory SessionController() {
-//     return _session;
-//   }
+  static SessionController get instance => _session;
 
-//   Future<void> saveUserInStorage(UserToken user) async {
-//     await storage.setValues(StorageKeys.userDetails, jsonEncode(user));
-//     await storage.setValues(StorageKeys.loggedIn, 'true');
-//     await storage.setValues(StorageKeys.token, user.accessToken.toString());
-//   }
+  factory SessionController() {
+    return _session;
+  }
 
-//   Future<void> getUserfromSharedpref() async {
-//     try {
-//       final userData = await storage.readValues(StorageKeys.userDetails);
-//       if (userData != null) {
-//         SessionController().getUserDetails = UserToken.fromJson(
-//           jsonDecode(userData),
-//         );
-//       }
-//       final isLoggedIn = await storage.readValues(StorageKeys.loggedIn);
-//       SessionController().islogin = (isLoggedIn == 'true' ? true : false);
-//     } catch (e) {
-//       throw Exception(e);
-//     }
-//   }
-// }
+  Future<void> saveUserInStorage(UserModel user) async {
+    await storage.setValues(StorageKeys.userDetails, jsonEncode(user));
+    await storage.setValues(StorageKeys.loggedIn, 'true');
+    await storage.setValues(
+      StorageKeys.token,
+      user.data?.token.toString() ?? "",
+    );
+  }
+
+  Future<void> getUserfromSharedpref() async {
+    try {
+      final userData = await storage.readValues(StorageKeys.userDetails);
+      if (userData != null) {
+        SessionController().getUserDetails = UserModel.fromJson(
+          jsonDecode(userData),
+        );
+      }
+      final isLoggedIn = await storage.readValues(StorageKeys.loggedIn);
+      SessionController().islogin = (isLoggedIn == 'true' ? true : false);
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+}
