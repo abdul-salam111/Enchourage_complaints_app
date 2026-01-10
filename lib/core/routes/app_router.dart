@@ -1,3 +1,5 @@
+import 'package:flutter_template/features/splash/splash_view.dart';
+
 import '../../app_exports.dart';
 
 class AppNavigator {
@@ -8,7 +10,7 @@ class AppNavigator {
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
-    initialLocation: RoutePaths.initialRoute,
+    initialLocation: RoutePaths.splash,
     navigatorKey: AppNavigator.navigatorKey,
     routes: [
       GoRoute(
@@ -19,7 +21,7 @@ class AppRoutes {
       GoRoute(
         path: RoutePaths.splash,
         name: RouteNames.splash,
-        builder: (context, state) => const SigninPage(),
+        builder: (context, state) => const SplashScreen(),
       ),
     ],
   );

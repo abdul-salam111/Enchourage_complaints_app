@@ -7,7 +7,7 @@ class SigninViewModel extends ChangeNotifier with UseCaseExecutor {
     : _signinUsecase = signinUsecase;
 
   UserModel? _userModel;
-  UserModel? get userToken => _userModel;
+  UserModel? get userModel => _userModel;
 
   Future<void> signin(String userId, String password) async {
     await execute(

@@ -11,13 +11,8 @@
 class AppIcons {
   AppIcons._();
 
-  
-
-  static const String icon = 'assets/icons/icon.png';
 
   
-
-  static const String logo = 'assets/icons/logo.png';
-
+  // No icons found in assets/icons folder
 
 }

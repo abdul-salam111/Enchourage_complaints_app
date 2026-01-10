@@ -12,10 +12,7 @@ class AppImages {
   AppImages._();
 
   
-  static const String campediaBanner = 'assets/images/campedia banner.png';
-
-  
-  static const String image = 'assets/images/image.png';
+  static const String logo = 'assets/images/logo.png';
 
 
 }
