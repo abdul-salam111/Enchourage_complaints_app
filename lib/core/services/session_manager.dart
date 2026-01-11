@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../../app_exports.dart';
 
 class SessionController {
-  UserModel getUserDetails = UserModel();
+  UserEntity getUserDetails = UserModel();
 
   static final SessionController _session = SessionController._internal();
   bool islogin = false;
