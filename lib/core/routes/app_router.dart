@@ -54,6 +54,11 @@ class AppRoutes {
         name: RouteNames.dashboard,
         builder: (context, state) => const DashboardPage(),
       ),
+          GoRoute(
+        path: RoutePaths.all_complaints,
+        name: RouteNames.all_complaints,
+        builder: (context, state) => const AllComplaintsPage(),
+      ),
     ],
   );
 }

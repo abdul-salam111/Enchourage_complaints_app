@@ -39,26 +39,31 @@ Future<void> run(HookContext context) async {
   _updateDependencyInjection(libDir, className, fileName, logger);
 
   logger.success('\n✅ $className feature created successfully!');
-  logger.info(
-      '\n🎉 All files, routes, and dependencies configured automatically!');
 }
 
 String _detectArchitecture(Directory libDir) {
-  // Check for Clean Architecture with Provider setup
-  if (Directory('${libDir.path}/features').existsSync() &&
-      Directory('${libDir.path}/core/di').existsSync() &&
-      Directory('${libDir.path}/core/routes').existsSync()) {
-    final features = Directory('${libDir.path}/features').listSync();
-    if (features.isNotEmpty) {
-      final firstFeature = features.first;
-      if (firstFeature is Directory) {
-        // Check for Clean Architecture structure
-        if (Directory('${firstFeature.path}/data').existsSync() &&
-            Directory('${firstFeature.path}/domain').existsSync() &&
-            Directory('${firstFeature.path}/presentation').existsSync()) {
-          return 'CleanArchitecture-Provider';
-        }
-      }
+  final featuresDir = Directory('${libDir.path}/features');
+  final diDir = Directory('${libDir.path}/core/di');
+  final routesDir = Directory('${libDir.path}/core/routes');
+
+  if (!featuresDir.existsSync() ||
+      !diDir.existsSync() ||
+      !routesDir.existsSync()) {
+    return 'Unknown';
+  }
+
+  // ✅ Check ALL feature folders (not just first)
+  final entities = featuresDir.listSync();
+
+  for (final e in entities) {
+    if (e is! Directory) continue;
+
+    final hasData = Directory('${e.path}/data').existsSync();
+    final hasDomain = Directory('${e.path}/domain').existsSync();
+    final hasPresentation = Directory('${e.path}/presentation').existsSync();
+
+    if (hasData && hasDomain && hasPresentation) {
+      return 'CleanArchitecture-Provider';
     }
   }
 
