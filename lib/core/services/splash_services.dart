@@ -10,9 +10,9 @@ class SplashServices {
 
   Future<void> checkLoginStatus() async {
     try {
-      await SessionController().getUserfromSharedpref();
+      await SessionController().loadUser();
 
-      if (SessionController().islogin == true) {
+      if (SessionController().isLoggedIn == true) {
         AppNavigator.goNamed(RouteNames.dashboard);
       } else {
         AppNavigator.goNamed(RouteNames.signin);

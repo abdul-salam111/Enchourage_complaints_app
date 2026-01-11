@@ -1,4 +1,3 @@
-// domain/entities/user_entity.dart
 import '../../../../app_exports.dart';
 
 class UserEntity {
@@ -42,7 +41,6 @@ extension UserModelMapper on UserModel {
   UserEntity toEntity() {
     return UserEntity(
       id: data?.id ?? 0,
-
       name: data?.name ?? '',
       email: data?.email ?? '',
       token: data?.token ?? '',
@@ -58,7 +56,6 @@ extension UserEntityMapper on UserEntity {
       success: true,
       data: UserData(
         id: id,
-
         name: name,
         email: email,
         token: token,
