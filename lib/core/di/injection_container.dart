@@ -10,6 +10,7 @@ Future<void> setupLocator() async {
   await authDependencies();
   await dashboardDependencies();
   await allComplaintsDependencies();
+  await complaintDetailsDependencies();
 }
 
 Future<void> coreDependencies() async {
@@ -68,4 +69,28 @@ Future<void> allComplaintsDependencies() async {
     () => AllComplaintsViewModel(allComplaintsUsecase: sl()),
   );
 }
+
+/// ComplaintDetails Feature Dependencies
+Future<void> complaintDetailsDependencies() async {
+  // DataSource
+  sl.registerLazySingleton<IRemoteComplaintDetailsDataSource>(
+    () => RemoteComplaintDetailsDataSourceImpl(dioHelper: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<IComplaintDetailsRepository>(
+    () => ComplaintDetailsRepositoryImpl(dataSource: sl()),
+  );
+
+  // UseCase
+  sl.registerLazySingleton<ComplaintDetailsUsecase>(
+    () => ComplaintDetailsUsecase(repository: sl()),
+  );
+
+  // ViewModel
+  sl.registerFactory<ComplaintDetailsViewModel>(
+    () => ComplaintDetailsViewModel(complaintDetailsUsecase: sl()),
+  );
+}
+
 

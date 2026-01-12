@@ -9,16 +9,21 @@ class AllComplaintsViewModel extends ChangeNotifier with UseCaseExecutor {
   final FocusNode searchFocusNode = FocusNode();
 
   final List<AllComplaintsResponse> data = [];
+
   final List<AllComplaintsResponse> filteredData = [];
+
   List<AllComplaintsResponse> paginatedData = [];
 
   int currentPage = 1;
+
   final int itemsPerPage = 10;
 
   final Set<String> expandedRows = {};
+
   final Set<String> selectedRows = {};
 
   String selectedStatus = '';
+
   bool isLoading = false;
 
   int get totalPages =>
@@ -27,7 +32,6 @@ class AllComplaintsViewModel extends ChangeNotifier with UseCaseExecutor {
   void _rebuildPagination() {
     final start = (currentPage - 1) * itemsPerPage;
     final end = (start + itemsPerPage).clamp(0, filteredData.length);
-
     if (start >= filteredData.length) {
       paginatedData = [];
     } else {
@@ -53,8 +57,6 @@ class AllComplaintsViewModel extends ChangeNotifier with UseCaseExecutor {
   Future<void> loadComplaints() async {
     isLoading = true;
     notifyListeners();
-
-    // ✅ STATIC DATA
     final staticComplaints = List.generate(25, (i) {
       final index = i + 1;
       return AllComplaintsResponse(

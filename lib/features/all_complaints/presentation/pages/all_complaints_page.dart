@@ -234,7 +234,11 @@ class _AllComplaintsPageState extends State<AllComplaintsPage> {
                                             width: 25,
                                             child: IconButton(
                                               padding: .zero,
-                                              onPressed: () {},
+                                              onPressed: () {
+                                                AppNavigator.pushNamed(
+                                                  RouteNames.complaint_details,
+                                                );
+                                              },
                                               icon: Container(
                                                 padding: .all(4),
                                                 decoration: BoxDecoration(

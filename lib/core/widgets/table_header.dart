@@ -18,20 +18,20 @@ class TableHeaderWidget extends StatelessWidget {
         mainAxisAlignment: .spaceBetween,
         crossAxisAlignment: .center,
         children: [
-          // Expanded(
-          //   flex: 0,
-          //   child: SizedBox(
-          //     height: 24,
-          //     width: 24,
-          //     child: Checkbox(
-          //       activeColor: AppColors.primaryDark,
-          //       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          //       side: BorderSide(width: 1),
-          //       value: true,
-          //       onChanged: (val) {},
-          //     ),
-          //   ),
-          // ),
+          Expanded(
+            flex: 0,
+            child: SizedBox(
+              height: 24,
+              width: 24,
+              child: Checkbox(
+                activeColor: AppColors.primaryDark,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                side: BorderSide(width: 1),
+                value: true,
+                onChanged: (val) {},
+              ),
+            ),
+          ),
           Expanded(
             flex: 1,
             child: Text(
