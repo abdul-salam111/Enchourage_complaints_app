@@ -56,6 +56,7 @@ export 'core/widgets/custom_button.dart';
 export 'core/widgets/custom_dropdown_textfield.dart';
 export 'core/widgets/custom_searchfield.dart';
 export 'core/widgets/custom_textfield.dart';
+export 'core/widgets/expandable_bills_list.dart';
 export 'core/widgets/loading_indicator.dart';
 export 'core/widgets/loading_popup.dart';
 export 'core/widgets/table_header.dart';

@@ -21,6 +21,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     notifyListeners();
   }
 
+  // ---------------- MESSAGES ----------------
   final List<ComplaintMessage> _messages = [
     ComplaintMessage(
       message: 'Complaint assigned to maintenance team.',
@@ -43,11 +44,60 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     _messages.add(ComplaintMessage(message: msg, time: now));
     notifyListeners();
   }
+
+  // ---------------- BILLS (STATIC) ----------------
+  final List<BillItem> _bills = const [
+    BillItem(
+      title: 'Electricity',
+      amount: 120.00,
+      date: '2024-06-15',
+      description: 'June electricity bill for Block A. Meter reading verified.',
+    ),
+    BillItem(
+      title: 'Water',
+      amount: 35.50,
+      date: '2024-06-12',
+      description: 'Monthly water charges including maintenance.',
+    ),
+    BillItem(
+      title: 'Gas',
+      amount: 18.75,
+      date: '2024-06-10',
+      description: 'Gas usage bill for the last billing cycle.',
+    ),
+  ];
+
+  List<BillItem> get bills => List.unmodifiable(_bills);
+
+  // ---------------- EXPAND/COLLAPSE ----------------
+  final Set<int> expandedRows = <int>{};
+
+  bool isRowExpanded(int index) => expandedRows.contains(index);
+
+  void toggleExpandRow(int index) {
+    expandedRows.contains(index)
+        ? expandedRows.remove(index)
+        : expandedRows.add(index);
+    notifyListeners();
+  }
 }
 
 class ComplaintMessage {
   final String message;
   final String time;
-
   ComplaintMessage({required this.message, required this.time});
+}
+
+class BillItem {
+  final String title;
+  final double amount;
+  final String date;
+  final String description;
+
+  const BillItem({
+    required this.title,
+    required this.amount,
+    required this.date,
+    required this.description,
+  });
 }

@@ -39,6 +39,13 @@ class ViewBillTableHeader extends StatelessWidget {
               style: context.bodySmall.copyWith(fontWeight: FontWeight.bold),
             ).align(.centerRight),
           ),
+          Expanded(
+            flex: 1,
+            child: Text(
+              'Actions',
+              style: context.bodySmall.copyWith(fontWeight: FontWeight.bold),
+            ).align(.centerRight),
+          ),
         ],
       ),
     );
