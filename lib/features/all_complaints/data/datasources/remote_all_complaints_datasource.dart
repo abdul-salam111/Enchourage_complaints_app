@@ -1,9 +1,7 @@
 import '../../../../app_exports.dart';
 
 abstract interface class IRemoteAllComplaintsDataSource {
-  Future<AllComplaintsResponse> performAction({
-    required AllComplaintsParams params,
-  });
+  Future<AllComplaintsList> getAllComplaintsList();
 }
 
 class RemoteAllComplaintsDataSourceImpl extends BaseRemoteDatasource
@@ -11,13 +9,10 @@ class RemoteAllComplaintsDataSourceImpl extends BaseRemoteDatasource
   RemoteAllComplaintsDataSourceImpl({required super.dioHelper});
 
   @override
-  Future<AllComplaintsResponse> performAction({
-    required AllComplaintsParams params,
-  }) async {
-    return post(
+  Future<AllComplaintsList> getAllComplaintsList() async {
+    return get(
       url: ApiEndPoints.allComplaintsEndpoint,
-      parser: (json) => AllComplaintsResponse.fromJson(json),
-      body: params.toJson(),
+      parser: (json) => AllComplaintsList.fromJson(json),
     );
   }
 }

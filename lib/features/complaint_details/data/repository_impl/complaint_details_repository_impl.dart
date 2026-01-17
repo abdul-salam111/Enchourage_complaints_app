@@ -1,6 +1,7 @@
 import '../../../../app_exports.dart';
 
-class ComplaintDetailsRepositoryImpl extends BaseRepository implements IComplaintDetailsRepository {
+class ComplaintDetailsRepositoryImpl extends BaseRepository
+    implements IComplaintDetailsRepository {
   final IRemoteComplaintDetailsDataSource dataSource;
 
   ComplaintDetailsRepositoryImpl({required this.dataSource});
@@ -9,8 +10,6 @@ class ComplaintDetailsRepositoryImpl extends BaseRepository implements IComplain
   Future<Either<AppException, ComplaintDetailsResponse>> performAction({
     required ComplaintDetailsParams params,
   }) {
-    return execute(
-      call: () => dataSource.performAction(params: params),
-    );
+    return execute(call: () => dataSource.performAction(params: params));
   }
 }

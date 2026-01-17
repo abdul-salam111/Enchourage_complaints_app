@@ -1,13 +1,20 @@
 import '../../app_exports.dart';
 
 class TableHeaderWidget extends StatelessWidget {
-  const TableHeaderWidget({super.key});
+  const TableHeaderWidget({
+    super.key,
+    required this.isAllSelected,
+    required this.onToggleAll,
+  });
+
+  final bool isAllSelected;
+  final ValueChanged<bool?> onToggleAll;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: .all(10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Color(0xffF5F7FA),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(5),
@@ -18,24 +25,21 @@ class TableHeaderWidget extends StatelessWidget {
         mainAxisAlignment: .spaceBetween,
         crossAxisAlignment: .center,
         children: [
-          Expanded(
-            flex: 0,
-            child: SizedBox(
-              height: 24,
-              width: 24,
-              child: Checkbox(
-                activeColor: AppColors.primaryDark,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                side: BorderSide(width: 1),
-                value: true,
-                onChanged: (val) {},
-              ),
+          SizedBox(
+            height: 24,
+            width: 24,
+            child: Checkbox(
+              activeColor: AppColors.primaryDark,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              side: const BorderSide(width: 1),
+              value: isAllSelected,
+              onChanged: onToggleAll,
             ),
           ),
           Expanded(
             flex: 1,
             child: Text(
-              'Compt No',
+              'Cmpt No',
               style: context.bodySmall.copyWith(fontWeight: FontWeight.bold),
             ).withMargin(.only(left: 6)),
           ),
@@ -46,13 +50,6 @@ class TableHeaderWidget extends StatelessWidget {
               style: context.bodySmall.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
-          // Expanded(
-          //   flex: 1,
-          //   child: Text(
-          //     'Created At',
-          //     style: context.bodySmall.copyWith(fontWeight: FontWeight.bold),
-          //   ).align(.center),
-          // ),
           Expanded(
             flex: 1,
             child: Text(

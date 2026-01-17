@@ -20,8 +20,8 @@ abstract class BaseRemoteDatasource {
       final response = await dioHelper.postApi(
         url: url,
         requestBody: body,
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return parser(response);
     } on AppException {
@@ -42,8 +42,8 @@ abstract class BaseRemoteDatasource {
       final response = await dioHelper.postApi(
         url: url,
         requestBody: body,
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return List<T>.from(response.map((json) => parser(json)));
     } on AppException {
@@ -63,8 +63,8 @@ abstract class BaseRemoteDatasource {
     try {
       final response = await dioHelper.getApi(
         url: url,
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return parser(response);
     } on AppException {
@@ -85,8 +85,8 @@ abstract class BaseRemoteDatasource {
       final response = await dioHelper.getApi(
         url: url,
 
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return List<T>.from(response.map((json) => parser(json)));
     } on AppException {
@@ -107,8 +107,8 @@ abstract class BaseRemoteDatasource {
       final response = await dioHelper.putApi(
         url: url,
         requestBody: body,
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return parser(response);
     } on AppException {
@@ -129,8 +129,8 @@ abstract class BaseRemoteDatasource {
       final response = await dioHelper.putApi(
         url: url,
         requestBody: body,
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return List<T>.from(response.map((json) => parser(json)));
     } on AppException {
@@ -150,8 +150,8 @@ abstract class BaseRemoteDatasource {
     try {
       final response = await dioHelper.deleteApi(
         url: url,
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return parser(response);
     } on AppException {
@@ -172,8 +172,8 @@ abstract class BaseRemoteDatasource {
       final response = await dioHelper.deleteApi(
         url: url,
 
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return List<T>.from(response.map((json) => parser(json)));
     } on AppException {
@@ -194,8 +194,8 @@ abstract class BaseRemoteDatasource {
       final response = await dioHelper.patchApi(
         url: url,
         requestBody: body,
-        authToken: authToken,
-        isAuthRequired: authToken != null,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
       );
       return parser(response);
     } on AppException {

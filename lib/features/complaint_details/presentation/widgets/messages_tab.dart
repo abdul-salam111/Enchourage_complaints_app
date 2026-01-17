@@ -11,18 +11,6 @@ class _MessagesTabState extends State<MessagesTab> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final List<ComplaintMessage> _messages = [
-    ComplaintMessage(
-      message: 'Complaint assigned to maintenance team.',
-      time: '10:30 AM',
-    ),
-    ComplaintMessage(
-      message: 'Maintenance staff acknowledged the task.',
-      time: '11:10 AM',
-    ),
-    ComplaintMessage(message: 'Work completed successfully.', time: '04:45 PM'),
-  ];
-
   @override
   void dispose() {
     _controller.dispose();
@@ -31,15 +19,8 @@ class _MessagesTabState extends State<MessagesTab> {
   }
 
   void _sendMessage() {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-
-    final now = TimeOfDay.now().format(context);
-
-    setState(() {
-      _messages.add(ComplaintMessage(message: text, time: now));
-    });
-
+    final vm = context.read<ComplaintDetailsViewModel>();
+    vm.addMessage(context, _controller.text);
     _controller.clear();
 
     // scroll to bottom
@@ -56,43 +37,38 @@ class _MessagesTabState extends State<MessagesTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // ✅ Messages list
-        Expanded(
-          child: _messages.isEmpty
-              ? Center(
-                  child: Text(
-                    'No activity yet',
-                    style: context.bodySmall.copyWith(
-                      color: AppColors.textSecondaryLight,
+    return Consumer<ComplaintDetailsViewModel>(
+      builder: (context, vm, _) {
+        final messages = vm.messages;
+        return Column(
+          children: [
+            Expanded(
+              child: messages.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No messages yet',
+                        style: context.bodySmall.copyWith(
+                          color: AppColors.textSecondaryLight,
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(12),
+                      itemCount: messages.length,
+                      separatorBuilder: (_, __) => heightBox(8),
+                      itemBuilder: (context, index) {
+                        final msg = messages[index];
+                        return _AdminMessageCard(message: msg);
+                      },
                     ),
-                  ),
-                )
-              : ListView.separated(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(12),
-                  itemCount: _messages.length,
-                  separatorBuilder: (_, __) => heightBox(8),
-                  itemBuilder: (context, index) {
-                    final msg = _messages[index];
-                    return _AdminMessageCard(message: msg);
-                  },
-                ),
-        ),
-
-        // ✅ Input bar
-        _MessageInputBar(controller: _controller, onSend: _sendMessage),
-      ],
+            ),
+            _MessageInputBar(controller: _controller, onSend: _sendMessage),
+          ],
+        );
+      },
     );
   }
-}
-
-class ComplaintMessage {
-  final String message;
-  final String time;
-
-  ComplaintMessage({required this.message, required this.time});
 }
 
 class _AdminMessageCard extends StatelessWidget {

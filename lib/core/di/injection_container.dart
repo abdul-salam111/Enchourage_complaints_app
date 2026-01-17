@@ -14,7 +14,7 @@ Future<void> setupLocator() async {
 }
 
 Future<void> coreDependencies() async {
-  sl.registerLazySingleton<Dio>(() => getDio());
+  sl.registerLazySingleton<Dio>(() => Dio());
   sl.registerLazySingleton(() => DioHelper(sl()));
 }
 
@@ -92,5 +92,3 @@ Future<void> complaintDetailsDependencies() async {
     () => ComplaintDetailsViewModel(complaintDetailsUsecase: sl()),
   );
 }
-
-
