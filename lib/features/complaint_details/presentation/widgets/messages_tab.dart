@@ -59,11 +59,11 @@ class _MessagesTabState extends State<MessagesTab> {
                       separatorBuilder: (_, __) => heightBox(8),
                       itemBuilder: (context, index) {
                         final msg = messages[index];
-                        return _AdminMessageCard(message: msg);
+                        return AdminMessageCard(message: msg);
                       },
                     ),
             ),
-            _MessageInputBar(controller: _controller, onSend: _sendMessage),
+            MessageInputBar(controller: _controller, onSend: _sendMessage),
           ],
         );
       },
@@ -71,10 +71,10 @@ class _MessagesTabState extends State<MessagesTab> {
   }
 }
 
-class _AdminMessageCard extends StatelessWidget {
+class AdminMessageCard extends StatelessWidget {
   final ComplaintMessage message;
 
-  const _AdminMessageCard({required this.message});
+  const AdminMessageCard({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -82,19 +82,19 @@ class _AdminMessageCard extends StatelessWidget {
       padding: .all(12),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.grey200),
+        borderRadius: .circular(8),
+        border: .all(color: AppColors.grey200),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           Text(
             message.message,
-            style: context.bodySmall.copyWith(fontWeight: FontWeight.normal),
+            style: context.bodySmall.copyWith(fontWeight: .normal),
           ),
           heightBox(6),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: .centerRight,
             child: Text(
               message.time,
               style: context.bodySmall.copyWith(
@@ -109,11 +109,15 @@ class _AdminMessageCard extends StatelessWidget {
   }
 }
 
-class _MessageInputBar extends StatelessWidget {
+class MessageInputBar extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
 
-  const _MessageInputBar({required this.controller, required this.onSend});
+  const MessageInputBar({
+    super.key,
+    required this.controller,
+    required this.onSend,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -145,15 +149,15 @@ class _MessageInputBar extends StatelessWidget {
                     vertical: 10,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: .circular(10),
                     borderSide: BorderSide(color: AppColors.grey200),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: .circular(10),
                     borderSide: BorderSide(color: AppColors.grey200),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: .circular(10),
                     borderSide: BorderSide(color: AppColors.primaryDark),
                   ),
                 ),
@@ -162,13 +166,13 @@ class _MessageInputBar extends StatelessWidget {
             widthBox(10),
             InkWell(
               onTap: onSend,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: .circular(10),
               child: Container(
                 height: 44,
                 width: 44,
                 decoration: BoxDecoration(
                   color: AppColors.primaryDark,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: .circular(10),
                 ),
                 child: const Icon(Icons.send, color: Colors.white, size: 18),
               ),

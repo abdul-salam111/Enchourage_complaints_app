@@ -17,6 +17,7 @@ class CustomTextFormField extends StatefulWidget {
   final bool isRequired;
   final int labelFontSize;
   final bool readOnly;
+  final EdgeInsets contentPadding;
 
   const CustomTextFormField({
     super.key,
@@ -35,6 +36,7 @@ class CustomTextFormField extends StatefulWidget {
     this.labelFontSize = 16,
     this.onChanged,
     this.onTap,
+    this.contentPadding = const EdgeInsets.all(12),
     this.maxLines = 1,
   });
 
@@ -106,9 +108,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             prefixIcon: widget.prefixIcon != null
                 ? Icon(widget.prefixIcon, color: context.grey500, size: 20)
                 : null,
+            isDense: true,
             fillColor: defaultFillColor,
             filled: true,
-            contentPadding: const EdgeInsets.only(left: 10),
+            contentPadding: widget.contentPadding,
 
             // Default border
             border: OutlineInputBorder(

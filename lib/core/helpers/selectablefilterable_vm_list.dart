@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import '../../app_exports.dart';
 
 abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {

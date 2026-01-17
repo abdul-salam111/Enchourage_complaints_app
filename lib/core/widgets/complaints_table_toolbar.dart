@@ -58,7 +58,7 @@ class ComplaintsTableToolbar extends StatelessWidget {
               Expanded(
                 child: CustomDropdown(
                   value: value,
-                  statuses: statuses,
+                  valuesList: statuses,
                   onChanged: (s) => onStatusChanged(s ?? ''),
                 ),
               ),
@@ -96,32 +96,42 @@ class ComplaintsTableToolbar extends StatelessWidget {
 class CustomDropdown extends StatelessWidget {
   const CustomDropdown({
     super.key,
-    required this.value,
-    required this.statuses,
+    this.value,
+    this.hint,
+    required this.valuesList,
     required this.onChanged,
   });
 
-  final String value;
-  final List<String> statuses;
+  final String? value;
+  final String? hint;
+  final List<String> valuesList;
   final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: .only(top: 4, left: 8, right: 8, bottom: 4),
-      margin: .zero,
+      padding: const EdgeInsets.only(top: 4, left: 8, right: 8, bottom: 4),
       decoration: BoxDecoration(
-        borderRadius: .circular(6),
+        borderRadius: BorderRadius.circular(6),
         color: Colors.white,
-        border: .all(color: Colors.grey[300]!),
+        border: Border.all(color: Colors.grey[300]!),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           isDense: true,
           isExpanded: true,
           value: value,
+          hint: hint != null
+              ? Text(
+                  hint!,
+                  style: context.bodySmall.copyWith(
+                    color: AppColors.textSecondaryLight,
+                  ),
+                )
+              : null,
+
           icon: const Icon(Iconsax.arrow_down_1, size: 16),
-          items: statuses.map((s) {
+          items: valuesList.map((s) {
             return DropdownMenuItem<String>(
               value: s,
               child: Text(s, style: context.bodySmall),

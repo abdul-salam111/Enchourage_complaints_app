@@ -80,6 +80,34 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
         : expandedRows.add(index);
     notifyListeners();
   }
+
+  // ---------------- Add Bill Tab----------------
+  final List<String> _propertiesList = const [
+    'Property A',
+    'Property B',
+    'Property C',
+  ];
+  List<String> get propertiesList => List.unmodifiable(_propertiesList);
+  final List<String> _billTypesList = const [
+    'Electricity',
+    'Water',
+    'Gas',
+    'Maintenance',
+  ];
+  List<String> get billTypesList => List.unmodifiable(_billTypesList);
+  String? _selectedProperty;
+  String? get selectedProperty => _selectedProperty;
+  set selectedProperty(String? value) {
+    _selectedProperty = value;
+    notifyListeners();
+  }
+
+  String? _selectedBillType;
+  String? get selectedBillType => _selectedBillType;
+  set selectedBillType(String? value) {
+    _selectedBillType = value;
+    notifyListeners();
+  }
 }
 
 class ComplaintMessage {

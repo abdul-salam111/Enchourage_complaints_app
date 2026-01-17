@@ -63,16 +63,41 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                 Expanded(
                                   child: CustomDropdown(
                                     value: vm.selectedTime,
-                                    statuses: duration,
-                                    onChanged: (value) =>
-                                        vm.selectedTime = value!,
+                                    valuesList: duration,
+                                    onChanged: (value) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: const Text('Confirm'),
+                                            content: const Text(
+                                              'Are you sure you want to continue?',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    AppNavigator.pop(),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  vm.selectedTime = value!;
+                                                  AppNavigator.pop();
+                                                },
+                                                child: const Text('OK'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
                                   ),
                                 ),
                                 widthBox(10),
                                 Expanded(
                                   child: CustomDropdown(
                                     value: vm.selectedStatus,
-                                    statuses: statuses,
+                                    valuesList: statuses,
                                     onChanged: (value) =>
                                         vm.selectedStatus = value!,
                                   ),
