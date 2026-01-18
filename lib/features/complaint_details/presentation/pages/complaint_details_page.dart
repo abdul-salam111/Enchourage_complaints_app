@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+
 import '../../../../app_exports.dart';
 
 class ComplaintDetailsPage extends StatefulWidget {
@@ -57,6 +59,7 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                       child: Padding(
                         padding: .all(12),
                         child: Column(
+                          crossAxisAlignment: .start,
                           children: [
                             Row(
                               children: [
@@ -69,7 +72,11 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                         context: context,
                                         builder: (context) {
                                           return AlertDialog(
-                                            title: const Text('Confirm'),
+                                            title: Text(
+                                              'Confirm',
+                                              style: context.bodyMedium
+                                                  .copyWith(fontWeight: .bold),
+                                            ),
                                             content: const Text(
                                               'Are you sure you want to continue?',
                                             ),
@@ -79,12 +86,15 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                                     AppNavigator.pop(),
                                                 child: const Text('Cancel'),
                                               ),
-                                              ElevatedButton(
+                                              CustomButton(
+                                                size: Size(100, 30),
+                                                radius: 5,
+                                                text: "Yes",
+                                                fontsize: 14,
                                                 onPressed: () {
                                                   vm.selectedTime = value!;
                                                   AppNavigator.pop();
                                                 },
-                                                child: const Text('OK'),
                                               ),
                                             ],
                                           );
@@ -170,6 +180,51 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                 ],
                               ),
                             ),
+                            heightBox(10),
+
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: InkWell(
+                                onTap: () {
+                                  _showAttachmentsDialog(context, [
+                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnCCpVhEQQyiapc7WvX5dUVHSm8ZnaWeCesw&s",
+                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnCCpVhEQQyiapc7WvX5dUVHSm8ZnaWeCesw&s",
+                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnCCpVhEQQyiapc7WvX5dUVHSm8ZnaWeCesw&s",
+                                  ]);
+                                },
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: AppColors.grey200,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.attachment,
+                                        color: AppColors.primaryDark,
+                                        size: 18,
+                                      ),
+                                      widthBox(8),
+                                      Text(
+                                        "View Attachments",
+                                        style: context.bodySmall.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -204,4 +259,133 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
       ),
     );
   }
+}
+
+void _showAttachmentsDialog(BuildContext context, List<String> imageUrls) {
+  if (imageUrls.isEmpty) return;
+
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (ctx) {
+      int currentIndex = 0;
+      final pageController = PageController();
+
+      return StatefulBuilder(
+        builder: (ctx, setState) {
+          return Dialog(
+            insetPadding: const EdgeInsets.all(12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Container(
+              height: MediaQuery.of(ctx).size.height * 0.6,
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      Text(
+                        "Attachments",
+                        style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        "${currentIndex + 1}/${imageUrls.length}",
+                        style: Theme.of(ctx).textTheme.bodySmall,
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Viewer
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: PageView.builder(
+                        controller: pageController,
+                        itemCount: imageUrls.length,
+                        onPageChanged: (i) => setState(() => currentIndex = i),
+                        itemBuilder: (ctx, i) {
+                          return InteractiveViewer(
+                            minScale: 1,
+                            maxScale: 4,
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrls[i],
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Center(
+                                    child: Icon(Icons.broken_image, size: 40),
+                                  ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Thumbnails
+                  SizedBox(
+                    height: 64,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: imageUrls.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (ctx, i) {
+                        final isSelected = i == currentIndex;
+                        return InkWell(
+                          onTap: () {
+                            pageController.animateToPage(
+                              i,
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeOut,
+                            );
+                            setState(() => currentIndex = i);
+                          },
+                          child: Container(
+                            width: 64,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primaryDark
+                                    : AppColors.grey200,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(9),
+                              child: CachedNetworkImage(
+                                imageUrl: imageUrls[i],
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) =>
+                                    const Icon(Icons.broken_image),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }

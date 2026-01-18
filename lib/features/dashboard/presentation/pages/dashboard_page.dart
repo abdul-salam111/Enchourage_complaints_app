@@ -9,21 +9,73 @@ class DashboardPage extends StatelessWidget {
       _DashboardItem(
         title: 'All Complaints',
         onTap: () {
-          context.pushNamed(RouteNames.all_complaints);
+          AppNavigator.pushNamed(RouteNames.all_complaints);
         },
+        icon:
+            "https://cdn-icons-png.freepik.com/256/18594/18594936.png?semt=ais_white_label",
       ),
-      _DashboardItem(title: 'Indoor Complaints', onTap: () {}),
-      _DashboardItem(title: 'Outdoor Complaints', onTap: () {}),
-      _DashboardItem(title: 'Add New Complaint', onTap: () {}),
+      _DashboardItem(
+        title: 'Indoor Complaints',
+        onTap: () {
+          AppNavigator.pushNamed(RouteNames.indoor_complaints);
+        },
+        icon:
+            "https://cdn-icons-png.freepik.com/256/15562/15562756.png?semt=ais_white_label",
+      ),
+      _DashboardItem(
+        title: 'Outdoor Complaints',
+        onTap: () {
+          AppNavigator.pushNamed(RouteNames.outdoor_complaints);
+        },
+        icon: "https://cdn-icons-png.flaticon.com/512/18207/18207574.png",
+      ),
+      _DashboardItem(
+        title: 'Add New Complaint',
+        onTap: () {
+          AppNavigator.pushNamed(RouteNames.create_complaint);
+        },
+        icon: "https://www.complianceforindia.com/complaint-banner.jpg",
+      ),
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
-      body: ListView.separated(
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        actions: [
+          CircleAvatar(
+                backgroundImage: CachedNetworkImageProvider(
+                  "https://i.sstatic.net/l60Hf.png",
+                ),
+              )
+              .withPadding(.only(right: 10))
+              .onTap(() => AppNavigator.pushNamed(RouteNames.profile)),
+        ],
+      ),
+      body: Padding(
         padding: const EdgeInsets.all(14),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => heightBox(30),
-        itemBuilder: (context, index) => _DashboardTile(item: items[index]),
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            heightBox(context.screenHeight * 0.05),
+            Text(
+              "Hi, ${SessionController.instance.user?.name ?? ""}👋",
+              style: context.titleSmall.copyWith(
+                color: AppColors.textSecondaryLight,
+              ),
+            ),
+            heightBox(5),
+            Text("Welcome, Back.", style: context.titleLarge),
+            heightBox(context.screenHeight * 0.07),
+            Expanded(
+              child: ListView.separated(
+                itemCount: items.length,
+                separatorBuilder: (_, __) => heightBox(30),
+                itemBuilder: (context, index) =>
+                    _DashboardTile(item: items[index]),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -49,7 +101,7 @@ class _DashboardTile extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(Iconsax.sms, color: AppColors.primaryDark),
+            CachedNetworkImage(imageUrl: item.icon, height: 30, width: 30),
             Expanded(
               child: Center(
                 child: Text(
@@ -77,6 +129,11 @@ class _DashboardTile extends StatelessWidget {
 class _DashboardItem {
   final String title;
   final VoidCallback onTap;
+  final String icon;
 
-  const _DashboardItem({required this.title, required this.onTap});
+  const _DashboardItem({
+    required this.title,
+    required this.onTap,
+    required this.icon,
+  });
 }

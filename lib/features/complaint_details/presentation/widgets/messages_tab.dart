@@ -19,19 +19,20 @@ class _MessagesTabState extends State<MessagesTab> {
   }
 
   void _sendMessage() {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
     final vm = context.read<ComplaintDetailsViewModel>();
-    vm.addMessage(context, _controller.text);
+    vm.addMessage(context, text);
     _controller.clear();
 
-    // scroll to bottom
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-        );
-      }
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
     });
   }
 
@@ -40,31 +41,35 @@ class _MessagesTabState extends State<MessagesTab> {
     return Consumer<ComplaintDetailsViewModel>(
       builder: (context, vm, _) {
         final messages = vm.messages;
-        return Column(
-          children: [
-            Expanded(
-              child: messages.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No messages yet',
-                        style: context.bodySmall.copyWith(
-                          color: AppColors.textSecondaryLight,
+        final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+        return Padding(
+          padding: EdgeInsets.only(bottom: bottomInset), // ✅ keyboard safe
+          child: Column(
+            children: [
+              Expanded(
+                child: messages.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No messages yet',
+                          style: context.bodySmall.copyWith(
+                            color: AppColors.textSecondaryLight,
+                          ),
                         ),
+                      )
+                    : ListView.separated(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 80),
+                        itemCount: messages.length,
+                        separatorBuilder: (_, __) => heightBox(8),
+                        itemBuilder: (context, index) {
+                          return AdminMessageCard(message: messages[index]);
+                        },
                       ),
-                    )
-                  : ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(12),
-                      itemCount: messages.length,
-                      separatorBuilder: (_, __) => heightBox(8),
-                      itemBuilder: (context, index) {
-                        final msg = messages[index];
-                        return AdminMessageCard(message: msg);
-                      },
-                    ),
-            ),
-            MessageInputBar(controller: _controller, onSend: _sendMessage),
-          ],
+              ),
+              MessageInputBar(controller: _controller, onSend: _sendMessage),
+            ],
+          ),
         );
       },
     );
@@ -121,64 +126,61 @@ class MessageInputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: AppColors.grey200)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                style: context.bodySmall,
-                minLines: 1,
-                maxLines: 4,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => onSend(),
-                decoration: InputDecoration(
-                  hintText: 'Write message...',
-                  hintStyle: context.bodySmall.copyWith(
-                    color: AppColors.textSecondaryLight,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: .circular(10),
-                    borderSide: BorderSide(color: AppColors.grey200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: .circular(10),
-                    borderSide: BorderSide(color: AppColors.grey200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: .circular(10),
-                    borderSide: BorderSide(color: AppColors.primaryDark),
-                  ),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: AppColors.grey200)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller,
+              style: context.bodySmall,
+              minLines: 1,
+              maxLines: 4,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => onSend(),
+              decoration: InputDecoration(
+                hintText: 'Write message...',
+                hintStyle: context.bodySmall.copyWith(
+                  color: AppColors.textSecondaryLight,
                 ),
-              ),
-            ),
-            widthBox(10),
-            InkWell(
-              onTap: onSend,
-              borderRadius: .circular(10),
-              child: Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryDark,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                border: OutlineInputBorder(
                   borderRadius: .circular(10),
+                  borderSide: BorderSide(color: AppColors.grey200),
                 ),
-                child: const Icon(Icons.send, color: Colors.white, size: 18),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: .circular(10),
+                  borderSide: BorderSide(color: AppColors.grey200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: .circular(10),
+                  borderSide: BorderSide(color: AppColors.primaryDark),
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+          widthBox(10),
+          InkWell(
+            onTap: onSend,
+            borderRadius: .circular(10),
+            child: Container(
+              height: 44,
+              width: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primaryDark,
+                borderRadius: .circular(10),
+              ),
+              child: const Icon(Icons.send, color: Colors.white, size: 18),
+            ),
+          ),
+        ],
       ),
     );
   }

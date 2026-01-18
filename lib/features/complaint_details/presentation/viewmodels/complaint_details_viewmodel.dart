@@ -1,6 +1,7 @@
 import '../../../../app_exports.dart';
 
 class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
+  // ignore: unused_field
   final ComplaintDetailsUsecase _complaintDetailsUsecase;
 
   ComplaintDetailsViewModel({

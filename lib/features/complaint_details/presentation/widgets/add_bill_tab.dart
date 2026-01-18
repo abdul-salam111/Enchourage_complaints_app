@@ -92,9 +92,17 @@ class AddBillTab extends StatelessWidget {
             maxLines: 4,
           ),
           heightBox(20),
-          CustomButton(onPressed: () {}, text: "Submit Bill", radius: 7),
-          heightBox(10),
           CustomButton(
+            size: Size(context.screenWidth * 0.3, 35),
+            onPressed: () {},
+            text: "Submit Bill",
+            radius: 7,
+            fontsize: 12,
+          ),
+
+          CustomButton(
+            size: Size(context.screenWidth * 0.3, 35),
+            fontsize: 12,
             onPressed: () {},
             text: "Cancel",
             radius: 7,

@@ -54,15 +54,35 @@ class AppRoutes {
         name: RouteNames.dashboard,
         builder: (context, state) => const DashboardPage(),
       ),
-          GoRoute(
+      GoRoute(
         path: RoutePaths.all_complaints,
         name: RouteNames.all_complaints,
         builder: (context, state) => const AllComplaintsPage(),
       ),
-          GoRoute(
+      GoRoute(
         path: RoutePaths.complaint_details,
         name: RouteNames.complaint_details,
         builder: (context, state) => const ComplaintDetailsPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.indoor_complaints,
+        name: RouteNames.indoor_complaints,
+        builder: (context, state) => const IndoorComplaintsPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.outdoor_complaints,
+        name: RouteNames.outdoor_complaints,
+        builder: (context, state) => const OutdoorComplaintsPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.create_complaint,
+        name: RouteNames.create_complaint,
+        builder: (context, state) => const CreateComplaintPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.profile,
+        name: RouteNames.profile,
+        builder: (context, state) => const ProfileView(),
       ),
     ],
   );

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-
 import '../../app_exports.dart';
 
 final sl = GetIt.instance;
@@ -11,6 +10,9 @@ Future<void> setupLocator() async {
   await dashboardDependencies();
   await allComplaintsDependencies();
   await complaintDetailsDependencies();
+  await indoorComplaintsDependencies();
+  await outdoorComplaintsDependencies();
+  await createComplaintDependencies();
 }
 
 Future<void> coreDependencies() async {
@@ -92,3 +94,73 @@ Future<void> complaintDetailsDependencies() async {
     () => ComplaintDetailsViewModel(complaintDetailsUsecase: sl()),
   );
 }
+
+/// AllComplaints Feature Dependencies
+Future<void> indoorComplaintsDependencies() async {
+  // DataSource
+  sl.registerLazySingleton<IRemoteIndoorComplaintsDataSource>(
+    () => RemoteIndoorComplaintsDataSourceImpl(dioHelper: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<IIndoorComplaintsRepository>(
+    () => IndoorComplaintsRepositoryImpl(dataSource: sl()),
+  );
+
+  // UseCase
+  sl.registerLazySingleton<IndoorComplaintsUsecase>(
+    () => IndoorComplaintsUsecase(repository: sl()),
+  );
+
+  // ViewModel
+  sl.registerFactory<IndoorComplaintsViewModel>(
+    () => IndoorComplaintsViewModel(indoorComplaintsUsecase: sl()),
+  );
+}
+
+/// AllComplaints Feature Dependencies
+Future<void> outdoorComplaintsDependencies() async {
+  // DataSource
+  sl.registerLazySingleton<IRemoteOutdoorComplaintsDataSource>(
+    () => RemoteOutdoorComplaintsDataSourceImpl(dioHelper: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<IOutdoorComplaintsRepository>(
+    () => OutdoorComplaintsRepositoryImpl(dataSource: sl()),
+  );
+
+  // UseCase
+  sl.registerLazySingleton<OutdoorComplaintsUsecase>(
+    () => OutdoorComplaintsUsecase(repository: sl()),
+  );
+
+  // ViewModel
+  sl.registerFactory<OutdoorComplaintsViewmodel>(
+    () => OutdoorComplaintsViewmodel(outudoorComplaintsUsecase: sl()),
+  );
+}
+
+/// CreateComplaint Feature Dependencies
+Future<void> createComplaintDependencies() async {
+  // DataSource
+  sl.registerLazySingleton<IRemoteCreateComplaintDataSource>(
+    () => RemoteCreateComplaintDataSourceImpl(dioHelper: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<ICreateComplaintRepository>(
+    () => CreateComplaintRepositoryImpl(dataSource: sl()),
+  );
+
+  // UseCase
+  sl.registerLazySingleton<CreateComplaintUsecase>(
+    () => CreateComplaintUsecase(repository: sl()),
+  );
+
+  // ViewModel
+  sl.registerFactory<CreateComplaintViewModel>(
+    () => CreateComplaintViewModel(createComplaintUsecase: sl()),
+  );
+}
+
