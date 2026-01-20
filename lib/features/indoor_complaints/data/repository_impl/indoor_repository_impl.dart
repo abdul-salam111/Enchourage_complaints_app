@@ -7,7 +7,7 @@ class IndoorComplaintsRepositoryImpl extends BaseRepository
   IndoorComplaintsRepositoryImpl({required this.dataSource});
 
   @override
-  Future<Either<AppException, AllComplaintsList>> getIndoorComplaintsList() {
+  Future<Either<AppException, ComplaintsList>> getIndoorComplaintsList() {
     return execute(call: () => dataSource.getIndoorComplaintsList());
   }
 }

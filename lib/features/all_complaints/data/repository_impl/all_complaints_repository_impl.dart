@@ -7,7 +7,7 @@ class AllComplaintsRepositoryImpl extends BaseRepository
   AllComplaintsRepositoryImpl({required this.dataSource});
 
   @override
-  Future<Either<AppException, AllComplaintsList>> getAllComplaintsList() {
+  Future<Either<AppException, ComplaintsList>> getAllComplaintsList() {
     return execute(call: () => dataSource.getAllComplaintsList());
   }
 }

@@ -7,7 +7,7 @@ class OutdoorComplaintsRepositoryImpl extends BaseRepository
   OutdoorComplaintsRepositoryImpl({required this.dataSource});
 
   @override
-  Future<Either<AppException, AllComplaintsList>> getOutdoorComplaintsList() {
+  Future<Either<AppException, ComplaintsList>> getOutdoorComplaintsList() {
     return execute(call: () => dataSource.getOutdoorComplaintsList());
   }
 }

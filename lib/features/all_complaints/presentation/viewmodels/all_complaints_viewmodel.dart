@@ -12,23 +12,23 @@ class AllComplaintsViewModel extends SelectableFilterableListVM<Complaints, int>
   Future<void> loadComplaints() async {
     execute(
       call: () => _allComplaintsUsecase.call(NoParams()),
-      onSuccess: (AllComplaintsList res) {
-        setItems(res.data ?? <Complaints>[]);
+      onSuccess: (ComplaintsList res) {
+        setItems(res.data?.data ?? <Complaints>[]);
       },
       showError: true,
     );
   }
 
   @override
-  int? keyOf(Complaints item) => item.id;
+  int? keyOf(Complaints item) => item.complaintNo;
 
   @override
   String statusOf(Complaints item) => (item.status ?? '').trim();
 
   @override
   bool matchesQuery(Complaints c, String q) {
-    final id = (c.id?.toString() ?? '').toLowerCase();
-    final memberId = (c.memberId?.toString() ?? '').toLowerCase();
+    final id = (c.complaintNo?.toString() ?? '').toLowerCase();
+    final memberId = (c.memberName?.toString() ?? '').toLowerCase();
     final status = (c.status ?? '').toLowerCase();
     return id.contains(q) || memberId.contains(q) || status.contains(q);
   }

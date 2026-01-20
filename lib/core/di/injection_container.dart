@@ -16,7 +16,7 @@ Future<void> setupLocator() async {
 }
 
 Future<void> coreDependencies() async {
-  sl.registerLazySingleton<Dio>(() => Dio());
+  sl.registerLazySingleton<Dio>(() => getDio());
   sl.registerLazySingleton(() => DioHelper(sl()));
 }
 
@@ -157,10 +157,23 @@ Future<void> createComplaintDependencies() async {
   sl.registerLazySingleton<CreateComplaintUsecase>(
     () => CreateComplaintUsecase(repository: sl()),
   );
+  sl.registerLazySingleton<GetBlockListRemoteUsecase>(
+    () => GetBlockListRemoteUsecase(repository: sl()),
+  );
+  sl.registerLazySingleton<GetStreetListRemoteUsecase>(
+    () => GetStreetListRemoteUsecase(repository: sl()),
+  );
+  sl.registerLazySingleton<GetPlotListRemoteUsecase>(
+    () => GetPlotListRemoteUsecase(repository: sl()),
+  );
 
   // ViewModel
   sl.registerFactory<CreateComplaintViewModel>(
-    () => CreateComplaintViewModel(createComplaintUsecase: sl()),
+    () => CreateComplaintViewModel(
+      createComplaintUsecase: sl(),
+      getBlockListRemoteUsecase: sl(),
+      getStreetListRemoteUsecase: sl(),
+      getPlotListRemoteUsecase: sl(),
+    ),
   );
 }
-

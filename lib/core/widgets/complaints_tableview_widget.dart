@@ -38,9 +38,11 @@ class ComplaintsTableList extends StatelessWidget {
           complaint: complaint,
           index: index,
           isExpanded:
-              complaint.id != null && expandedRows.contains(complaint.id),
+              complaint.complaintNo != null &&
+              expandedRows.contains(complaint.complaintNo),
           isSelected:
-              complaint.id != null && selectedRows.contains(complaint.id),
+              complaint.complaintNo != null &&
+              selectedRows.contains(complaint.complaintNo),
           onToggleExpand: (id) => onToggleExpand(id),
           onToggleSelect: (id) => onToggleSelect(id),
           onView: () => onView(complaint),
@@ -78,7 +80,7 @@ class ComplaintRowTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final id = complaint.id;
+    final id = complaint.complaintNo;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -109,7 +111,7 @@ class ComplaintRowTile extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text(
-                    (complaint.id ?? '-').toString(),
+                    (complaint.complaintNo ?? '-').toString(),
                     style: context.bodySmall,
                   ),
                 ),
@@ -117,7 +119,7 @@ class ComplaintRowTile extends StatelessWidget {
               Expanded(
                 flex: 1,
                 child: Text(
-                  (complaint.memberId ?? '-').toString(),
+                  (complaint.memberName ?? '-').toString(),
                   style: context.bodySmall,
                 ),
               ),
@@ -173,7 +175,7 @@ class ComplaintRowTile extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  (complaint.description ?? '-').toString(),
+                  (complaint.address ?? '-').toString(),
                   style: context.bodySmall,
                   maxLines: 1,
                 ),

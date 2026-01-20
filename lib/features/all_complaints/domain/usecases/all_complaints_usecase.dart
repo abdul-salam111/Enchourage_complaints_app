@@ -1,12 +1,12 @@
 import '../../../../app_exports.dart';
 
-class AllComplaintsUsecase implements Usecase<AllComplaintsList, NoParams> {
+class AllComplaintsUsecase implements Usecase<ComplaintsList, NoParams> {
   final IAllComplaintsRepository repository;
 
   AllComplaintsUsecase({required this.repository});
 
   @override
-  Future<Either<AppException, AllComplaintsList>> call(NoParams params) {
+  Future<Either<AppException, ComplaintsList>> call(NoParams params) {
     return repository.getAllComplaintsList();
   }
 }

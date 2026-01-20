@@ -1,9 +1,7 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:enchourage_app/app_exports.dart';
-import 'package:enchourage_app/core/theme/theme_utils.dart';
-import 'package:flutter/material.dart';
 
-class RequiredDropdownSearch extends StatelessWidget {
+class RequiredDropdownSearch<T> extends StatelessWidget {
   const RequiredDropdownSearch({
     super.key,
     required this.label,
@@ -13,6 +11,8 @@ class RequiredDropdownSearch extends StatelessWidget {
     this.hintText = "Search",
     this.dropdownHintText = "Select",
     required this.onChanged,
+    required this.itemAsString,
+    this.compareFn, // ✅ NEW
     this.margin = const EdgeInsets.only(top: 5),
     this.itemTextColor,
     this.menuBackgroundColor = Colors.white,
@@ -21,25 +21,26 @@ class RequiredDropdownSearch extends StatelessWidget {
       horizontal: 12,
       vertical: 10,
     ),
-
-    // ✅ height controls
-    this.fieldHeight = 40, // closed dropdown height
-    this.searchFieldHeight = 38, // popup search height
-    this.itemHeight = 36, // popup item row height
+    this.fieldHeight = 40,
+    this.searchFieldHeight = 38,
+    this.itemHeight = 36,
+    this.isLoading = false, // optional
   });
 
   final String label;
   final bool isRequired;
 
-  final List<String> items;
-  final String? selectedItem;
+  final List<T> items;
+  final T? selectedItem;
 
   final String hintText;
-
-  /// (inside InputDecoration hint)
   final String dropdownHintText;
 
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<T?> onChanged;
+  final String Function(T) itemAsString;
+
+  // ✅ REQUIRED for custom classes
+  final bool Function(T a, T b)? compareFn;
 
   final EdgeInsets margin;
   final Color? itemTextColor;
@@ -50,6 +51,8 @@ class RequiredDropdownSearch extends StatelessWidget {
   final double fieldHeight;
   final double searchFieldHeight;
   final double itemHeight;
+
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -83,14 +86,16 @@ class RequiredDropdownSearch extends StatelessWidget {
         Padding(padding: margin),
         SizedBox(
           height: fieldHeight,
-          child: DropdownSearch<String>(
+          child: DropdownSearch<T>(
             selectedItem: selectedItem,
+            compareFn: compareFn, // ✅ FIX for Blocks
             items: (String filter, LoadProps? loadProps) => items,
+            itemAsString: (item) => itemAsString(item),
 
             dropdownBuilder: (context, selected) => Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                selected ?? "",
+                selected == null ? "" : itemAsString(selected),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.bodySmall.copyWith(
@@ -99,45 +104,45 @@ class RequiredDropdownSearch extends StatelessWidget {
               ),
             ),
 
-            itemAsString: (item) => item,
-
             popupProps: PopupProps.menu(
               showSearchBox: true,
               searchDelay: Duration.zero,
               menuProps: MenuProps(
                 backgroundColor: menuBackgroundColor,
-                margin: .zero,
+                margin: EdgeInsets.zero,
               ),
-
               itemBuilder: (context, item, isDisabled, isSelected) => SizedBox(
                 height: itemHeight,
                 child: Align(
-                  alignment: .centerLeft,
+                  alignment: Alignment.centerLeft,
                   child: Padding(
-                    padding: const .symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      item,
+                      itemAsString(item),
                       style: context.bodySmall.copyWith(
                         color: AppColors.textSecondaryLight,
                       ),
                       maxLines: 1,
-                      overflow: .ellipsis,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
               ),
-
-              // ✅ SEARCH FIELD HEIGHT
               searchFieldProps: TextFieldProps(
                 cursorHeight: 16,
                 style: context.bodySmall,
                 decoration: InputDecoration(
-                  constraints: .tightFor(height: searchFieldHeight),
+                  constraints: BoxConstraints.tightFor(
+                    height: searchFieldHeight,
+                  ),
                   isDense: true,
-                  contentPadding: const .only(top: 12, bottom: 5, left: 12),
+                  contentPadding: const EdgeInsets.only(
+                    top: 12,
+                    bottom: 5,
+                    left: 12,
+                  ),
                   border: defaultBorder,
-                  hintText: hintText, //
-
+                  hintText: hintText,
                   hintStyle: context.bodySmall.copyWith(
                     color: AppColors.textSecondaryLight,
                   ),
@@ -147,17 +152,13 @@ class RequiredDropdownSearch extends StatelessWidget {
               ),
             ),
 
-            // ✅ CLOSED FIELD DECORATION (height controlled by SizedBox)
             decoratorProps: DropDownDecoratorProps(
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: contentPadding,
                 border: defaultBorder,
-
-                // ✅ make field white
                 filled: true,
                 fillColor: Colors.white,
-
                 hintText: dropdownHintText,
                 hintStyle: context.bodySmall.copyWith(
                   color: AppColors.textSecondaryLight,
@@ -165,7 +166,7 @@ class RequiredDropdownSearch extends StatelessWidget {
               ),
             ),
 
-            onChanged: onChanged,
+            onChanged: isLoading ? null : onChanged,
           ),
         ),
       ],
