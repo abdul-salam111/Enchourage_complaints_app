@@ -2,6 +2,8 @@
 /*                         Base Remote Datasource                              */
 /* -------------------------------------------------------------------------- */
 
+import 'package:dio/dio.dart';
+
 import '../../../app_exports.dart';
 
 abstract class BaseRemoteDatasource {
@@ -196,6 +198,30 @@ abstract class BaseRemoteDatasource {
         requestBody: body,
         authToken: await storage.readValues(StorageKeys.token),
         isAuthRequired: true,
+      );
+      return parser(response);
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException(e.toString());
+    }
+  }
+
+  Future<T> postMultipart<T>({
+    required String url,
+    required Map<String, dynamic> fields,
+    List<FileUploadModel>? files,
+    required T Function(dynamic response) parser,
+    ProgressCallback? onProgress,
+  }) async {
+    try {
+      final response = await dioHelper.sendMultipartRequest(
+        url: url,
+        fields: fields,
+        files: files,
+        authToken: await storage.readValues(StorageKeys.token),
+        isAuthRequired: true,
+        onSendProgress: onProgress,
       );
       return parser(response);
     } on AppException {

@@ -286,7 +286,7 @@ as List<Street>?,
 /// @nodoc
 mixin _$Street {
 
-@JsonKey(name: "id") int? get id;@JsonKey(name: "block_id") int? get blockId;@JsonKey(name: "title") String? get title;@JsonKey(name: "status") int? get status;
+@JsonKey(name: "id") int? get id;@JsonKey(name: "street_no") String? get streetNo;@JsonKey(name: "block_name") String? get blockName;
 /// Create a copy of Street
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -299,16 +299,16 @@ $StreetCopyWith<Street> get copyWith => _$StreetCopyWithImpl<Street>(this as Str
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Street&&(identical(other.id, id) || other.id == id)&&(identical(other.blockId, blockId) || other.blockId == blockId)&&(identical(other.title, title) || other.title == title)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Street&&(identical(other.id, id) || other.id == id)&&(identical(other.streetNo, streetNo) || other.streetNo == streetNo)&&(identical(other.blockName, blockName) || other.blockName == blockName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,blockId,title,status);
+int get hashCode => Object.hash(runtimeType,id,streetNo,blockName);
 
 @override
 String toString() {
-  return 'Street(id: $id, blockId: $blockId, title: $title, status: $status)';
+  return 'Street(id: $id, streetNo: $streetNo, blockName: $blockName)';
 }
 
 
@@ -319,7 +319,7 @@ abstract mixin class $StreetCopyWith<$Res>  {
   factory $StreetCopyWith(Street value, $Res Function(Street) _then) = _$StreetCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: "id") int? id,@JsonKey(name: "block_id") int? blockId,@JsonKey(name: "title") String? title,@JsonKey(name: "status") int? status
+@JsonKey(name: "id") int? id,@JsonKey(name: "street_no") String? streetNo,@JsonKey(name: "block_name") String? blockName
 });
 
 
@@ -336,13 +336,12 @@ class _$StreetCopyWithImpl<$Res>
 
 /// Create a copy of Street
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? blockId = freezed,Object? title = freezed,Object? status = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? streetNo = freezed,Object? blockName = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,blockId: freezed == blockId ? _self.blockId : blockId // ignore: cast_nullable_to_non_nullable
-as int?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,streetNo: freezed == streetNo ? _self.streetNo : streetNo // ignore: cast_nullable_to_non_nullable
+as String?,blockName: freezed == blockName ? _self.blockName : blockName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -427,10 +426,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_id")  int? blockId, @JsonKey(name: "title")  String? title, @JsonKey(name: "status")  int? status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "street_no")  String? streetNo, @JsonKey(name: "block_name")  String? blockName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Street() when $default != null:
-return $default(_that.id,_that.blockId,_that.title,_that.status);case _:
+return $default(_that.id,_that.streetNo,_that.blockName);case _:
   return orElse();
 
 }
@@ -448,10 +447,10 @@ return $default(_that.id,_that.blockId,_that.title,_that.status);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_id")  int? blockId, @JsonKey(name: "title")  String? title, @JsonKey(name: "status")  int? status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "street_no")  String? streetNo, @JsonKey(name: "block_name")  String? blockName)  $default,) {final _that = this;
 switch (_that) {
 case _Street():
-return $default(_that.id,_that.blockId,_that.title,_that.status);case _:
+return $default(_that.id,_that.streetNo,_that.blockName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -468,10 +467,10 @@ return $default(_that.id,_that.blockId,_that.title,_that.status);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_id")  int? blockId, @JsonKey(name: "title")  String? title, @JsonKey(name: "status")  int? status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "street_no")  String? streetNo, @JsonKey(name: "block_name")  String? blockName)?  $default,) {final _that = this;
 switch (_that) {
 case _Street() when $default != null:
-return $default(_that.id,_that.blockId,_that.title,_that.status);case _:
+return $default(_that.id,_that.streetNo,_that.blockName);case _:
   return null;
 
 }
@@ -483,13 +482,12 @@ return $default(_that.id,_that.blockId,_that.title,_that.status);case _:
 @JsonSerializable()
 
 class _Street implements Street {
-  const _Street({@JsonKey(name: "id") this.id, @JsonKey(name: "block_id") this.blockId, @JsonKey(name: "title") this.title, @JsonKey(name: "status") this.status});
+  const _Street({@JsonKey(name: "id") this.id, @JsonKey(name: "street_no") this.streetNo, @JsonKey(name: "block_name") this.blockName});
   factory _Street.fromJson(Map<String, dynamic> json) => _$StreetFromJson(json);
 
 @override@JsonKey(name: "id") final  int? id;
-@override@JsonKey(name: "block_id") final  int? blockId;
-@override@JsonKey(name: "title") final  String? title;
-@override@JsonKey(name: "status") final  int? status;
+@override@JsonKey(name: "street_no") final  String? streetNo;
+@override@JsonKey(name: "block_name") final  String? blockName;
 
 /// Create a copy of Street
 /// with the given fields replaced by the non-null parameter values.
@@ -504,16 +502,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Street&&(identical(other.id, id) || other.id == id)&&(identical(other.blockId, blockId) || other.blockId == blockId)&&(identical(other.title, title) || other.title == title)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Street&&(identical(other.id, id) || other.id == id)&&(identical(other.streetNo, streetNo) || other.streetNo == streetNo)&&(identical(other.blockName, blockName) || other.blockName == blockName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,blockId,title,status);
+int get hashCode => Object.hash(runtimeType,id,streetNo,blockName);
 
 @override
 String toString() {
-  return 'Street(id: $id, blockId: $blockId, title: $title, status: $status)';
+  return 'Street(id: $id, streetNo: $streetNo, blockName: $blockName)';
 }
 
 
@@ -524,7 +522,7 @@ abstract mixin class _$StreetCopyWith<$Res> implements $StreetCopyWith<$Res> {
   factory _$StreetCopyWith(_Street value, $Res Function(_Street) _then) = __$StreetCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: "id") int? id,@JsonKey(name: "block_id") int? blockId,@JsonKey(name: "title") String? title,@JsonKey(name: "status") int? status
+@JsonKey(name: "id") int? id,@JsonKey(name: "street_no") String? streetNo,@JsonKey(name: "block_name") String? blockName
 });
 
 
@@ -541,13 +539,12 @@ class __$StreetCopyWithImpl<$Res>
 
 /// Create a copy of Street
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? blockId = freezed,Object? title = freezed,Object? status = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? streetNo = freezed,Object? blockName = freezed,}) {
   return _then(_Street(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,blockId: freezed == blockId ? _self.blockId : blockId // ignore: cast_nullable_to_non_nullable
-as int?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,streetNo: freezed == streetNo ? _self.streetNo : streetNo // ignore: cast_nullable_to_non_nullable
+as String?,blockName: freezed == blockName ? _self.blockName : blockName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

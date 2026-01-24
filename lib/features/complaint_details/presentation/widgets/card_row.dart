@@ -15,11 +15,14 @@ class CardRow extends StatelessWidget {
           title,
           style: context.bodySmall.copyWith(fontWeight: FontWeight.bold),
         ),
-        Text(
-          value,
-          style: context.bodySmall.copyWith(
-            fontWeight: FontWeight.normal,
-            color: AppColors.textSecondaryLight,
+        SizedBox(
+          width: context.screenWidth * 0.6,
+          child: Text(
+            value,
+            style: context.bodySmall.copyWith(
+              fontWeight: FontWeight.normal,
+              color: AppColors.textSecondaryLight,
+            ),
           ),
         ),
       ],

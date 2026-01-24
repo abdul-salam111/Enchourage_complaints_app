@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:io'; // <-- Add this for HttpClient
+import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart'; // <-- Add this for IOHttpClientAdapter
+import 'package:dio/io.dart';
 import 'prints.dart';
 
 Dio getDio() {
@@ -28,11 +28,41 @@ Dio getDio() {
       onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
         printValue(tag: 'API URL:', '${options.uri}');
         printValue(tag: 'HEADER:', options.headers);
+
+        // Handle different request body types
         try {
-          printValue(tag: 'REQUEST BODY:', jsonEncode(options.data));
+          if (options.data is FormData) {
+            // For FormData, log fields and files separately
+            final formData = options.data as FormData;
+            printValue(tag: 'REQUEST TYPE:', 'FormData (Multipart)');
+
+            // Log form fields
+            if (formData.fields.isNotEmpty) {
+              final fieldsMap = Map.fromEntries(formData.fields);
+              printValue(tag: 'FORM FIELDS:', jsonEncode(fieldsMap));
+            }
+
+            // Log files info
+            if (formData.files.isNotEmpty) {
+              final filesInfo = formData.files.map((file) {
+                return {
+                  'fieldName': file.key,
+                  'filename': file.value.filename,
+                  'contentType': file.value.contentType?.toString(),
+                };
+              }).toList();
+              printValue(tag: 'FILES:', jsonEncode(filesInfo));
+            }
+          } else if (options.data != null) {
+            // For regular JSON data
+            printValue(tag: 'REQUEST BODY:', jsonEncode(options.data));
+          } else {
+            printValue(tag: 'REQUEST BODY:', 'No body data');
+          }
         } catch (e) {
-          printValue(tag: "Request Body", e.toString());
+          printValue(tag: "Request Body Error:", e.toString());
         }
+
         return handler.next(options);
       },
 
@@ -44,6 +74,7 @@ Dio getDio() {
       onError: (DioException e, ErrorInterceptorHandler handler) {
         printValue(tag: 'STATUS CODE:', "${e.response?.statusCode ?? ""}");
         printValue(tag: 'ERROR DATA:', "${e.response?.data ?? ""}");
+        printValue(tag: 'ERROR MESSAGE:', e.message ?? "");
         return handler.next(e);
       },
     ),

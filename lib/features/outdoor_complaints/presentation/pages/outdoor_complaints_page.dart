@@ -9,11 +9,28 @@ class OutdoorComplaintsPage extends StatefulWidget {
 
 class _OutdoorComplaintsPageState extends State<OutdoorComplaintsPage> {
   final statuses = <String>[
-    'All',
+    'Select Status',
     'Pending',
     'Processing',
     'Assigned',
     'Resolved',
+  ];
+
+  final departments = <String>[
+    'Select Department',
+    'Security Department',
+    'Electrical Department',
+    'Society Janitorial Services',
+    'Water Supply Department',
+    'BIlling Department',
+    'Civil Works Department(Road, Sewerage, Rain Drain etc)',
+    'Horticulture Department',
+    'Building Control Department',
+    'Verification Department(Owner/Tenant Data)',
+    'IT Department',
+    'Misc',
+    'Mosque Complaints',
+    'Street Light Complaints',
   ];
 
   @override
@@ -39,19 +56,28 @@ class _OutdoorComplaintsPageState extends State<OutdoorComplaintsPage> {
                     await vm.export(
                       fileName: 'outdoor_complaints',
                       sheetName: 'Complaints',
-                      complaintsList: vm.filteredData,
+                      complaintsList: vm.filteredData as List<Complaint>?,
                     );
                   },
                   onDelete: () {},
                 ),
-
+                CustomDropdown(
+                  value: vm.selectedDepartment,
+                  valuesList: departments,
+                  onChanged: (department) {
+                    if (department != null) {
+                      vm.filterByDepartment(department);
+                    }
+                  },
+                ).withPadding(.only(left: 8, right: 10, bottom: 10)),
                 TableHeaderWidget(
                   isAllSelected: vm.isAllSelected,
                   onToggleAll: (val) => vm.toggleSelectAll(val ?? false),
                 ),
                 Expanded(
                   child: ComplaintsTableList(
-                    items: vm.filteredData,
+                    isShowDepart: true,
+                    items: vm.paginatedData,
                     expandedRows: vm.expandedRows,
                     selectedRows: vm.selectedRows,
                     onToggleExpand: vm.toggleExpandRow,
@@ -59,8 +85,16 @@ class _OutdoorComplaintsPageState extends State<OutdoorComplaintsPage> {
                     onView: (complaint) {
                       AppNavigator.pushNamed(RouteNames.complaint_details);
                     },
-                    onDelete: (Complaints value) {},
+                    onDelete: (Complaint value) {},
                   ),
+                ),
+                PaginationWidget(
+                  currentPage: vm.currentPage,
+                  totalPages: vm.totalPages,
+                  totalItems: vm.totalItems,
+                  onPrevious: vm.previousPage,
+                  onNext: vm.nextPage,
+                  onPageSelected: vm.goToPage,
                 ),
               ],
             );

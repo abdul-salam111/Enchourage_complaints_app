@@ -17,14 +17,10 @@ Map<String, dynamic> _$BlockListToJson(_BlockList instance) =>
 
 _Blocks _$BlocksFromJson(Map<String, dynamic> json) => _Blocks(
   id: (json['id'] as num?)?.toInt(),
-  title: json['title'] as String?,
-  societyId: json['society_id'] as String?,
-  status: (json['status'] as num?)?.toInt(),
+  blockName: json['block_name'] as String?,
 );
 
 Map<String, dynamic> _$BlocksToJson(_Blocks instance) => <String, dynamic>{
   'id': instance.id,
-  'title': instance.title,
-  'society_id': instance.societyId,
-  'status': instance.status,
+  'block_name': instance.blockName,
 };

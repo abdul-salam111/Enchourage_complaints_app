@@ -7,6 +7,51 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
   final Set<K> expandedRows = <K>{};
   final Set<K> selectedRows = <K>{};
 
+  // ----------------- Pagination -----------------
+  int currentPage = 1;
+  int itemsPerPage = 10;
+
+  int get totalPages {
+    if (filteredData.isEmpty) return 1;
+    return (filteredData.length / itemsPerPage).ceil();
+  }
+
+  int get totalItems => filteredData.length;
+
+  List<T> get paginatedData {
+    final startIndex = (currentPage - 1) * itemsPerPage;
+    final endIndex = (startIndex + itemsPerPage).clamp(0, filteredData.length);
+
+    if (startIndex >= filteredData.length) return [];
+    return filteredData.sublist(startIndex, endIndex);
+  }
+
+  void goToPage(int page) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    notifyListeners();
+  }
+
+  void nextPage() {
+    if (currentPage < totalPages) {
+      currentPage++;
+      notifyListeners();
+    }
+  }
+
+  void previousPage() {
+    if (currentPage > 1) {
+      currentPage--;
+      notifyListeners();
+    }
+  }
+
+  void setItemsPerPage(int count) {
+    itemsPerPage = count;
+    currentPage = 1; // Reset to first page
+    notifyListeners();
+  }
+
   // Each item has a unique key (like id)
   K? keyOf(T item);
 
@@ -15,6 +60,7 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
 
   // Optional: status getter (if you want filter by status)
   String statusOf(T item) => '';
+  // String departmentOf(T item) => '';
 
   // ----------------- Expand / Select -----------------
   void toggleExpandRow(K key) {
@@ -39,11 +85,12 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
       ..clear()
       ..addAll(q.isEmpty ? data : data.where((e) => matchesQuery(e, q)));
 
+    currentPage = 1; // Reset to first page after search
     notifyListeners();
   }
 
   // ----------------- Status Filter (optional) -----------------
-  String selectedStatus = 'All';
+  String selectedStatus = 'Select Status';
 
   void filterByStatus(String status) {
     selectedStatus = status.trim();
@@ -53,28 +100,34 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
     filteredData
       ..clear()
       ..addAll(
-        s == 'all' ? data : data.where((e) => statusOf(e).toLowerCase() == s),
+        s == 'select status'
+            ? data
+            : data.where((e) => statusOf(e).toLowerCase() == s),
       );
 
+    currentPage = 1; // Reset to first page after filter
     notifyListeners();
   }
 
   // ----------------- Select All -----------------
   bool get isAllSelected {
-    if (filteredData.isEmpty) return false;
-    return filteredData.every((e) {
+    if (paginatedData.isEmpty) return false;
+    return paginatedData.every((e) {
       final k = keyOf(e);
       return k != null && selectedRows.contains(k);
     });
   }
 
   void toggleSelectAll(bool select) {
-    selectedRows.clear();
-
     if (select) {
-      for (final e in filteredData) {
+      for (final e in paginatedData) {
         final k = keyOf(e);
         if (k != null) selectedRows.add(k);
+      }
+    } else {
+      for (final e in paginatedData) {
+        final k = keyOf(e);
+        if (k != null) selectedRows.remove(k);
       }
     }
 
@@ -89,6 +142,7 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
     filteredData
       ..clear()
       ..addAll(items);
+    currentPage = 1; // Reset to first page
     notifyListeners();
   }
 
@@ -104,13 +158,13 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
   Future<void> export({
     required String fileName,
     required String sheetName,
-    List<Complaints>? complaintsList,
+    List<Complaint>? complaintsList,
   }) async {
     isExportingFile = true;
     await Future.delayed(Duration(milliseconds: 100));
     try {
       await ExcelExporter.exportComplaints(
-        complaintsList: complaintsList ?? (data as List<Complaints>),
+        complaintsList: complaintsList ?? (data as List<Complaint>),
         sheetName: sheetName,
         fileName: fileName,
       );

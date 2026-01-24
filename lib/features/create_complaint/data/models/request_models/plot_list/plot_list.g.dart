@@ -18,18 +18,14 @@ Map<String, dynamic> _$PlotListToJson(_PlotList instance) => <String, dynamic>{
 
 _Plot _$PlotFromJson(Map<String, dynamic> json) => _Plot(
   id: (json['id'] as num?)?.toInt(),
-  blockId: (json['block_id'] as num?)?.toInt(),
-  streetId: (json['street_id'] as num?)?.toInt(),
   plotNo: json['plot_no'] as String?,
-  sqYards: json['sq_yards'] as String?,
-  status: (json['status'] as num?)?.toInt(),
+  streetNo: json['street_no'] as String?,
+  blockName: json['block_name'] as String?,
 );
 
 Map<String, dynamic> _$PlotToJson(_Plot instance) => <String, dynamic>{
   'id': instance.id,
-  'block_id': instance.blockId,
-  'street_id': instance.streetId,
   'plot_no': instance.plotNo,
-  'sq_yards': instance.sqYards,
-  'status': instance.status,
+  'street_no': instance.streetNo,
+  'block_name': instance.blockName,
 };

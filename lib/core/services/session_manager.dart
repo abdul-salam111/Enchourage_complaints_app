@@ -71,4 +71,9 @@ class SessionController {
 
   /// Check if user is authenticated
   bool get isAuthenticated => _isLoggedIn && _userEntity != null;
+
+  Future<void> signOut() async {
+    await clearSession();
+    AppNavigator.goNamed(RouteNames.signin);
+  }
 }

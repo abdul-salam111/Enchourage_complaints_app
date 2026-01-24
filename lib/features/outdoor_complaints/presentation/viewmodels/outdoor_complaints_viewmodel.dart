@@ -1,7 +1,7 @@
 import '../../../../app_exports.dart';
 
 class OutdoorComplaintsViewmodel
-    extends SelectableFilterableListVM<Complaints, int>
+    extends SelectableFilterableListVM<Complaint, int>
     with UseCaseExecutor {
   OutdoorComplaintsViewmodel({
     required OutdoorComplaintsUsecase outudoorComplaintsUsecase,
@@ -11,24 +11,85 @@ class OutdoorComplaintsViewmodel
 
   final FocusNode searchFocusNode = FocusNode();
 
+  // Department filter state
+  String _selectedDepartment = 'Select Department';
+  String get selectedDepartment => _selectedDepartment;
+
+  // Search query and status (to combine all filters)
+  String _searchQuery = '';
+
   Future<void> loadOutdoorComplaints() async {
     execute(
       call: () => _outdoorComplaintsUsecase.call(NoParams()),
-      onSuccess: (ComplaintsList res) {
-        setItems(res.data?.data ?? <Complaints>[]);
+      onSuccess: (OutdoorComplaintsList res) {
+        setItems(res.complaints ?? <Complaint>[]);
       },
       showError: true,
     );
   }
 
+  // Override search to store query and apply combined filters
   @override
-  int? keyOf(Complaints item) => item.complaintNo;
+  void search(String query) {
+    _searchQuery = query.trim().toLowerCase();
+    _applyAllFilters();
+  }
+
+  // Override status filter to apply combined filters
+  @override
+  void filterByStatus(String status) {
+    selectedStatus = status.trim();
+    _applyAllFilters();
+  }
+
+  // Department filter method
+  void filterByDepartment(String department) {
+    _selectedDepartment = department;
+    _applyAllFilters();
+  }
+
+  // Apply all filters together (search + status + department)
+  void _applyAllFilters() {
+    var result = List<Complaint>.from(data);
+
+    // 1. Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      result = result.where((e) => matchesQuery(e, _searchQuery)).toList();
+    }
+
+    // 2. Apply status filter
+    if (selectedStatus.toLowerCase() != 'select status') {
+      result = result
+          .where(
+            (e) => statusOf(e).toLowerCase() == selectedStatus.toLowerCase(),
+          )
+          .toList();
+    }
+
+    // 3. Apply department filter
+    if (_selectedDepartment != 'Select Department') {
+      result = result.where((c) {
+        final department = (c.complaintType ?? '').trim();
+        return department == _selectedDepartment;
+      }).toList();
+    }
+
+    filteredData
+      ..clear()
+      ..addAll(result);
+
+    currentPage = 1; // Reset to first page after filter
+    notifyListeners();
+  }
 
   @override
-  String statusOf(Complaints item) => (item.status ?? '').trim();
+  int? keyOf(Complaint item) => item.complaintNo;
 
   @override
-  bool matchesQuery(Complaints c, String q) {
+  String statusOf(Complaint item) => (item.status ?? '').trim();
+
+  @override
+  bool matchesQuery(Complaint c, String q) {
     final id = (c.complaintNo?.toString() ?? '').toLowerCase();
     final memberId = (c.memberName?.toString() ?? '').toLowerCase();
     final status = (c.status ?? '').toLowerCase();

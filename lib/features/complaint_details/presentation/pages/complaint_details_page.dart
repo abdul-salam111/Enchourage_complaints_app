@@ -1,9 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
-
 import '../../../../app_exports.dart';
 
 class ComplaintDetailsPage extends StatefulWidget {
-  const ComplaintDetailsPage({super.key});
+  final int complaintId;
+  const ComplaintDetailsPage({super.key, required this.complaintId});
 
   @override
   State<ComplaintDetailsPage> createState() => _ComplaintDetailsPageState();
@@ -45,11 +44,16 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => sl<ComplaintDetailsViewModel>(),
+      create: (_) =>
+          sl<ComplaintDetailsViewModel>()
+            ..fetchComplaintDetails(widget.complaintId),
       child: Scaffold(
-        appBar: AppBar(title: const Text('ComptNo: 5347')),
+        appBar: AppBar(title: Text('ComptNo: ${widget.complaintId}')),
         body: Consumer<ComplaintDetailsViewModel>(
           builder: (context, vm, _) {
+            if (vm.isLoadingComplaintDetails) {
+              return const Center(child: LoadingIndicator());
+            }
             return DefaultTabController(
               length: 3,
               child: NestedScrollView(
@@ -127,43 +131,52 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                 children: [
                                   CardRow(
                                     title: 'Complaint No:',
-                                    value: '5347',
+                                    value:
+                                        '${vm.complaintDetails?.data?.complaintNo}',
                                   ),
                                   heightBox(10),
                                   CardRow(
                                     title: 'Member Name:',
-                                    value: 'ZARTAJ KHANAM',
+                                    value:
+                                        '${vm.complaintDetails?.data?.memberName}',
                                   ),
                                   heightBox(10),
                                   CardRow(
                                     title: 'Phone No:',
-                                    value: '03115308116',
+                                    value:
+                                        '${vm.complaintDetails?.data?.phone}',
                                   ),
                                   heightBox(10),
                                   CardRow(
                                     title: 'Address:',
-                                    value: 'House No.14-B street 12 Block A',
+                                    value:
+                                        '${vm.complaintDetails?.data?.address}',
                                   ),
                                   heightBox(10),
                                   CardRow(
                                     title: 'Title:',
-                                    value: 'Society Janitorial Services',
+                                    value:
+                                        '${vm.complaintDetails?.data?.title}',
                                   ),
                                   heightBox(10),
-                                  CardRow(title: 'Date:', value: '12-01-2026'),
+                                  CardRow(
+                                    title: 'Date:',
+                                    value: '${vm.complaintDetails?.data?.date}',
+                                  ),
                                   heightBox(10),
-                                  CardRow(title: 'Assign By:', value: 'Admin'),
+                                  CardRow(
+                                    title: 'Assign By:',
+                                    value:
+                                        '${vm.complaintDetails?.data?.assignBy}',
+                                  ),
                                   heightBox(10),
                                   CardRow(
                                     title: 'Assign To:',
-                                    value: 'Salahuddin Ahmed',
+                                    value:
+                                        '${vm.complaintDetails?.data?.assignTo}',
                                   ),
                                   heightBox(10),
-                                  CardRow(
-                                    title: 'Complaint Type:',
-                                    value: 'Society Janitorial Services',
-                                  ),
-                                  heightBox(10),
+
                                   Text(
                                     "Description:",
                                     style: context.bodySmall.copyWith(
@@ -171,7 +184,7 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                     ),
                                   ),
                                   Text(
-                                    "Bushes arround the house has not been removed. Pl remove the same at soon as possible.",
+                                    "${vm.complaintDetails?.data?.description}",
                                     style: context.bodySmall.copyWith(
                                       fontWeight: FontWeight.normal,
                                       color: AppColors.textSecondaryLight,

@@ -286,7 +286,7 @@ as List<Plot>?,
 /// @nodoc
 mixin _$Plot {
 
-@JsonKey(name: "id") int? get id;@JsonKey(name: "block_id") int? get blockId;@JsonKey(name: "street_id") int? get streetId;@JsonKey(name: "plot_no") String? get plotNo;@JsonKey(name: "sq_yards") String? get sqYards;@JsonKey(name: "status") int? get status;
+@JsonKey(name: "id") int? get id;@JsonKey(name: "plot_no") String? get plotNo;@JsonKey(name: "street_no") String? get streetNo;@JsonKey(name: "block_name") String? get blockName;
 /// Create a copy of Plot
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -299,16 +299,16 @@ $PlotCopyWith<Plot> get copyWith => _$PlotCopyWithImpl<Plot>(this as Plot, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Plot&&(identical(other.id, id) || other.id == id)&&(identical(other.blockId, blockId) || other.blockId == blockId)&&(identical(other.streetId, streetId) || other.streetId == streetId)&&(identical(other.plotNo, plotNo) || other.plotNo == plotNo)&&(identical(other.sqYards, sqYards) || other.sqYards == sqYards)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Plot&&(identical(other.id, id) || other.id == id)&&(identical(other.plotNo, plotNo) || other.plotNo == plotNo)&&(identical(other.streetNo, streetNo) || other.streetNo == streetNo)&&(identical(other.blockName, blockName) || other.blockName == blockName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,blockId,streetId,plotNo,sqYards,status);
+int get hashCode => Object.hash(runtimeType,id,plotNo,streetNo,blockName);
 
 @override
 String toString() {
-  return 'Plot(id: $id, blockId: $blockId, streetId: $streetId, plotNo: $plotNo, sqYards: $sqYards, status: $status)';
+  return 'Plot(id: $id, plotNo: $plotNo, streetNo: $streetNo, blockName: $blockName)';
 }
 
 
@@ -319,7 +319,7 @@ abstract mixin class $PlotCopyWith<$Res>  {
   factory $PlotCopyWith(Plot value, $Res Function(Plot) _then) = _$PlotCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: "id") int? id,@JsonKey(name: "block_id") int? blockId,@JsonKey(name: "street_id") int? streetId,@JsonKey(name: "plot_no") String? plotNo,@JsonKey(name: "sq_yards") String? sqYards,@JsonKey(name: "status") int? status
+@JsonKey(name: "id") int? id,@JsonKey(name: "plot_no") String? plotNo,@JsonKey(name: "street_no") String? streetNo,@JsonKey(name: "block_name") String? blockName
 });
 
 
@@ -336,15 +336,13 @@ class _$PlotCopyWithImpl<$Res>
 
 /// Create a copy of Plot
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? blockId = freezed,Object? streetId = freezed,Object? plotNo = freezed,Object? sqYards = freezed,Object? status = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? plotNo = freezed,Object? streetNo = freezed,Object? blockName = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,blockId: freezed == blockId ? _self.blockId : blockId // ignore: cast_nullable_to_non_nullable
-as int?,streetId: freezed == streetId ? _self.streetId : streetId // ignore: cast_nullable_to_non_nullable
 as int?,plotNo: freezed == plotNo ? _self.plotNo : plotNo // ignore: cast_nullable_to_non_nullable
-as String?,sqYards: freezed == sqYards ? _self.sqYards : sqYards // ignore: cast_nullable_to_non_nullable
-as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as int?,
+as String?,streetNo: freezed == streetNo ? _self.streetNo : streetNo // ignore: cast_nullable_to_non_nullable
+as String?,blockName: freezed == blockName ? _self.blockName : blockName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -429,10 +427,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_id")  int? blockId, @JsonKey(name: "street_id")  int? streetId, @JsonKey(name: "plot_no")  String? plotNo, @JsonKey(name: "sq_yards")  String? sqYards, @JsonKey(name: "status")  int? status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "plot_no")  String? plotNo, @JsonKey(name: "street_no")  String? streetNo, @JsonKey(name: "block_name")  String? blockName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Plot() when $default != null:
-return $default(_that.id,_that.blockId,_that.streetId,_that.plotNo,_that.sqYards,_that.status);case _:
+return $default(_that.id,_that.plotNo,_that.streetNo,_that.blockName);case _:
   return orElse();
 
 }
@@ -450,10 +448,10 @@ return $default(_that.id,_that.blockId,_that.streetId,_that.plotNo,_that.sqYards
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_id")  int? blockId, @JsonKey(name: "street_id")  int? streetId, @JsonKey(name: "plot_no")  String? plotNo, @JsonKey(name: "sq_yards")  String? sqYards, @JsonKey(name: "status")  int? status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "plot_no")  String? plotNo, @JsonKey(name: "street_no")  String? streetNo, @JsonKey(name: "block_name")  String? blockName)  $default,) {final _that = this;
 switch (_that) {
 case _Plot():
-return $default(_that.id,_that.blockId,_that.streetId,_that.plotNo,_that.sqYards,_that.status);case _:
+return $default(_that.id,_that.plotNo,_that.streetNo,_that.blockName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -470,10 +468,10 @@ return $default(_that.id,_that.blockId,_that.streetId,_that.plotNo,_that.sqYards
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_id")  int? blockId, @JsonKey(name: "street_id")  int? streetId, @JsonKey(name: "plot_no")  String? plotNo, @JsonKey(name: "sq_yards")  String? sqYards, @JsonKey(name: "status")  int? status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "plot_no")  String? plotNo, @JsonKey(name: "street_no")  String? streetNo, @JsonKey(name: "block_name")  String? blockName)?  $default,) {final _that = this;
 switch (_that) {
 case _Plot() when $default != null:
-return $default(_that.id,_that.blockId,_that.streetId,_that.plotNo,_that.sqYards,_that.status);case _:
+return $default(_that.id,_that.plotNo,_that.streetNo,_that.blockName);case _:
   return null;
 
 }
@@ -485,15 +483,13 @@ return $default(_that.id,_that.blockId,_that.streetId,_that.plotNo,_that.sqYards
 @JsonSerializable()
 
 class _Plot implements Plot {
-  const _Plot({@JsonKey(name: "id") this.id, @JsonKey(name: "block_id") this.blockId, @JsonKey(name: "street_id") this.streetId, @JsonKey(name: "plot_no") this.plotNo, @JsonKey(name: "sq_yards") this.sqYards, @JsonKey(name: "status") this.status});
+  const _Plot({@JsonKey(name: "id") this.id, @JsonKey(name: "plot_no") this.plotNo, @JsonKey(name: "street_no") this.streetNo, @JsonKey(name: "block_name") this.blockName});
   factory _Plot.fromJson(Map<String, dynamic> json) => _$PlotFromJson(json);
 
 @override@JsonKey(name: "id") final  int? id;
-@override@JsonKey(name: "block_id") final  int? blockId;
-@override@JsonKey(name: "street_id") final  int? streetId;
 @override@JsonKey(name: "plot_no") final  String? plotNo;
-@override@JsonKey(name: "sq_yards") final  String? sqYards;
-@override@JsonKey(name: "status") final  int? status;
+@override@JsonKey(name: "street_no") final  String? streetNo;
+@override@JsonKey(name: "block_name") final  String? blockName;
 
 /// Create a copy of Plot
 /// with the given fields replaced by the non-null parameter values.
@@ -508,16 +504,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Plot&&(identical(other.id, id) || other.id == id)&&(identical(other.blockId, blockId) || other.blockId == blockId)&&(identical(other.streetId, streetId) || other.streetId == streetId)&&(identical(other.plotNo, plotNo) || other.plotNo == plotNo)&&(identical(other.sqYards, sqYards) || other.sqYards == sqYards)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Plot&&(identical(other.id, id) || other.id == id)&&(identical(other.plotNo, plotNo) || other.plotNo == plotNo)&&(identical(other.streetNo, streetNo) || other.streetNo == streetNo)&&(identical(other.blockName, blockName) || other.blockName == blockName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,blockId,streetId,plotNo,sqYards,status);
+int get hashCode => Object.hash(runtimeType,id,plotNo,streetNo,blockName);
 
 @override
 String toString() {
-  return 'Plot(id: $id, blockId: $blockId, streetId: $streetId, plotNo: $plotNo, sqYards: $sqYards, status: $status)';
+  return 'Plot(id: $id, plotNo: $plotNo, streetNo: $streetNo, blockName: $blockName)';
 }
 
 
@@ -528,7 +524,7 @@ abstract mixin class _$PlotCopyWith<$Res> implements $PlotCopyWith<$Res> {
   factory _$PlotCopyWith(_Plot value, $Res Function(_Plot) _then) = __$PlotCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: "id") int? id,@JsonKey(name: "block_id") int? blockId,@JsonKey(name: "street_id") int? streetId,@JsonKey(name: "plot_no") String? plotNo,@JsonKey(name: "sq_yards") String? sqYards,@JsonKey(name: "status") int? status
+@JsonKey(name: "id") int? id,@JsonKey(name: "plot_no") String? plotNo,@JsonKey(name: "street_no") String? streetNo,@JsonKey(name: "block_name") String? blockName
 });
 
 
@@ -545,15 +541,13 @@ class __$PlotCopyWithImpl<$Res>
 
 /// Create a copy of Plot
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? blockId = freezed,Object? streetId = freezed,Object? plotNo = freezed,Object? sqYards = freezed,Object? status = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? plotNo = freezed,Object? streetNo = freezed,Object? blockName = freezed,}) {
   return _then(_Plot(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,blockId: freezed == blockId ? _self.blockId : blockId // ignore: cast_nullable_to_non_nullable
-as int?,streetId: freezed == streetId ? _self.streetId : streetId // ignore: cast_nullable_to_non_nullable
 as int?,plotNo: freezed == plotNo ? _self.plotNo : plotNo // ignore: cast_nullable_to_non_nullable
-as String?,sqYards: freezed == sqYards ? _self.sqYards : sqYards // ignore: cast_nullable_to_non_nullable
-as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as int?,
+as String?,streetNo: freezed == streetNo ? _self.streetNo : streetNo // ignore: cast_nullable_to_non_nullable
+as String?,blockName: freezed == blockName ? _self.blockName : blockName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

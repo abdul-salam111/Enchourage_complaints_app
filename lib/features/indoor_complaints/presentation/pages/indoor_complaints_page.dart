@@ -9,7 +9,7 @@ class IndoorComplaintsPage extends StatefulWidget {
 
 class _IndoorComplaintsPageState extends State<IndoorComplaintsPage> {
   final statuses = <String>[
-    'All',
+    'Select Status',
     'Pending',
     'Processing',
     'Assigned',
@@ -51,7 +51,7 @@ class _IndoorComplaintsPageState extends State<IndoorComplaintsPage> {
                 ),
                 Expanded(
                   child: ComplaintsTableList(
-                    items: vm.filteredData,
+                    items: vm.paginatedData,
                     expandedRows: vm.expandedRows,
                     selectedRows: vm.selectedRows,
                     onToggleExpand: vm.toggleExpandRow,
@@ -59,8 +59,17 @@ class _IndoorComplaintsPageState extends State<IndoorComplaintsPage> {
                     onView: (complaint) {
                       AppNavigator.pushNamed(RouteNames.complaint_details);
                     },
-                    onDelete: (Complaints value) {},
+                    onDelete: (Complaint value) {},
                   ),
+                ),
+
+                PaginationWidget(
+                  currentPage: vm.currentPage,
+                  totalPages: vm.totalPages,
+                  totalItems: vm.totalItems,
+                  onPrevious: vm.previousPage,
+                  onNext: vm.nextPage,
+                  onPageSelected: vm.goToPage,
                 ),
               ],
             );

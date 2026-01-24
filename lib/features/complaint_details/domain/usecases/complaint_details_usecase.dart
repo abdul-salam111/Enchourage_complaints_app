@@ -1,12 +1,12 @@
 import '../../../../app_exports.dart';
 
-class ComplaintDetailsUsecase implements Usecase<ComplaintDetailsResponse, ComplaintDetailsParams> {
+class ComplaintDetailsUsecase implements Usecase<ViewComplaint, int> {
   final IComplaintDetailsRepository repository;
 
   ComplaintDetailsUsecase({required this.repository});
 
   @override
-  Future<Either<AppException, ComplaintDetailsResponse>> call(ComplaintDetailsParams params) {
-    return repository.performAction(params: params);
+  Future<Either<AppException, ViewComplaint>> call(int complaintId) {
+    return repository.getComplaintDetails(complaintId: complaintId);
   }
 }

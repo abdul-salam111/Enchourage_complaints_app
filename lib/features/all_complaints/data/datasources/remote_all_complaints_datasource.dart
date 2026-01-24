@@ -11,7 +11,7 @@ class RemoteAllComplaintsDataSourceImpl extends BaseRemoteDatasource
   @override
   Future<ComplaintsList> getAllComplaintsList() async {
     return get(
-      url: "${ApiEndPoints.allComplaintsEndpoint}1",
+      url: ApiEndPoints.allComplaintsEndpoint,
       parser: (json) => ComplaintsList.fromJson(json),
     );
   }

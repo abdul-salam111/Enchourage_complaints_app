@@ -14,11 +14,9 @@ abstract class PlotList with _$PlotList {
 abstract class Plot with _$Plot {
   const factory Plot({
     @JsonKey(name: "id") int? id,
-    @JsonKey(name: "block_id") int? blockId,
-    @JsonKey(name: "street_id") int? streetId,
     @JsonKey(name: "plot_no") String? plotNo,
-    @JsonKey(name: "sq_yards") String? sqYards,
-    @JsonKey(name: "status") int? status,
+    @JsonKey(name: "street_no") String? streetNo,
+    @JsonKey(name: "block_name") String? blockName,
   }) = _Plot;
 
   factory Plot.fromJson(Map<String, dynamic> json) => _$PlotFromJson(json);

@@ -166,7 +166,12 @@ Future<void> createComplaintDependencies() async {
   sl.registerLazySingleton<GetPlotListRemoteUsecase>(
     () => GetPlotListRemoteUsecase(repository: sl()),
   );
-
+  sl.registerLazySingleton<GetResidentOwnerRemoteUsecas>(
+    () => GetResidentOwnerRemoteUsecas(repository: sl()),
+  );
+  sl.registerLazySingleton<GetComplaintTypesListRemoteUsecase>(
+    () => GetComplaintTypesListRemoteUsecase(repository: sl()),
+  );
   // ViewModel
   sl.registerFactory<CreateComplaintViewModel>(
     () => CreateComplaintViewModel(
@@ -174,6 +179,8 @@ Future<void> createComplaintDependencies() async {
       getBlockListRemoteUsecase: sl(),
       getStreetListRemoteUsecase: sl(),
       getPlotListRemoteUsecase: sl(),
+      getResidentOwnerRemoteUsecase: sl(),
+      getComplaintTypesListRemoteUsecase: sl(),
     ),
   );
 }

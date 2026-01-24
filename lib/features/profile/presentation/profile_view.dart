@@ -57,7 +57,9 @@ class ProfileView extends StatelessWidget {
           Spacer(),
           CustomButton(
             text: "Logout",
-            onPressed: () {},
+            onPressed: () {
+              SessionController.instance.signOut();
+            },
             radius: 10,
             icon: Iconsax.logout,
           ),

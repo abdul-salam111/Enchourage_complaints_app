@@ -70,7 +70,7 @@ class ExcelExporter {
   }
 
   static Future<void> exportComplaints({
-    required List<Complaints> complaintsList,
+    required List<Complaint> complaintsList,
     required String fileName,
     required String sheetName,
   }) async {
@@ -82,7 +82,7 @@ class ExcelExporter {
         "Member Name",
         "Address",
         "Complaint Type",
-        // "Description",
+        "Description",
         "Status",
         "Assigned By",
         "Assigned User",
@@ -94,7 +94,7 @@ class ExcelExporter {
           complaint.memberName?.toString() ?? '',
           complaint.address ?? '',
           complaint.complaintType?.toString() ?? '',
-          //complaint.description ?? '',
+          complaint.description ?? '',
           complaint.status ?? '',
           complaint.assignBy?.toString() ?? '',
           complaint.assignToUser?.toString() ?? '',

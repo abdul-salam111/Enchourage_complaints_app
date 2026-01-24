@@ -11,4 +11,12 @@ class ApiEndPoints {
   static const String getAllBlocksEndpoint = "${baseUrl}block";
   static const String getStreetEndpoint = "${baseUrl}street/";
   static const String getPlotEndpoint = "${baseUrl}plot/";
+  static const String createComplaintEndpoint =
+      "${baseUrl}admin/complaint/create";
+  static const String getComplaintTypesListEndpoint =
+      "${baseUrl}complaint-type";
+  static String getPlotResidentEndpoint(int plotId) =>
+      "${baseUrl}admin/plot/$plotId/residents";
+  static String getComplaintDetailsEndpoint(int complaintId) =>
+      "${baseUrl}admin/complaint/$complaintId/view";
 }

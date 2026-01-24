@@ -1,7 +1,7 @@
 import '../../../../app_exports.dart';
 
 abstract interface class IComplaintDetailsRepository {
-  Future<Either<AppException, ComplaintDetailsResponse>> performAction({
-    required ComplaintDetailsParams params,
+  Future<Either<AppException, ViewComplaint>> getComplaintDetails({
+    required int complaintId,
   });
 }

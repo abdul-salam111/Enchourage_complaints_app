@@ -1,9 +1,7 @@
 import '../../../../app_exports.dart';
 
 abstract interface class IRemoteComplaintDetailsDataSource {
-  Future<ComplaintDetailsResponse> performAction({
-    required ComplaintDetailsParams params,
-  });
+  Future<ViewComplaint> viewComplaintDetails({required int complaintId});
 }
 
 class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
@@ -11,13 +9,10 @@ class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
   RemoteComplaintDetailsDataSourceImpl({required super.dioHelper});
 
   @override
-  Future<ComplaintDetailsResponse> performAction({
-    required ComplaintDetailsParams params,
-  }) async {
-    return post(
-      url: ApiEndPoints.allComplaintsEndpoint,
-      parser: (json) => ComplaintDetailsResponse.fromJson(json),
-      body: params.toJson(),
+  Future<ViewComplaint> viewComplaintDetails({required int complaintId}) async {
+    return get(
+      url: ApiEndPoints.getComplaintDetailsEndpoint(complaintId),
+      parser: (json) => ViewComplaint.fromJson(json),
     );
   }
 }

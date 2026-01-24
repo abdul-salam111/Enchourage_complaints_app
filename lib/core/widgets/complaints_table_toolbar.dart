@@ -24,6 +24,7 @@ class ComplaintsTableToolbar extends StatelessWidget {
   final VoidCallback onDelete;
 
   final String hintText;
+  final bool isOutDoorComplaints = false;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +63,8 @@ class ComplaintsTableToolbar extends StatelessWidget {
                   onChanged: (s) => onStatusChanged(s ?? ''),
                 ),
               ),
-              widthBox(10),
+              widthBox(5),
+
               IconButton(
                 onPressed: onExport,
                 icon: Container(

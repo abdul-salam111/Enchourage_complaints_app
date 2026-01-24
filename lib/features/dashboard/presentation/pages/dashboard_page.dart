@@ -20,14 +20,15 @@ class DashboardPage extends StatelessWidget {
           AppNavigator.pushNamed(RouteNames.indoor_complaints);
         },
         icon:
-            "https://cdn-icons-png.freepik.com/256/15562/15562756.png?semt=ais_white_label",
+            "https://cdn-icons-png.freepik.com/256/18594/18594936.png?semt=ais_white_label",
       ),
       _DashboardItem(
         title: 'Outdoor Complaints',
         onTap: () {
           AppNavigator.pushNamed(RouteNames.outdoor_complaints);
         },
-        icon: "https://cdn-icons-png.flaticon.com/512/18207/18207574.png",
+        icon:
+            "https://cdn-icons-png.freepik.com/256/18594/18594936.png?semt=ais_white_label",
       ),
       _DashboardItem(
         title: 'Add New Complaint',

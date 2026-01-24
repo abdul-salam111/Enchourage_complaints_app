@@ -10,17 +10,18 @@ class ComplaintsTableList extends StatelessWidget {
     required this.onToggleSelect,
     required this.onView,
     required this.onDelete,
+    this.isShowDepart = false,
   });
 
-  final List<Complaints> items;
+  final List<Complaint> items;
   final Set<int> expandedRows;
   final Set<int> selectedRows;
-
+  final bool? isShowDepart;
   final ValueChanged<int> onToggleExpand;
   final ValueChanged<int> onToggleSelect;
 
-  final ValueChanged<Complaints> onView;
-  final ValueChanged<Complaints> onDelete;
+  final ValueChanged<Complaint> onView;
+  final ValueChanged<Complaint> onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +48,7 @@ class ComplaintsTableList extends StatelessWidget {
           onToggleSelect: (id) => onToggleSelect(id),
           onView: () => onView(complaint),
           onDelete: () => onDelete(complaint),
+          isShowDepart: isShowDepart ?? false,
         );
       },
     );
@@ -64,9 +66,10 @@ class ComplaintRowTile extends StatelessWidget {
     required this.onToggleSelect,
     required this.onView,
     required this.onDelete,
+    this.isShowDepart = false,
   });
 
-  final Complaints complaint;
+  final Complaint complaint;
   final int index;
 
   final bool isExpanded;
@@ -77,7 +80,7 @@ class ComplaintRowTile extends StatelessWidget {
 
   final VoidCallback onView;
   final VoidCallback onDelete;
-
+  final bool isShowDepart;
   @override
   Widget build(BuildContext context) {
     final id = complaint.complaintNo;
@@ -121,6 +124,7 @@ class ComplaintRowTile extends StatelessWidget {
                 child: Text(
                   (complaint.memberName ?? '-').toString(),
                   style: context.bodySmall,
+                  maxLines: 2,
                 ),
               ),
               Expanded(
@@ -145,13 +149,13 @@ class ComplaintRowTile extends StatelessWidget {
               ),
             ],
           ),
-          if (isExpanded) expandedDetails(context),
+          if (isExpanded) expandedDetails(context, isShowDepart),
         ],
       ),
     );
   }
 
-  Widget expandedDetails(BuildContext context) {
+  Widget expandedDetails(BuildContext context, bool isShowDepart) {
     return Container(
       width: double.infinity,
       padding: .all(5),
@@ -169,13 +173,15 @@ class ComplaintRowTile extends StatelessWidget {
               crossAxisAlignment: .start,
               children: [
                 Text(
-                  'Address',
+                  isShowDepart ? "Department" : 'Address',
                   style: context.bodySmall.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  (complaint.address ?? '-').toString(),
+                  isShowDepart
+                      ? complaint.complaintType ?? ""
+                      : (complaint.address ?? '-').toString(),
                   style: context.bodySmall,
                   maxLines: 1,
                 ),

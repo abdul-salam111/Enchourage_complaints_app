@@ -1,7 +1,8 @@
 import '../../../../app_exports.dart';
+import '../models/response_models/outdoor_complaints_list.dart';
 
 abstract interface class IRemoteOutdoorComplaintsDataSource {
-  Future<ComplaintsList> getOutdoorComplaintsList();
+  Future<OutdoorComplaintsList> getOutdoorComplaintsList();
 }
 
 class RemoteOutdoorComplaintsDataSourceImpl extends BaseRemoteDatasource
@@ -9,10 +10,10 @@ class RemoteOutdoorComplaintsDataSourceImpl extends BaseRemoteDatasource
   RemoteOutdoorComplaintsDataSourceImpl({required super.dioHelper});
 
   @override
-  Future<ComplaintsList> getOutdoorComplaintsList() async {
+  Future<OutdoorComplaintsList> getOutdoorComplaintsList() async {
     return get(
       url: ApiEndPoints.outdoorComplaintsEndpoint,
-      parser: (json) => ComplaintsList.fromJson(json),
+      parser: (json) => OutdoorComplaintsList.fromJson(json),
     );
   }
 }

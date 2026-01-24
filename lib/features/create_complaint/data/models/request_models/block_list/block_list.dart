@@ -15,9 +15,7 @@ abstract class BlockList with _$BlockList {
 abstract class Blocks with _$Blocks {
   const factory Blocks({
     @JsonKey(name: "id") int? id,
-    @JsonKey(name: "title") String? title,
-    @JsonKey(name: "society_id") String? societyId,
-    @JsonKey(name: "status") int? status,
+    @JsonKey(name: "block_name") String? blockName,
   }) = _Blocks;
 
   factory Blocks.fromJson(Map<String, dynamic> json) => _$BlocksFromJson(json);

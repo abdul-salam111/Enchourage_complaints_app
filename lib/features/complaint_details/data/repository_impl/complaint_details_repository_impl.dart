@@ -7,9 +7,11 @@ class ComplaintDetailsRepositoryImpl extends BaseRepository
   ComplaintDetailsRepositoryImpl({required this.dataSource});
 
   @override
-  Future<Either<AppException, ComplaintDetailsResponse>> performAction({
-    required ComplaintDetailsParams params,
+  Future<Either<AppException, ViewComplaint>> getComplaintDetails({
+    required int complaintId,
   }) {
-    return execute(call: () => dataSource.performAction(params: params));
+    return execute(
+      call: () => dataSource.viewComplaintDetails(complaintId: complaintId),
+    );
   }
 }

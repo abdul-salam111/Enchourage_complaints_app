@@ -15,9 +15,8 @@ abstract class StreetList with _$StreetList {
 abstract class Street with _$Street {
   const factory Street({
     @JsonKey(name: "id") int? id,
-    @JsonKey(name: "block_id") int? blockId,
-    @JsonKey(name: "title") String? title,
-    @JsonKey(name: "status") int? status,
+    @JsonKey(name: "street_no") String? streetNo,
+    @JsonKey(name: "block_name") String? blockName,
   }) = _Street;
 
   factory Street.fromJson(Map<String, dynamic> json) => _$StreetFromJson(json);

@@ -1,13 +1,66 @@
 import '../../../../app_exports.dart';
 
 class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
-  // ignore: unused_field
   final ComplaintDetailsUsecase _complaintDetailsUsecase;
 
   ComplaintDetailsViewModel({
     required ComplaintDetailsUsecase complaintDetailsUsecase,
   }) : _complaintDetailsUsecase = complaintDetailsUsecase;
 
+  // ==========================
+  // Complaint Details State
+  // ==========================
+  ViewComplaint? _complaintDetails;
+  ViewComplaint? get complaintDetails => _complaintDetails;
+
+  bool _isLoadingComplaintDetails = false;
+  bool get isLoadingComplaintDetails => _isLoadingComplaintDetails;
+
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
+
+  void _setLoading(bool value) {
+    _isLoadingComplaintDetails = value;
+    notifyListeners();
+  }
+
+  void _setComplaintDetails(ViewComplaint? value) {
+    _complaintDetails = value;
+    notifyListeners();
+  }
+
+  void _setErrorMessage(String? value) {
+    _errorMessage = value;
+    notifyListeners();
+  }
+
+  Future<void> fetchComplaintDetails(int complaintId) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    await execute(
+      call: () => _complaintDetailsUsecase(complaintId),
+      onSuccess: (result) {
+        _setComplaintDetails(result);
+        debugPrint('Complaint details loaded: ${result.data?.complaintNo}');
+      },
+      onError: (error) {
+        _setErrorMessage(error.toString());
+        debugPrint('Error loading complaint details: $error');
+      },
+    );
+
+    _setLoading(false);
+  }
+
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  // ==========================
+  // Existing Code
+  // ==========================
   String _selectedTime = 'Select Duration';
   String get selectedTime => _selectedTime;
   set selectedTime(String value) {
@@ -89,6 +142,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     'Property C',
   ];
   List<String> get propertiesList => List.unmodifiable(_propertiesList);
+
   final List<String> _billTypesList = const [
     'Electricity',
     'Water',
@@ -96,6 +150,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     'Maintenance',
   ];
   List<String> get billTypesList => List.unmodifiable(_billTypesList);
+
   String? _selectedProperty;
   String? get selectedProperty => _selectedProperty;
   set selectedProperty(String? value) {

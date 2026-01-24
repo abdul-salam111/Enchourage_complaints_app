@@ -22,4 +22,23 @@ class CreateComplaintRepositoryImpl extends BaseRepository
   Future<Either<AppException, PlotList>> getPlotList({required int streetId}) {
     return execute(call: () => dataSource.getPlotList(streetId: streetId));
   }
+
+  @override
+  Future<Either<AppException, ResidentOwner>> getResidentOwner({
+    required int plotId,
+  }) {
+    return execute(call: () => dataSource.getResidentOwner(plotId: plotId));
+  }
+
+  @override
+  Future<Either<AppException, ComplaintTypesList>> getComplaintTypes() {
+    return execute(call: () => dataSource.getComplaintTypes());
+  }
+
+  @override
+  Future<Either<AppException, CreateComplaintResponse>> createComplaint({
+    required CreateComplaintRequest request,
+  }) {
+    return execute(call: () => dataSource.createComplaint(request: request));
+  }
 }

@@ -286,7 +286,7 @@ as List<Blocks>?,
 /// @nodoc
 mixin _$Blocks {
 
-@JsonKey(name: "id") int? get id;@JsonKey(name: "title") String? get title;@JsonKey(name: "society_id") String? get societyId;@JsonKey(name: "status") int? get status;
+@JsonKey(name: "id") int? get id;@JsonKey(name: "block_name") String? get blockName;
 /// Create a copy of Blocks
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -299,16 +299,16 @@ $BlocksCopyWith<Blocks> get copyWith => _$BlocksCopyWithImpl<Blocks>(this as Blo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Blocks&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.societyId, societyId) || other.societyId == societyId)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Blocks&&(identical(other.id, id) || other.id == id)&&(identical(other.blockName, blockName) || other.blockName == blockName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,societyId,status);
+int get hashCode => Object.hash(runtimeType,id,blockName);
 
 @override
 String toString() {
-  return 'Blocks(id: $id, title: $title, societyId: $societyId, status: $status)';
+  return 'Blocks(id: $id, blockName: $blockName)';
 }
 
 
@@ -319,7 +319,7 @@ abstract mixin class $BlocksCopyWith<$Res>  {
   factory $BlocksCopyWith(Blocks value, $Res Function(Blocks) _then) = _$BlocksCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: "id") int? id,@JsonKey(name: "title") String? title,@JsonKey(name: "society_id") String? societyId,@JsonKey(name: "status") int? status
+@JsonKey(name: "id") int? id,@JsonKey(name: "block_name") String? blockName
 });
 
 
@@ -336,13 +336,11 @@ class _$BlocksCopyWithImpl<$Res>
 
 /// Create a copy of Blocks
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? title = freezed,Object? societyId = freezed,Object? status = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? blockName = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String?,societyId: freezed == societyId ? _self.societyId : societyId // ignore: cast_nullable_to_non_nullable
-as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,blockName: freezed == blockName ? _self.blockName : blockName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -427,10 +425,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "title")  String? title, @JsonKey(name: "society_id")  String? societyId, @JsonKey(name: "status")  int? status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_name")  String? blockName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Blocks() when $default != null:
-return $default(_that.id,_that.title,_that.societyId,_that.status);case _:
+return $default(_that.id,_that.blockName);case _:
   return orElse();
 
 }
@@ -448,10 +446,10 @@ return $default(_that.id,_that.title,_that.societyId,_that.status);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "title")  String? title, @JsonKey(name: "society_id")  String? societyId, @JsonKey(name: "status")  int? status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_name")  String? blockName)  $default,) {final _that = this;
 switch (_that) {
 case _Blocks():
-return $default(_that.id,_that.title,_that.societyId,_that.status);case _:
+return $default(_that.id,_that.blockName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -468,10 +466,10 @@ return $default(_that.id,_that.title,_that.societyId,_that.status);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "title")  String? title, @JsonKey(name: "society_id")  String? societyId, @JsonKey(name: "status")  int? status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "id")  int? id, @JsonKey(name: "block_name")  String? blockName)?  $default,) {final _that = this;
 switch (_that) {
 case _Blocks() when $default != null:
-return $default(_that.id,_that.title,_that.societyId,_that.status);case _:
+return $default(_that.id,_that.blockName);case _:
   return null;
 
 }
@@ -483,13 +481,11 @@ return $default(_that.id,_that.title,_that.societyId,_that.status);case _:
 @JsonSerializable()
 
 class _Blocks implements Blocks {
-  const _Blocks({@JsonKey(name: "id") this.id, @JsonKey(name: "title") this.title, @JsonKey(name: "society_id") this.societyId, @JsonKey(name: "status") this.status});
+  const _Blocks({@JsonKey(name: "id") this.id, @JsonKey(name: "block_name") this.blockName});
   factory _Blocks.fromJson(Map<String, dynamic> json) => _$BlocksFromJson(json);
 
 @override@JsonKey(name: "id") final  int? id;
-@override@JsonKey(name: "title") final  String? title;
-@override@JsonKey(name: "society_id") final  String? societyId;
-@override@JsonKey(name: "status") final  int? status;
+@override@JsonKey(name: "block_name") final  String? blockName;
 
 /// Create a copy of Blocks
 /// with the given fields replaced by the non-null parameter values.
@@ -504,16 +500,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Blocks&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.societyId, societyId) || other.societyId == societyId)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Blocks&&(identical(other.id, id) || other.id == id)&&(identical(other.blockName, blockName) || other.blockName == blockName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,societyId,status);
+int get hashCode => Object.hash(runtimeType,id,blockName);
 
 @override
 String toString() {
-  return 'Blocks(id: $id, title: $title, societyId: $societyId, status: $status)';
+  return 'Blocks(id: $id, blockName: $blockName)';
 }
 
 
@@ -524,7 +520,7 @@ abstract mixin class _$BlocksCopyWith<$Res> implements $BlocksCopyWith<$Res> {
   factory _$BlocksCopyWith(_Blocks value, $Res Function(_Blocks) _then) = __$BlocksCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: "id") int? id,@JsonKey(name: "title") String? title,@JsonKey(name: "society_id") String? societyId,@JsonKey(name: "status") int? status
+@JsonKey(name: "id") int? id,@JsonKey(name: "block_name") String? blockName
 });
 
 
@@ -541,13 +537,11 @@ class __$BlocksCopyWithImpl<$Res>
 
 /// Create a copy of Blocks
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? title = freezed,Object? societyId = freezed,Object? status = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? blockName = freezed,}) {
   return _then(_Blocks(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String?,societyId: freezed == societyId ? _self.societyId : societyId // ignore: cast_nullable_to_non_nullable
-as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,blockName: freezed == blockName ? _self.blockName : blockName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

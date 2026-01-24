@@ -62,7 +62,10 @@ class AppRoutes {
       GoRoute(
         path: RoutePaths.complaint_details,
         name: RouteNames.complaint_details,
-        builder: (context, state) => const ComplaintDetailsPage(),
+        builder: (context, state) {
+          final id = state.extra as int;
+          return ComplaintDetailsPage(complaintId: id);
+        },
       ),
       GoRoute(
         path: RoutePaths.indoor_complaints,
