@@ -65,10 +65,15 @@ Future<void> allComplaintsDependencies() async {
   sl.registerLazySingleton<AllComplaintsUsecase>(
     () => AllComplaintsUsecase(repository: sl()),
   );
-
+  sl.registerLazySingleton<DeleteComplaintRemoteUsecase>(
+    () => DeleteComplaintRemoteUsecase(repository: sl()),
+  );
   // ViewModel
   sl.registerFactory<AllComplaintsViewModel>(
-    () => AllComplaintsViewModel(allComplaintsUsecase: sl()),
+    () => AllComplaintsViewModel(
+      allComplaintsUsecase: sl(),
+      deleteComplaintRemoteUsecase: sl(),
+    ),
   );
 }
 

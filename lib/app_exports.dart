@@ -52,6 +52,7 @@ export 'core/utils/widget_utils.dart';
 export 'core/widgets/app_logo.dart';
 export 'core/widgets/complaints_table_toolbar.dart';
 export 'core/widgets/complaints_tableview_widget.dart';
+export 'core/widgets/confirmation_popup.dart';
 export 'core/widgets/custom_appbar.dart';
 export 'core/widgets/custom_button.dart';
 export 'core/widgets/custom_dropdown_textfield.dart';
@@ -74,6 +75,7 @@ export 'features/all_complaints/data/repository_impl/all_complaints_repository_i
 export 'features/all_complaints/domain/entities/all_complaints_entity.dart';
 export 'features/all_complaints/domain/repositories/all_complaints_repository.dart';
 export 'features/all_complaints/domain/usecases/all_complaints_usecase.dart';
+export 'features/all_complaints/domain/usecases/delete_complaint_remote_usecase.dart';
 export 'features/all_complaints/presentation/pages/all_complaints_page.dart';
 export 'features/all_complaints/presentation/viewmodels/all_complaints_viewmodel.dart';
 export 'features/complaint_details/data/datasources/remote_complaint_details_datasource.dart';

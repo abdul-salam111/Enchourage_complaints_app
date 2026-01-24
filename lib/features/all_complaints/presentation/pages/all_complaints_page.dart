@@ -64,7 +64,23 @@ class _AllComplaintsPageState extends State<AllComplaintsPage> {
                           extra: complaint.complaintNo,
                         );
                       },
-                      onDelete: (Complaint value) {},
+                      onDelete: (Complaint value) {
+                        confirmationPopupHelper(
+                          context,
+                          () async {
+                            await vm.deleteComplaint(value.complaintNo!);
+                            AppNavigator.pop();
+                          },
+                          () {
+                            AppNavigator.pop();
+                          },
+                          "Delete Complaint",
+                          "Are you sure you want to delete this complaint?",
+                          "Delete",
+                          "Cancel",
+                          vm.getIsDeleting,
+                        );
+                      },
                     ),
                   ),
 

@@ -10,4 +10,13 @@ class AllComplaintsRepositoryImpl extends BaseRepository
   Future<Either<AppException, ComplaintsList>> getAllComplaintsList() {
     return execute(call: () => dataSource.getAllComplaintsList());
   }
+
+  @override
+  Future<Either<AppException, bool>> deleteComplaint({
+    required int complaintId,
+  }) {
+    return execute(
+      call: () => dataSource.deleteComplaint(complaintId: complaintId),
+    );
+  }
 }
