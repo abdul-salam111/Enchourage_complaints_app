@@ -5,11 +5,11 @@ import '../../app_exports.dart';
 class ConfirmationPopup extends StatefulWidget {
   final String title;
   final String subTitle;
-  final VoidCallback onConfirm;
+  final Future<void> Function() onConfirm;
   final VoidCallback onCancel;
   final String confirmText;
   final String cancelText;
-  final bool showConfirmLoader;
+
   const ConfirmationPopup({
     super.key,
     required this.title,
@@ -18,7 +18,6 @@ class ConfirmationPopup extends StatefulWidget {
     required this.onCancel,
     required this.confirmText,
     required this.cancelText,
-    this.showConfirmLoader = false,
   });
 
   @override
@@ -149,15 +148,13 @@ class _ConfirmationPopupState extends State<ConfirmationPopup>
 
                   // Confirm Button
                   Expanded(
-                    child: widget.showConfirmLoader
-                        ? const LoadingIndicator(size: 25)
-                        : _AnimatedButton(
-                            onTap: widget.onConfirm,
-                            backgroundColor: AppColors.primaryDark,
-                            textColor: Colors.white,
-                            text: widget.confirmText,
-                            icon: Icons.check_rounded,
-                          ),
+                    child: _AnimatedButton(
+                      onTap: widget.onConfirm,
+                      backgroundColor: AppColors.primaryDark,
+                      textColor: Colors.white,
+                      text: widget.confirmText,
+                      icon: Icons.check_rounded,
+                    ),
                   ),
                 ],
               ),
@@ -170,7 +167,7 @@ class _ConfirmationPopupState extends State<ConfirmationPopup>
 }
 
 class _AnimatedButton extends StatefulWidget {
-  final VoidCallback onTap;
+  final dynamic onTap;
   final Color backgroundColor;
   final Color textColor;
   final String text;
@@ -191,13 +188,21 @@ class _AnimatedButton extends StatefulWidget {
 class _AnimatedButtonState extends State<_AnimatedButton> {
   bool _isPressed = false;
 
+  void _handleTap() async {
+    if (widget.onTap is Future<void> Function()) {
+      await widget.onTap();
+    } else if (widget.onTap is VoidCallback) {
+      widget.onTap();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
         setState(() => _isPressed = false);
-        widget.onTap();
+        _handleTap();
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedContainer(
@@ -243,17 +248,16 @@ class _AnimatedButtonState extends State<_AnimatedButton> {
 // Alternative: Blur background animation
 void confirmationPopupHelper(
   BuildContext context,
-  VoidCallback onConfirm,
+  Future<void> Function() onConfirm,
   VoidCallback onCancel,
   String title,
   String subTitle,
   String confirmText,
   String cancelText,
-  bool showConfirmLoader,
 ) {
   showGeneralDialog(
     context: context,
-    barrierDismissible: true,
+    barrierDismissible: false,
     barrierLabel: 'Close Order',
     barrierColor: Colors.black.withOpacity(0.6),
     transitionDuration: const Duration(milliseconds: 300),
@@ -274,7 +278,6 @@ void confirmationPopupHelper(
             subTitle: subTitle,
             confirmText: confirmText,
             cancelText: cancelText,
-            showConfirmLoader: showConfirmLoader,
           ),
         ),
       );

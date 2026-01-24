@@ -11,6 +11,8 @@ class ComplaintsTableList extends StatelessWidget {
     required this.onView,
     required this.onDelete,
     this.isShowDepart = false,
+    this.isDeleting = false,
+    this.deletingId,
   });
 
   final List<Complaint> items;
@@ -19,7 +21,8 @@ class ComplaintsTableList extends StatelessWidget {
   final bool? isShowDepart;
   final ValueChanged<int> onToggleExpand;
   final ValueChanged<int> onToggleSelect;
-
+  final bool isDeleting;
+  final int? deletingId;
   final ValueChanged<Complaint> onView;
   final ValueChanged<Complaint> onDelete;
 
@@ -49,6 +52,7 @@ class ComplaintsTableList extends StatelessWidget {
           onView: () => onView(complaint),
           onDelete: () => onDelete(complaint),
           isShowDepart: isShowDepart ?? false,
+          isDeleting: isDeleting && deletingId == complaint.complaintNo,
         );
       },
     );
@@ -67,6 +71,7 @@ class ComplaintRowTile extends StatelessWidget {
     required this.onView,
     required this.onDelete,
     this.isShowDepart = false,
+    this.isDeleting = false,
   });
 
   final Complaint complaint;
@@ -77,10 +82,11 @@ class ComplaintRowTile extends StatelessWidget {
 
   final ValueChanged<int> onToggleExpand;
   final ValueChanged<int> onToggleSelect;
-
+  final bool isDeleting;
   final VoidCallback onView;
   final VoidCallback onDelete;
   final bool isShowDepart;
+
   @override
   Widget build(BuildContext context) {
     final id = complaint.complaintNo;
@@ -207,11 +213,13 @@ class ComplaintRowTile extends StatelessWidget {
             width: 25,
             child: IconButton(
               padding: EdgeInsets.zero,
-              onPressed: onView,
+              onPressed: isDeleting ? null : onView,
               icon: Container(
                 padding: .all(4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: isDeleting
+                      ? AppColors.primaryLight.withOpacity(0.5)
+                      : AppColors.primaryLight,
                   borderRadius: .circular(5),
                 ),
                 child: const Center(
@@ -225,15 +233,32 @@ class ComplaintRowTile extends StatelessWidget {
             width: 25,
             child: IconButton(
               padding: EdgeInsets.zero,
-              onPressed: onDelete,
+              onPressed: isDeleting ? null : onDelete,
               icon: Container(
                 padding: .all(4),
                 decoration: BoxDecoration(
-                  color: AppColors.errorLight,
+                  color: isDeleting
+                      ? AppColors.errorLight.withOpacity(0.5)
+                      : AppColors.errorLight,
                   borderRadius: .circular(5),
                 ),
-                child: const Center(
-                  child: Icon(Iconsax.trash, size: 15, color: Colors.white),
+                child: Center(
+                  child: isDeleting
+                      ? const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Iconsax.trash,
+                          size: 15,
+                          color: Colors.white,
+                        ),
                 ),
               ),
             ),

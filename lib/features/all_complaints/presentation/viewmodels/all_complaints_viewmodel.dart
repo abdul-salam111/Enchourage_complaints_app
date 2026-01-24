@@ -37,24 +37,45 @@ class AllComplaintsViewModel extends SelectableFilterableListVM<Complaint, int>
     return id.contains(q) || memberId.contains(q) || status.contains(q);
   }
 
-  bool isDeleting = false;
-  bool get getIsDeleting => isDeleting;
+  bool _isDeleting = false;
+  bool get getIsDeleting => _isDeleting;
+
   set setIsDeleting(bool value) {
-    isDeleting = value;
+    _isDeleting = value;
+    notifyListeners();
+  }
+
+  int _deletingId = -1;
+  int get getDeletingId => _deletingId;
+
+  set setDeletingId(int value) {
+    _deletingId = value;
     notifyListeners();
   }
 
   Future<void> deleteComplaint(int complaintId) async {
-    setIsDeleting = true;
-    await execute(
+    _isDeleting = true;
+    setDeletingId = complaintId;
+    notifyListeners();
+
+    // Use executeQuiet to avoid affecting the main isLoading state
+    await executeQuiet(
       call: () => _deleteComplaintRemoteUsecase(complaintId),
       onSuccess: (bool res) {
-        paginatedData.removeWhere((e) => e.complaintNo == complaintId);
-        setIsDeleting = false;
-        AppToastsUtils.success(
-          'Complaint deleted successfully',
-          title: "Deleted",
-        );
+        // Remove from the actual data sources
+        data.removeWhere((e) => e.complaintNo == complaintId);
+        filteredData.removeWhere((e) => e.complaintNo == complaintId);
+
+        // Remove from selected rows if it was selected
+        selectedRows.remove(complaintId);
+
+        _isDeleting = false;
+        notifyListeners();
+      },
+      successMessage: 'Complaint deleted successfully',
+      onError: (error) {
+        _isDeleting = false;
+        notifyListeners();
       },
       showError: true,
     );

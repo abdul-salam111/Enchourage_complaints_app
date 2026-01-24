@@ -318,35 +318,28 @@ class CreateComplaintViewModel extends ChangeNotifier with UseCaseExecutor {
 
   final descriptionController = TextEditingController();
 
-  String? validateForm() {
-    if (_selectedBlock == null) {
-      return "Please select a block";
-    }
-    if (_selectedStreet == null) {
-      return "Please select a street";
-    }
-    if (_selectedPlot == null) {
-      return "Please select a plot";
-    }
-    if (_selectedComplaintType == null) {
-      return "Please select a complaint type";
-    }
-    if (descriptionController.text.trim().isEmpty) {
-      return "Please enter a description";
-    }
-    return null;
-  }
+  // String? validateForm() {
+  //   if (_selectedBlock == null) {
+  //     return "Please select a block";
+  //   }
+  //   if (_selectedStreet == null) {
+  //     return "Please select a street";
+  //   }
+  //   if (_selectedPlot == null) {
+  //     return "Please select a plot";
+  //   }
+  //   if (_selectedComplaintType == null) {
+  //     return "Please select a complaint type";
+  //   }
+  //   if (descriptionController.text.trim().isEmpty) {
+  //     return "Please enter a description";
+  //   }
+  //   return null;
+  // }
 
   Future<void> submitComplaint(List<File> attachments) async {
     // Clear previous error
     clearError();
-
-    // Validate
-    final validationError = validateForm();
-    if (validationError != null) {
-      _setErrorMessage(validationError);
-      return;
-    }
 
     _setSubmitting(true);
 
