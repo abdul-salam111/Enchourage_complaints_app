@@ -14,4 +14,8 @@ abstract interface class IComplaintDetailsRepository {
     required int complaintId,
     required String durationKey,
   });
+
+  Future<Either<AppException, MessagesList>> getMessagesList({
+    required int complaintId,
+  });
 }

@@ -80,6 +80,7 @@ export 'features/all_complaints/presentation/pages/all_complaints_page.dart';
 export 'features/all_complaints/presentation/viewmodels/all_complaints_viewmodel.dart';
 export 'features/complaint_details/data/datasources/remote_complaint_details_datasource.dart';
 export 'features/complaint_details/data/models/request_models/complaint_details_params.dart';
+export 'features/complaint_details/data/models/response_models/messages_list/messages_list.dart';
 export 'features/complaint_details/data/models/response_models/sent_message_response/sent_message_response.dart';
 export 'features/complaint_details/data/models/response_models/set_duration_response/set_duration_response.dart';
 export 'features/complaint_details/data/models/response_models/view_complaint_details/view_complaint.dart';
@@ -88,6 +89,7 @@ export 'features/complaint_details/domain/entities/complaint_details_entity.dart
 export 'features/complaint_details/domain/repositories/complaint_details_repository.dart';
 export 'features/complaint_details/domain/usecases/add_new_message_usecase.dart';
 export 'features/complaint_details/domain/usecases/complaint_details_usecase.dart';
+export 'features/complaint_details/domain/usecases/get_messages_list_usecase.dart';
 export 'features/complaint_details/domain/usecases/set_complaint_duration_usecase.dart';
 export 'features/complaint_details/presentation/pages/complaint_details_page.dart';
 export 'features/complaint_details/presentation/viewmodels/complaint_details_viewmodel.dart';

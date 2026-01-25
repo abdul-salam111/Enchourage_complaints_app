@@ -24,4 +24,6 @@ class ApiEndPoints {
       "${baseUrl}admin/complaint/$complaintId/messages";
   static String changeComplaintDuration(int complaintId) =>
       "${baseUrl}admin/complaint/$complaintId/duration";
+  static String getMessagesList(int complaintId) =>
+      "${baseUrl}admin/complaint/$complaintId/view-message";
 }

@@ -10,6 +10,8 @@ abstract interface class IRemoteComplaintDetailsDataSource {
     required int complaintId,
     required String durationKey,
   });
+
+  Future<MessagesList> getMessagesList({required int complaintId});
 }
 
 class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
@@ -45,6 +47,14 @@ class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
       url: ApiEndPoints.changeComplaintDuration(complaintId),
       parser: (json) => SetDurationResponse.fromJson(json),
       body: {"duration_key": durationKey},
+    );
+  }
+
+  @override
+  Future<MessagesList> getMessagesList({required int complaintId}) async {
+    return get(
+      url: ApiEndPoints.getMessagesList(complaintId),
+      parser: (json) => MessagesList.fromJson(json),
     );
   }
 }

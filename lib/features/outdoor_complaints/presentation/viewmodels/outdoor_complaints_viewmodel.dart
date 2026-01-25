@@ -5,10 +5,12 @@ class OutdoorComplaintsViewmodel
     with UseCaseExecutor {
   OutdoorComplaintsViewmodel({
     required OutdoorComplaintsUsecase outudoorComplaintsUsecase,
-  }) : _outdoorComplaintsUsecase = outudoorComplaintsUsecase;
+    required DeleteComplaintRemoteUsecase deleteComplaintRemoteUsecase,
+  }) : _outdoorComplaintsUsecase = outudoorComplaintsUsecase,
+       _deleteComplaintRemoteUsecase = deleteComplaintRemoteUsecase;
 
   final OutdoorComplaintsUsecase _outdoorComplaintsUsecase;
-
+  final DeleteComplaintRemoteUsecase _deleteComplaintRemoteUsecase;
   final FocusNode searchFocusNode = FocusNode();
 
   // Department filter state
@@ -94,6 +96,25 @@ class OutdoorComplaintsViewmodel
     final memberId = (c.memberName?.toString() ?? '').toLowerCase();
     final status = (c.status ?? '').toLowerCase();
     return id.contains(q) || memberId.contains(q) || status.contains(q);
+  }
+
+  @override
+  Future<bool> performDelete(int id) async {
+    bool success = false;
+
+    await executeQuiet(
+      call: () => _deleteComplaintRemoteUsecase(id),
+      onSuccess: (bool res) {
+        success = res;
+      },
+      successMessage: 'Complaint deleted successfully',
+      onError: (error) {
+        success = false;
+      },
+      showError: true,
+    );
+
+    return success;
   }
 
   @override

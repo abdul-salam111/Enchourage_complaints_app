@@ -52,8 +52,8 @@ class _IndoorComplaintsPageState extends State<IndoorComplaintsPage> {
 
                 Expanded(
                   child: ComplaintsTableList(
-                    isDeleting: vm.getIsDeleting,
-                    deletingId: vm.getDeletingId,
+                    isDeleting: vm.isDeleting,
+                    deletingId: vm.deletingId,
                     items: vm.paginatedData,
                     expandedRows: vm.expandedRows,
                     selectedRows: vm.selectedRows,
@@ -70,7 +70,7 @@ class _IndoorComplaintsPageState extends State<IndoorComplaintsPage> {
                         context,
                         () async {
                           AppNavigator.pop();
-                          await vm.deleteComplaint(value.complaintNo!);
+                          await vm.deleteItem(value.complaintNo!);
                         },
                         () {
                           AppNavigator.pop();
@@ -83,7 +83,6 @@ class _IndoorComplaintsPageState extends State<IndoorComplaintsPage> {
                     },
                   ),
                 ),
-
                 // Pagination Widget
                 PaginationWidget(
                   currentPage: vm.currentPage,

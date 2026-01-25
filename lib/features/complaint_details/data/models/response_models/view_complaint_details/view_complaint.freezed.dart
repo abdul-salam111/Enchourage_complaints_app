@@ -302,7 +302,7 @@ $ComplaintDetailsCopyWith<$Res>? get data {
 /// @nodoc
 mixin _$ComplaintDetails {
 
-@JsonKey(name: "complaint_no") int? get complaintNo;@JsonKey(name: "member_name") String? get memberName;@JsonKey(name: "phone") dynamic get phone;@JsonKey(name: "address") String? get address;@JsonKey(name: "title") String? get title;@JsonKey(name: "description") String? get description;@JsonKey(name: "date") String? get date;@JsonKey(name: "assign_by") String? get assignBy;@JsonKey(name: "assign_to") String? get assignTo;
+@JsonKey(name: "complaint_no") int? get complaintNo;@JsonKey(name: "member_name") String? get memberName;@JsonKey(name: "phone") dynamic get phone;@JsonKey(name: "address") String? get address;@JsonKey(name: "title") String? get title;@JsonKey(name: "description") String? get description;@JsonKey(name: "status") String? get status;@JsonKey(name: "time_duration") dynamic get timeDuration;@JsonKey(name: "attachments") List<String>? get attachments;@JsonKey(name: "date") String? get date;@JsonKey(name: "assign_by") String? get assignBy;@JsonKey(name: "assign_to") String? get assignTo;
 /// Create a copy of ComplaintDetails
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -315,16 +315,16 @@ $ComplaintDetailsCopyWith<ComplaintDetails> get copyWith => _$ComplaintDetailsCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ComplaintDetails&&(identical(other.complaintNo, complaintNo) || other.complaintNo == complaintNo)&&(identical(other.memberName, memberName) || other.memberName == memberName)&&const DeepCollectionEquality().equals(other.phone, phone)&&(identical(other.address, address) || other.address == address)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.date, date) || other.date == date)&&(identical(other.assignBy, assignBy) || other.assignBy == assignBy)&&(identical(other.assignTo, assignTo) || other.assignTo == assignTo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ComplaintDetails&&(identical(other.complaintNo, complaintNo) || other.complaintNo == complaintNo)&&(identical(other.memberName, memberName) || other.memberName == memberName)&&const DeepCollectionEquality().equals(other.phone, phone)&&(identical(other.address, address) || other.address == address)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.timeDuration, timeDuration)&&const DeepCollectionEquality().equals(other.attachments, attachments)&&(identical(other.date, date) || other.date == date)&&(identical(other.assignBy, assignBy) || other.assignBy == assignBy)&&(identical(other.assignTo, assignTo) || other.assignTo == assignTo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,complaintNo,memberName,const DeepCollectionEquality().hash(phone),address,title,description,date,assignBy,assignTo);
+int get hashCode => Object.hash(runtimeType,complaintNo,memberName,const DeepCollectionEquality().hash(phone),address,title,description,status,const DeepCollectionEquality().hash(timeDuration),const DeepCollectionEquality().hash(attachments),date,assignBy,assignTo);
 
 @override
 String toString() {
-  return 'ComplaintDetails(complaintNo: $complaintNo, memberName: $memberName, phone: $phone, address: $address, title: $title, description: $description, date: $date, assignBy: $assignBy, assignTo: $assignTo)';
+  return 'ComplaintDetails(complaintNo: $complaintNo, memberName: $memberName, phone: $phone, address: $address, title: $title, description: $description, status: $status, timeDuration: $timeDuration, attachments: $attachments, date: $date, assignBy: $assignBy, assignTo: $assignTo)';
 }
 
 
@@ -335,7 +335,7 @@ abstract mixin class $ComplaintDetailsCopyWith<$Res>  {
   factory $ComplaintDetailsCopyWith(ComplaintDetails value, $Res Function(ComplaintDetails) _then) = _$ComplaintDetailsCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: "complaint_no") int? complaintNo,@JsonKey(name: "member_name") String? memberName,@JsonKey(name: "phone") dynamic phone,@JsonKey(name: "address") String? address,@JsonKey(name: "title") String? title,@JsonKey(name: "description") String? description,@JsonKey(name: "date") String? date,@JsonKey(name: "assign_by") String? assignBy,@JsonKey(name: "assign_to") String? assignTo
+@JsonKey(name: "complaint_no") int? complaintNo,@JsonKey(name: "member_name") String? memberName,@JsonKey(name: "phone") dynamic phone,@JsonKey(name: "address") String? address,@JsonKey(name: "title") String? title,@JsonKey(name: "description") String? description,@JsonKey(name: "status") String? status,@JsonKey(name: "time_duration") dynamic timeDuration,@JsonKey(name: "attachments") List<String>? attachments,@JsonKey(name: "date") String? date,@JsonKey(name: "assign_by") String? assignBy,@JsonKey(name: "assign_to") String? assignTo
 });
 
 
@@ -352,7 +352,7 @@ class _$ComplaintDetailsCopyWithImpl<$Res>
 
 /// Create a copy of ComplaintDetails
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? complaintNo = freezed,Object? memberName = freezed,Object? phone = freezed,Object? address = freezed,Object? title = freezed,Object? description = freezed,Object? date = freezed,Object? assignBy = freezed,Object? assignTo = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? complaintNo = freezed,Object? memberName = freezed,Object? phone = freezed,Object? address = freezed,Object? title = freezed,Object? description = freezed,Object? status = freezed,Object? timeDuration = freezed,Object? attachments = freezed,Object? date = freezed,Object? assignBy = freezed,Object? assignTo = freezed,}) {
   return _then(_self.copyWith(
 complaintNo: freezed == complaintNo ? _self.complaintNo : complaintNo // ignore: cast_nullable_to_non_nullable
 as int?,memberName: freezed == memberName ? _self.memberName : memberName // ignore: cast_nullable_to_non_nullable
@@ -360,7 +360,10 @@ as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullabl
 as dynamic,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,date: freezed == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,timeDuration: freezed == timeDuration ? _self.timeDuration : timeDuration // ignore: cast_nullable_to_non_nullable
+as dynamic,attachments: freezed == attachments ? _self.attachments : attachments // ignore: cast_nullable_to_non_nullable
+as List<String>?,date: freezed == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as String?,assignBy: freezed == assignBy ? _self.assignBy : assignBy // ignore: cast_nullable_to_non_nullable
 as String?,assignTo: freezed == assignTo ? _self.assignTo : assignTo // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -448,10 +451,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "member_name")  String? memberName, @JsonKey(name: "phone")  dynamic phone, @JsonKey(name: "address")  String? address, @JsonKey(name: "title")  String? title, @JsonKey(name: "description")  String? description, @JsonKey(name: "date")  String? date, @JsonKey(name: "assign_by")  String? assignBy, @JsonKey(name: "assign_to")  String? assignTo)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "member_name")  String? memberName, @JsonKey(name: "phone")  dynamic phone, @JsonKey(name: "address")  String? address, @JsonKey(name: "title")  String? title, @JsonKey(name: "description")  String? description, @JsonKey(name: "status")  String? status, @JsonKey(name: "time_duration")  dynamic timeDuration, @JsonKey(name: "attachments")  List<String>? attachments, @JsonKey(name: "date")  String? date, @JsonKey(name: "assign_by")  String? assignBy, @JsonKey(name: "assign_to")  String? assignTo)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ComplaintDetails() when $default != null:
-return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_that.title,_that.description,_that.date,_that.assignBy,_that.assignTo);case _:
+return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_that.title,_that.description,_that.status,_that.timeDuration,_that.attachments,_that.date,_that.assignBy,_that.assignTo);case _:
   return orElse();
 
 }
@@ -469,10 +472,10 @@ return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "member_name")  String? memberName, @JsonKey(name: "phone")  dynamic phone, @JsonKey(name: "address")  String? address, @JsonKey(name: "title")  String? title, @JsonKey(name: "description")  String? description, @JsonKey(name: "date")  String? date, @JsonKey(name: "assign_by")  String? assignBy, @JsonKey(name: "assign_to")  String? assignTo)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "member_name")  String? memberName, @JsonKey(name: "phone")  dynamic phone, @JsonKey(name: "address")  String? address, @JsonKey(name: "title")  String? title, @JsonKey(name: "description")  String? description, @JsonKey(name: "status")  String? status, @JsonKey(name: "time_duration")  dynamic timeDuration, @JsonKey(name: "attachments")  List<String>? attachments, @JsonKey(name: "date")  String? date, @JsonKey(name: "assign_by")  String? assignBy, @JsonKey(name: "assign_to")  String? assignTo)  $default,) {final _that = this;
 switch (_that) {
 case _ComplaintDetails():
-return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_that.title,_that.description,_that.date,_that.assignBy,_that.assignTo);case _:
+return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_that.title,_that.description,_that.status,_that.timeDuration,_that.attachments,_that.date,_that.assignBy,_that.assignTo);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -489,10 +492,10 @@ return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "member_name")  String? memberName, @JsonKey(name: "phone")  dynamic phone, @JsonKey(name: "address")  String? address, @JsonKey(name: "title")  String? title, @JsonKey(name: "description")  String? description, @JsonKey(name: "date")  String? date, @JsonKey(name: "assign_by")  String? assignBy, @JsonKey(name: "assign_to")  String? assignTo)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "member_name")  String? memberName, @JsonKey(name: "phone")  dynamic phone, @JsonKey(name: "address")  String? address, @JsonKey(name: "title")  String? title, @JsonKey(name: "description")  String? description, @JsonKey(name: "status")  String? status, @JsonKey(name: "time_duration")  dynamic timeDuration, @JsonKey(name: "attachments")  List<String>? attachments, @JsonKey(name: "date")  String? date, @JsonKey(name: "assign_by")  String? assignBy, @JsonKey(name: "assign_to")  String? assignTo)?  $default,) {final _that = this;
 switch (_that) {
 case _ComplaintDetails() when $default != null:
-return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_that.title,_that.description,_that.date,_that.assignBy,_that.assignTo);case _:
+return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_that.title,_that.description,_that.status,_that.timeDuration,_that.attachments,_that.date,_that.assignBy,_that.assignTo);case _:
   return null;
 
 }
@@ -504,7 +507,7 @@ return $default(_that.complaintNo,_that.memberName,_that.phone,_that.address,_th
 @JsonSerializable()
 
 class _ComplaintDetails implements ComplaintDetails {
-  const _ComplaintDetails({@JsonKey(name: "complaint_no") this.complaintNo, @JsonKey(name: "member_name") this.memberName, @JsonKey(name: "phone") this.phone, @JsonKey(name: "address") this.address, @JsonKey(name: "title") this.title, @JsonKey(name: "description") this.description, @JsonKey(name: "date") this.date, @JsonKey(name: "assign_by") this.assignBy, @JsonKey(name: "assign_to") this.assignTo});
+  const _ComplaintDetails({@JsonKey(name: "complaint_no") this.complaintNo, @JsonKey(name: "member_name") this.memberName, @JsonKey(name: "phone") this.phone, @JsonKey(name: "address") this.address, @JsonKey(name: "title") this.title, @JsonKey(name: "description") this.description, @JsonKey(name: "status") this.status, @JsonKey(name: "time_duration") this.timeDuration, @JsonKey(name: "attachments") final  List<String>? attachments, @JsonKey(name: "date") this.date, @JsonKey(name: "assign_by") this.assignBy, @JsonKey(name: "assign_to") this.assignTo}): _attachments = attachments;
   factory _ComplaintDetails.fromJson(Map<String, dynamic> json) => _$ComplaintDetailsFromJson(json);
 
 @override@JsonKey(name: "complaint_no") final  int? complaintNo;
@@ -513,6 +516,17 @@ class _ComplaintDetails implements ComplaintDetails {
 @override@JsonKey(name: "address") final  String? address;
 @override@JsonKey(name: "title") final  String? title;
 @override@JsonKey(name: "description") final  String? description;
+@override@JsonKey(name: "status") final  String? status;
+@override@JsonKey(name: "time_duration") final  dynamic timeDuration;
+ final  List<String>? _attachments;
+@override@JsonKey(name: "attachments") List<String>? get attachments {
+  final value = _attachments;
+  if (value == null) return null;
+  if (_attachments is EqualUnmodifiableListView) return _attachments;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 @override@JsonKey(name: "date") final  String? date;
 @override@JsonKey(name: "assign_by") final  String? assignBy;
 @override@JsonKey(name: "assign_to") final  String? assignTo;
@@ -530,16 +544,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ComplaintDetails&&(identical(other.complaintNo, complaintNo) || other.complaintNo == complaintNo)&&(identical(other.memberName, memberName) || other.memberName == memberName)&&const DeepCollectionEquality().equals(other.phone, phone)&&(identical(other.address, address) || other.address == address)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.date, date) || other.date == date)&&(identical(other.assignBy, assignBy) || other.assignBy == assignBy)&&(identical(other.assignTo, assignTo) || other.assignTo == assignTo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ComplaintDetails&&(identical(other.complaintNo, complaintNo) || other.complaintNo == complaintNo)&&(identical(other.memberName, memberName) || other.memberName == memberName)&&const DeepCollectionEquality().equals(other.phone, phone)&&(identical(other.address, address) || other.address == address)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.timeDuration, timeDuration)&&const DeepCollectionEquality().equals(other._attachments, _attachments)&&(identical(other.date, date) || other.date == date)&&(identical(other.assignBy, assignBy) || other.assignBy == assignBy)&&(identical(other.assignTo, assignTo) || other.assignTo == assignTo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,complaintNo,memberName,const DeepCollectionEquality().hash(phone),address,title,description,date,assignBy,assignTo);
+int get hashCode => Object.hash(runtimeType,complaintNo,memberName,const DeepCollectionEquality().hash(phone),address,title,description,status,const DeepCollectionEquality().hash(timeDuration),const DeepCollectionEquality().hash(_attachments),date,assignBy,assignTo);
 
 @override
 String toString() {
-  return 'ComplaintDetails(complaintNo: $complaintNo, memberName: $memberName, phone: $phone, address: $address, title: $title, description: $description, date: $date, assignBy: $assignBy, assignTo: $assignTo)';
+  return 'ComplaintDetails(complaintNo: $complaintNo, memberName: $memberName, phone: $phone, address: $address, title: $title, description: $description, status: $status, timeDuration: $timeDuration, attachments: $attachments, date: $date, assignBy: $assignBy, assignTo: $assignTo)';
 }
 
 
@@ -550,7 +564,7 @@ abstract mixin class _$ComplaintDetailsCopyWith<$Res> implements $ComplaintDetai
   factory _$ComplaintDetailsCopyWith(_ComplaintDetails value, $Res Function(_ComplaintDetails) _then) = __$ComplaintDetailsCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: "complaint_no") int? complaintNo,@JsonKey(name: "member_name") String? memberName,@JsonKey(name: "phone") dynamic phone,@JsonKey(name: "address") String? address,@JsonKey(name: "title") String? title,@JsonKey(name: "description") String? description,@JsonKey(name: "date") String? date,@JsonKey(name: "assign_by") String? assignBy,@JsonKey(name: "assign_to") String? assignTo
+@JsonKey(name: "complaint_no") int? complaintNo,@JsonKey(name: "member_name") String? memberName,@JsonKey(name: "phone") dynamic phone,@JsonKey(name: "address") String? address,@JsonKey(name: "title") String? title,@JsonKey(name: "description") String? description,@JsonKey(name: "status") String? status,@JsonKey(name: "time_duration") dynamic timeDuration,@JsonKey(name: "attachments") List<String>? attachments,@JsonKey(name: "date") String? date,@JsonKey(name: "assign_by") String? assignBy,@JsonKey(name: "assign_to") String? assignTo
 });
 
 
@@ -567,7 +581,7 @@ class __$ComplaintDetailsCopyWithImpl<$Res>
 
 /// Create a copy of ComplaintDetails
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? complaintNo = freezed,Object? memberName = freezed,Object? phone = freezed,Object? address = freezed,Object? title = freezed,Object? description = freezed,Object? date = freezed,Object? assignBy = freezed,Object? assignTo = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? complaintNo = freezed,Object? memberName = freezed,Object? phone = freezed,Object? address = freezed,Object? title = freezed,Object? description = freezed,Object? status = freezed,Object? timeDuration = freezed,Object? attachments = freezed,Object? date = freezed,Object? assignBy = freezed,Object? assignTo = freezed,}) {
   return _then(_ComplaintDetails(
 complaintNo: freezed == complaintNo ? _self.complaintNo : complaintNo // ignore: cast_nullable_to_non_nullable
 as int?,memberName: freezed == memberName ? _self.memberName : memberName // ignore: cast_nullable_to_non_nullable
@@ -575,7 +589,10 @@ as String?,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullabl
 as dynamic,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,date: freezed == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,timeDuration: freezed == timeDuration ? _self.timeDuration : timeDuration // ignore: cast_nullable_to_non_nullable
+as dynamic,attachments: freezed == attachments ? _self._attachments : attachments // ignore: cast_nullable_to_non_nullable
+as List<String>?,date: freezed == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as String?,assignBy: freezed == assignBy ? _self.assignBy : assignBy // ignore: cast_nullable_to_non_nullable
 as String?,assignTo: freezed == assignTo ? _self.assignTo : assignTo // ignore: cast_nullable_to_non_nullable
 as String?,

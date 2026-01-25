@@ -34,9 +34,9 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) =>
-          sl<ComplaintDetailsViewModel>()
-            ..fetchComplaintDetails(widget.complaintId),
+      create: (_) => sl<ComplaintDetailsViewModel>()
+        ..fetchComplaintDetails(widget.complaintId)
+        ..getMessagesList(complaintId: widget.complaintId),
       child: Scaffold(
         appBar: AppBar(title: Text('ComptNo: ${widget.complaintId}')),
         body: Consumer<ComplaintDetailsViewModel>(
@@ -230,45 +230,56 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                             ),
                             heightBox(10),
 
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: InkWell(
-                                onTap: () {
-                                  _showAttachmentsDialog(context, []);
-                                },
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: AppColors.grey200,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.attachment,
-                                        color: AppColors.primaryDark,
-                                        size: 18,
-                                      ),
-                                      widthBox(8),
-                                      Text(
-                                        "View Attachments",
-                                        style: context.bodySmall.copyWith(
-                                          fontWeight: FontWeight.w600,
+                            vm.complaintDetails!.data!.attachments!.isNotEmpty
+                                ? Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: InkWell(
+                                      onTap: () {
+                                        _showAttachmentsDialog(
+                                          context,
+                                          vm
+                                                  .complaintDetails
+                                                  ?.data
+                                                  ?.attachments ??
+                                              [],
+                                        );
+                                      },
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.grey200,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.attachment,
+                                              color: AppColors.primaryDark,
+                                              size: 18,
+                                            ),
+                                            widthBox(8),
+                                            Text(
+                                              "View Attachments",
+                                              style: context.bodySmall.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                                    ),
+                                  )
+                                : Text("No Attachements"),
                           ],
                         ),
                       ),

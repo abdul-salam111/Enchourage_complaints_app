@@ -24,6 +24,11 @@ _ComplaintDetails _$ComplaintDetailsFromJson(Map<String, dynamic> json) =>
       address: json['address'] as String?,
       title: json['title'] as String?,
       description: json['description'] as String?,
+      status: json['status'] as String?,
+      timeDuration: json['time_duration'],
+      attachments: (json['attachments'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       date: json['date'] as String?,
       assignBy: json['assign_by'] as String?,
       assignTo: json['assign_to'] as String?,
@@ -37,6 +42,9 @@ Map<String, dynamic> _$ComplaintDetailsToJson(_ComplaintDetails instance) =>
       'address': instance.address,
       'title': instance.title,
       'description': instance.description,
+      'status': instance.status,
+      'time_duration': instance.timeDuration,
+      'attachments': instance.attachments,
       'date': instance.date,
       'assign_by': instance.assignBy,
       'assign_to': instance.assignTo,

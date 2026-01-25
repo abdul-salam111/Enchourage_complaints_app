@@ -41,7 +41,7 @@ class _MessagesTabState extends State<MessagesTab> {
   Widget build(BuildContext context) {
     return Consumer<ComplaintDetailsViewModel>(
       builder: (context, vm, _) {
-        final messages = vm.messages;
+        final messages = vm.messagesList;
         final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
         return Padding(
@@ -78,7 +78,7 @@ class _MessagesTabState extends State<MessagesTab> {
 }
 
 class AdminMessageCard extends StatelessWidget {
-  final ComplaintMessage message;
+  final Message message;
 
   const AdminMessageCard({super.key, required this.message});
 
@@ -95,14 +95,14 @@ class AdminMessageCard extends StatelessWidget {
         crossAxisAlignment: .start,
         children: [
           Text(
-            message.message,
+            message.message ?? "",
             style: context.bodySmall.copyWith(fontWeight: .normal),
           ),
           heightBox(6),
           Align(
             alignment: .centerRight,
             child: Text(
-              message.time,
+              message.createdAt.toString(),
               style: context.bodySmall.copyWith(
                 fontSize: 11,
                 color: AppColors.textSecondaryLight,

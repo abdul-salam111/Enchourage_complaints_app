@@ -76,16 +76,35 @@ class _OutdoorComplaintsPageState extends State<OutdoorComplaintsPage> {
                 ),
                 Expanded(
                   child: ComplaintsTableList(
-                    isShowDepart: true,
+                    isDeleting: vm.isDeleting,
+                    deletingId: vm.deletingId,
                     items: vm.paginatedData,
                     expandedRows: vm.expandedRows,
                     selectedRows: vm.selectedRows,
                     onToggleExpand: vm.toggleExpandRow,
                     onToggleSelect: vm.toggleRowSelection,
                     onView: (complaint) {
-                      AppNavigator.pushNamed(RouteNames.complaint_details);
+                      AppNavigator.pushNamed(
+                        RouteNames.complaint_details,
+                        extra: complaint.complaintNo,
+                      );
                     },
-                    onDelete: (Complaint value) {},
+                    onDelete: (Complaint value) {
+                      confirmationPopupHelper(
+                        context,
+                        () async {
+                          AppNavigator.pop();
+                          await vm.deleteItem(value.complaintNo!);
+                        },
+                        () {
+                          AppNavigator.pop();
+                        },
+                        "Delete Complaint",
+                        "Are you sure you want to delete this complaint?",
+                        "Delete",
+                        "Cancel",
+                      );
+                    },
                   ),
                 ),
                 PaginationWidget(

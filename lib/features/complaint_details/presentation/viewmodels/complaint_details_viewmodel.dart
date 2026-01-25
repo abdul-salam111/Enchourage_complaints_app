@@ -7,13 +7,16 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   final ComplaintDetailsUsecase _complaintDetailsUsecase;
   final AddNewMessageUsecase _addNewMessageUsecase;
   final SetComplaintDurationUsecase _setComplaintDurationUsecase;
+  final GetMessagesListUsecase _getMessagesListUsecase;
 
   ComplaintDetailsViewModel({
     required ComplaintDetailsUsecase complaintDetailsUsecase,
     required AddNewMessageUsecase addNewMessageUsecase,
     required SetComplaintDurationUsecase setComplaintDurationUsecase,
+    required GetMessagesListUsecase getMessagesListUsecase,
   }) : _complaintDetailsUsecase = complaintDetailsUsecase,
        _setComplaintDurationUsecase = setComplaintDurationUsecase,
+       _getMessagesListUsecase = getMessagesListUsecase,
        _addNewMessageUsecase = addNewMessageUsecase;
 
   // ══════════════════════════════════════════════════════════════
@@ -57,6 +60,18 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
       call: () => _complaintDetailsUsecase(complaintId),
       onSuccess: (result) {
         _setComplaintDetails(result);
+
+        // ✅ Find matching option by key
+        final apiKey =
+            result.data?.timeDuration?.toString().toLowerCase() ?? '';
+        final matchingOption = _durationOptions.firstWhere(
+          (opt) => opt.key.toLowerCase() == apiKey,
+          orElse: () => _durationOptions.first,
+        );
+
+        selectedDuration = matchingOption.displayText;
+        selectedStatus = result.data?.status ?? "Select Status";
+
         debugPrint('Complaint details loaded: ${result.data?.complaintNo}');
       },
       onError: (error) {
@@ -149,13 +164,31 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   // ══════════════════════════════════════════════════════════════
   // Messages State
   // ══════════════════════════════════════════════════════════════
-  final List<ComplaintMessage> _messages = [];
-  List<ComplaintMessage> get messages => List.unmodifiable(_messages);
+
+  // ══════════════════════════════════════════════════════════════
+  // Messages State
+  // ══════════════════════════════════════════════════════════════
 
   bool _isSendingMessage = false;
   bool get isSendingMessage => _isSendingMessage;
   set isSendingMessage(bool value) {
     _isSendingMessage = value;
+    notifyListeners();
+  }
+
+  // ✅ Initialize with mutable list
+  List<Message> _messagesList = <Message>[];
+  List<Message> get messagesList => _messagesList;
+
+  // ✅ Create mutable copy from response
+  void setMessagesList(MessagesList value) {
+    _messagesList = List.from(value.data ?? []);
+    notifyListeners();
+  }
+
+  // ✅ Method to safely add message
+  void addMessageToList(Message message) {
+    _messagesList.add(message);
     notifyListeners();
   }
 
@@ -177,10 +210,10 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
         AddMesesage(complaintId: complaintId, message: msg),
       ),
       onSuccess: (data) {
-        final now = TimeOfDay.now().format(context);
-        _messages.add(ComplaintMessage(message: msg, time: now));
+        final now = DateTime.now();
+        // ✅ CHANGED: Use addMessageToList instead of direct add
+        addMessageToList(Message(createdAt: now.timeAgo, message: msg));
         isSendingMessage = false;
-        notifyListeners();
       },
       onError: (error) {
         isSendingMessage = false;
@@ -241,12 +274,31 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     notifyListeners();
   }
 
+  bool _isGettingMessages = false;
+  bool get isGettingMessages => _isGettingMessages;
+  set isGettingMessages(bool value) {
+    _isGettingMessages = value;
+    notifyListeners();
+  }
+
+  Future<void> getMessagesList({required int complaintId}) async {
+    isGettingMessages = true;
+    await executeQuiet(
+      call: () => _getMessagesListUsecase(complaintId),
+      onSuccess: (data) {
+        // ✅ CHANGED: Use setMessagesList method
+        setMessagesList(data);
+      },
+    );
+    isGettingMessages = false;
+  }
+
   // ══════════════════════════════════════════════════════════════
   // Cleanup
   // ══════════════════════════════════════════════════════════════
   @override
   void dispose() {
-    _messages.clear();
+    _messagesList.clear();
     _expandedRows.clear();
     super.dispose();
   }
@@ -255,12 +307,6 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
 // ══════════════════════════════════════════════════════════════
 // Models
 // ══════════════════════════════════════════════════════════════
-class ComplaintMessage {
-  final String message;
-  final String time;
-
-  ComplaintMessage({required this.message, required this.time});
-}
 
 class BillItem {
   final String title;

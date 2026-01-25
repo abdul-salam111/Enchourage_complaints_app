@@ -40,4 +40,13 @@ class ComplaintDetailsRepositoryImpl extends BaseRepository
       ),
     );
   }
+
+  @override
+  Future<Either<AppException, MessagesList>> getMessagesList({
+    required int complaintId,
+  }) {
+    return execute(
+      call: () => dataSource.getMessagesList(complaintId: complaintId),
+    );
+  }
 }
