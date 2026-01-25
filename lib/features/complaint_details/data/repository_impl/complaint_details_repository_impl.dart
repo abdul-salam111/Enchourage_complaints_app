@@ -14,4 +14,29 @@ class ComplaintDetailsRepositoryImpl extends BaseRepository
       call: () => dataSource.viewComplaintDetails(complaintId: complaintId),
     );
   }
+
+  @override
+  Future<Either<AppException, SentMessageResponse>> addNewMessageToComplaint({
+    required int complaintId,
+    required String message,
+  }) {
+    return execute(
+      call: () => dataSource.addNewMessageToComplaint(
+        complaintId: complaintId,
+        message: message,
+      ),
+    );
+  }
+
+  Future<Either<AppException, SetDurationResponse>> setComplaintDuration({
+    required int complaintId,
+    required String durationKey,
+  }) {
+    return execute(
+      call: () => dataSource.setComplaintDuration(
+        complaintId: complaintId,
+        durationKey: durationKey,
+      ),
+    );
+  }
 }

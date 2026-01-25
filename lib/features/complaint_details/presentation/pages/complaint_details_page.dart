@@ -199,11 +199,7 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                               alignment: Alignment.centerLeft,
                               child: InkWell(
                                 onTap: () {
-                                  _showAttachmentsDialog(context, [
-                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnCCpVhEQQyiapc7WvX5dUVHSm8ZnaWeCesw&s",
-                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnCCpVhEQQyiapc7WvX5dUVHSm8ZnaWeCesw&s",
-                                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnCCpVhEQQyiapc7WvX5dUVHSm8ZnaWeCesw&s",
-                                  ]);
+                                  _showAttachmentsDialog(context, []);
                                 },
                                 borderRadius: BorderRadius.circular(10),
                                 child: Container(
@@ -262,8 +258,12 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                     ),
                   ];
                 },
-                body: const TabBarView(
-                  children: [MessagesTab(), ViewBillTab(), AddBillTab()],
+                body: TabBarView(
+                  children: [
+                    MessagesTab(complaintId: widget.complaintId),
+                    ViewBillTab(),
+                    AddBillTab(),
+                  ],
                 ),
               ),
             );

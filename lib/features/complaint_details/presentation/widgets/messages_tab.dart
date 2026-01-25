@@ -1,7 +1,8 @@
 import '../../../../app_exports.dart';
 
 class MessagesTab extends StatefulWidget {
-  const MessagesTab({super.key});
+  final int complaintId;
+  const MessagesTab({super.key, required this.complaintId});
 
   @override
   State<MessagesTab> createState() => _MessagesTabState();
@@ -23,7 +24,7 @@ class _MessagesTabState extends State<MessagesTab> {
     if (text.isEmpty) return;
 
     final vm = context.read<ComplaintDetailsViewModel>();
-    vm.addMessage(context, text);
+    vm.addMessage(context, text, widget.complaintId);
     _controller.clear();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -44,7 +45,7 @@ class _MessagesTabState extends State<MessagesTab> {
         final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
         return Padding(
-          padding: EdgeInsets.only(bottom: bottomInset), // ✅ keyboard safe
+          padding: EdgeInsets.only(bottom: bottomInset),
           child: Column(
             children: [
               Expanded(
@@ -167,18 +168,26 @@ class MessageInputBar extends StatelessWidget {
             ),
           ),
           widthBox(10),
-          InkWell(
-            onTap: onSend,
-            borderRadius: .circular(10),
-            child: Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                color: AppColors.primaryDark,
-                borderRadius: .circular(10),
-              ),
-              child: const Icon(Icons.send, color: Colors.white, size: 18),
-            ),
+          Consumer<ComplaintDetailsViewModel>(
+            builder: (context, ref, _) => ref.isSendingMessage
+                ? const CircularProgressIndicator.adaptive()
+                : InkWell(
+                    onTap: onSend,
+                    borderRadius: .circular(10),
+                    child: Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryDark,
+                        borderRadius: .circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.send,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
           ),
         ],
       ),

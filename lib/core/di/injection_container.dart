@@ -94,9 +94,20 @@ Future<void> complaintDetailsDependencies() async {
     () => ComplaintDetailsUsecase(repository: sl()),
   );
 
+  sl.registerLazySingleton<AddNewMessageUsecase>(
+    () => AddNewMessageUsecase(repository: sl()),
+  );
+  sl.registerLazySingleton<SetComplaintDurationUsecase>(
+    () => SetComplaintDurationUsecase(repository: sl()),
+  );
+
   // ViewModel
   sl.registerFactory<ComplaintDetailsViewModel>(
-    () => ComplaintDetailsViewModel(complaintDetailsUsecase: sl()),
+    () => ComplaintDetailsViewModel(
+      complaintDetailsUsecase: sl(),
+      addNewMessageUsecase: sl(),
+      setComplaintDurationUsecase: sl(),
+    ),
   );
 }
 

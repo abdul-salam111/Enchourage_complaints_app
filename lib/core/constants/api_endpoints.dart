@@ -20,4 +20,8 @@ class ApiEndPoints {
       "${baseUrl}admin/complaint/$complaintId/view";
   static String deleteComplaintEndpoint(int complaintId) =>
       "${baseUrl}admin/complaint/$complaintId";
+  static String sentMessageByAdmin(int complaintId) =>
+      "${baseUrl}admin/complaint/$complaintId/messages";
+  static String changeComplaintDuration(int complaintId) =>
+      "${baseUrl}admin/complaint/$complaintId/duration";
 }

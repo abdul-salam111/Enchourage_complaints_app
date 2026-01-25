@@ -1,15 +1,24 @@
 import '../../../../app_exports.dart';
 
 class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
+  // ══════════════════════════════════════════════════════════════
+  // Dependencies
+  // ══════════════════════════════════════════════════════════════
   final ComplaintDetailsUsecase _complaintDetailsUsecase;
+  final AddNewMessageUsecase _addNewMessageUsecase;
+  final SetComplaintDurationUsecase _setComplaintDurationUsecase;
 
   ComplaintDetailsViewModel({
     required ComplaintDetailsUsecase complaintDetailsUsecase,
-  }) : _complaintDetailsUsecase = complaintDetailsUsecase;
+    required AddNewMessageUsecase addNewMessageUsecase,
+    required SetComplaintDurationUsecase setComplaintDurationUsecase,
+  }) : _complaintDetailsUsecase = complaintDetailsUsecase,
+       _setComplaintDurationUsecase = setComplaintDurationUsecase,
+       _addNewMessageUsecase = addNewMessageUsecase;
 
-  // ==========================
+  // ══════════════════════════════════════════════════════════════
   // Complaint Details State
-  // ==========================
+  // ══════════════════════════════════════════════════════════════
   ViewComplaint? _complaintDetails;
   ViewComplaint? get complaintDetails => _complaintDetails;
 
@@ -19,6 +28,9 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  // ──────────────────────────────────────────────────────────────
+  // Complaint Details Private Setters
+  // ──────────────────────────────────────────────────────────────
   void _setLoading(bool value) {
     _isLoadingComplaintDetails = value;
     notifyListeners();
@@ -34,6 +46,9 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     notifyListeners();
   }
 
+  // ──────────────────────────────────────────────────────────────
+  // Complaint Details Methods
+  // ──────────────────────────────────────────────────────────────
   Future<void> fetchComplaintDetails(int complaintId) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -58,9 +73,9 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     notifyListeners();
   }
 
-  // ==========================
-  // Existing Code
-  // ==========================
+  // ══════════════════════════════════════════════════════════════
+  // Duration & Status State
+  // ══════════════════════════════════════════════════════════════
   String _selectedTime = 'Select Duration';
   String get selectedTime => _selectedTime;
   set selectedTime(String value) {
@@ -75,67 +90,100 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     notifyListeners();
   }
 
-  // ---------------- MESSAGES ----------------
-  final List<ComplaintMessage> _messages = [
-    ComplaintMessage(
-      message: 'Complaint assigned to maintenance team.',
-      time: '10:30 AM',
-    ),
-    ComplaintMessage(
-      message: 'Maintenance staff acknowledged the task.',
-      time: '11:10 AM',
-    ),
-    ComplaintMessage(message: 'Work completed successfully.', time: '04:45 PM'),
-  ];
+  // ──────────────────────────────────────────────────────────────
+  // Duration & Status Methods
+  // ──────────────────────────────────────────────────────────────
+  bool _isChaningDuration = false;
+  bool get isChangingDuration => _isChaningDuration;
+  set isChangingDuration(bool value) {
+    _isChaningDuration = value;
+    notifyListeners();
+  }
 
+  Future<void> setComplaintDuration({
+    required ChangeDuration complaint,
+    required BuildContext context,
+  }) async {
+    isChangingDuration = true;
+    await executeQuiet(
+      call: () => _setComplaintDurationUsecase(complaint),
+      onSuccess: (result) {
+        isChangingDuration = false;
+        AppToastsUtils.showSuccess(context, "Duration set successfully");
+      },
+      onError: (error) {
+        isChangingDuration = false;
+      },
+      showError: true,
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // Messages State
+  // ══════════════════════════════════════════════════════════════
+  final List<ComplaintMessage> _messages = [];
   List<ComplaintMessage> get messages => List.unmodifiable(_messages);
 
-  void addMessage(BuildContext context, String text) {
+  bool _isSendingMessage = false;
+  bool get isSendingMessage => _isSendingMessage;
+  set isSendingMessage(bool value) {
+    _isSendingMessage = value;
+    notifyListeners();
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // Messages Methods
+  // ──────────────────────────────────────────────────────────────
+  Future<void> addMessage(
+    BuildContext context,
+    String text,
+    int complaintId,
+  ) async {
     final msg = text.trim();
     if (msg.isEmpty) return;
 
-    final now = TimeOfDay.now().format(context);
-    _messages.add(ComplaintMessage(message: msg, time: now));
-    notifyListeners();
+    isSendingMessage = true;
+
+    await execute(
+      call: () => _addNewMessageUsecase(
+        AddMesesage(complaintId: complaintId, message: msg),
+      ),
+      onSuccess: (data) {
+        final now = TimeOfDay.now().format(context);
+        _messages.add(ComplaintMessage(message: msg, time: now));
+        isSendingMessage = false;
+        notifyListeners();
+      },
+      onError: (error) {
+        isSendingMessage = false;
+        debugPrint('Error sending message: $error');
+      },
+    );
   }
 
-  // ---------------- BILLS (STATIC) ----------------
-  final List<BillItem> _bills = const [
-    BillItem(
-      title: 'Electricity',
-      amount: 120.00,
-      date: '2024-06-15',
-      description: 'June electricity bill for Block A. Meter reading verified.',
-    ),
-    BillItem(
-      title: 'Water',
-      amount: 35.50,
-      date: '2024-06-12',
-      description: 'Monthly water charges including maintenance.',
-    ),
-    BillItem(
-      title: 'Gas',
-      amount: 18.75,
-      date: '2024-06-10',
-      description: 'Gas usage bill for the last billing cycle.',
-    ),
-  ];
-
+  // ══════════════════════════════════════════════════════════════
+  // Bills State
+  // ══════════════════════════════════════════════════════════════
+  final List<BillItem> _bills = const [];
   List<BillItem> get bills => List.unmodifiable(_bills);
 
-  // ---------------- EXPAND/COLLAPSE ----------------
-  final Set<int> expandedRows = <int>{};
+  // ──────────────────────────────────────────────────────────────
+  // Bills Expand/Collapse State
+  // ──────────────────────────────────────────────────────────────
+  final Set<int> _expandedRows = <int>{};
 
-  bool isRowExpanded(int index) => expandedRows.contains(index);
+  bool isRowExpanded(int index) => _expandedRows.contains(index);
 
   void toggleExpandRow(int index) {
-    expandedRows.contains(index)
-        ? expandedRows.remove(index)
-        : expandedRows.add(index);
+    _expandedRows.contains(index)
+        ? _expandedRows.remove(index)
+        : _expandedRows.add(index);
     notifyListeners();
   }
 
-  // ---------------- Add Bill Tab----------------
+  // ══════════════════════════════════════════════════════════════
+  // Add Bill Tab State
+  // ══════════════════════════════════════════════════════════════
   final List<String> _propertiesList = const [
     'Property A',
     'Property B',
@@ -164,11 +212,25 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     _selectedBillType = value;
     notifyListeners();
   }
+
+  // ══════════════════════════════════════════════════════════════
+  // Cleanup
+  // ══════════════════════════════════════════════════════════════
+  @override
+  void dispose() {
+    _messages.clear();
+    _expandedRows.clear();
+    super.dispose();
+  }
 }
 
+// ══════════════════════════════════════════════════════════════
+// Models
+// ══════════════════════════════════════════════════════════════
 class ComplaintMessage {
   final String message;
   final String time;
+
   ComplaintMessage({required this.message, required this.time});
 }
 
