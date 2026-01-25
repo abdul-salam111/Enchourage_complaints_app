@@ -49,20 +49,42 @@ class _IndoorComplaintsPageState extends State<IndoorComplaintsPage> {
                   isAllSelected: vm.isAllSelected,
                   onToggleAll: (val) => vm.toggleSelectAll(val ?? false),
                 ),
+
                 Expanded(
                   child: ComplaintsTableList(
+                    isDeleting: vm.getIsDeleting,
+                    deletingId: vm.getDeletingId,
                     items: vm.paginatedData,
                     expandedRows: vm.expandedRows,
                     selectedRows: vm.selectedRows,
                     onToggleExpand: vm.toggleExpandRow,
                     onToggleSelect: vm.toggleRowSelection,
                     onView: (complaint) {
-                      AppNavigator.pushNamed(RouteNames.complaint_details);
+                      AppNavigator.pushNamed(
+                        RouteNames.complaint_details,
+                        extra: complaint.complaintNo,
+                      );
                     },
-                    onDelete: (Complaint value) {},
+                    onDelete: (Complaint value) {
+                      confirmationPopupHelper(
+                        context,
+                        () async {
+                          AppNavigator.pop();
+                          await vm.deleteComplaint(value.complaintNo!);
+                        },
+                        () {
+                          AppNavigator.pop();
+                        },
+                        "Delete Complaint",
+                        "Are you sure you want to delete this complaint?",
+                        "Delete",
+                        "Cancel",
+                      );
+                    },
                   ),
                 ),
 
+                // Pagination Widget
                 PaginationWidget(
                   currentPage: vm.currentPage,
                   totalPages: vm.totalPages,

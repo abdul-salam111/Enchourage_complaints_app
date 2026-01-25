@@ -60,7 +60,6 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
 
   // Optional: status getter (if you want filter by status)
   String statusOf(T item) => '';
-  // String departmentOf(T item) => '';
 
   // ----------------- Expand / Select -----------------
   void toggleExpandRow(K key) {
@@ -146,6 +145,7 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ----------------- Export -----------------
   bool _isExportingFile = false;
 
   bool get isExportingFile => _isExportingFile;
@@ -170,6 +170,53 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
       );
     } finally {
       isExportingFile = false;
+    }
+  }
+
+  // ----------------- Delete -----------------
+  bool _isDeleting = false;
+  bool get isDeleting => _isDeleting;
+
+  set isDeleting(bool value) {
+    _isDeleting = value;
+    notifyListeners();
+  }
+
+  K? _deletingId;
+  K? get deletingId => _deletingId;
+
+  set deletingId(K? value) {
+    _deletingId = value;
+    notifyListeners();
+  }
+
+  /// Override this method in child classes to implement actual delete logic
+  /// This should call the delete use case and return true on success
+  Future<bool> performDelete(K id) async {
+    throw UnimplementedError('performDelete must be implemented in subclass');
+  }
+
+  /// Generic delete method that handles state and list updates
+  Future<void> deleteItem(K id) async {
+    isDeleting = true;
+    deletingId = id;
+    notifyListeners();
+
+    try {
+      final success = await performDelete(id);
+
+      if (success) {
+        // Remove from data sources
+        data.removeWhere((e) => keyOf(e) == id);
+        filteredData.removeWhere((e) => keyOf(e) == id);
+
+        // Remove from selected rows if it was selected
+        selectedRows.remove(id);
+      }
+    } finally {
+      isDeleting = false;
+      deletingId = null;
+      notifyListeners();
     }
   }
 }

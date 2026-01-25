@@ -37,48 +37,23 @@ class AllComplaintsViewModel extends SelectableFilterableListVM<Complaint, int>
     return id.contains(q) || memberId.contains(q) || status.contains(q);
   }
 
-  bool _isDeleting = false;
-  bool get getIsDeleting => _isDeleting;
+  @override
+  Future<bool> performDelete(int id) async {
+    bool success = false;
 
-  set setIsDeleting(bool value) {
-    _isDeleting = value;
-    notifyListeners();
-  }
-
-  int _deletingId = -1;
-  int get getDeletingId => _deletingId;
-
-  set setDeletingId(int value) {
-    _deletingId = value;
-    notifyListeners();
-  }
-
-  Future<void> deleteComplaint(int complaintId) async {
-    _isDeleting = true;
-    setDeletingId = complaintId;
-    notifyListeners();
-
-    // Use executeQuiet to avoid affecting the main isLoading state
     await executeQuiet(
-      call: () => _deleteComplaintRemoteUsecase(complaintId),
+      call: () => _deleteComplaintRemoteUsecase(id),
       onSuccess: (bool res) {
-        // Remove from the actual data sources
-        data.removeWhere((e) => e.complaintNo == complaintId);
-        filteredData.removeWhere((e) => e.complaintNo == complaintId);
-
-        // Remove from selected rows if it was selected
-        selectedRows.remove(complaintId);
-
-        _isDeleting = false;
-        notifyListeners();
+        success = res;
       },
       successMessage: 'Complaint deleted successfully',
       onError: (error) {
-        _isDeleting = false;
-        notifyListeners();
+        success = false;
       },
       showError: true,
     );
+
+    return success;
   }
 
   @override

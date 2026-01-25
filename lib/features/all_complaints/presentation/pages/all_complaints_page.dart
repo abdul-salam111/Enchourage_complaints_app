@@ -53,8 +53,8 @@ class _AllComplaintsPageState extends State<AllComplaintsPage> {
 
                   Expanded(
                     child: ComplaintsTableList(
-                      isDeleting: vm.getIsDeleting,
-                      deletingId: vm.getDeletingId,
+                      isDeleting: vm.isDeleting,
+                      deletingId: vm.deletingId,
                       items: vm.paginatedData,
                       expandedRows: vm.expandedRows,
                       selectedRows: vm.selectedRows,
@@ -71,7 +71,7 @@ class _AllComplaintsPageState extends State<AllComplaintsPage> {
                           context,
                           () async {
                             AppNavigator.pop();
-                            await vm.deleteComplaint(value.complaintNo!);
+                            await vm.deleteItem(value.complaintNo!);
                           },
                           () {
                             AppNavigator.pop();

@@ -130,7 +130,10 @@ Future<void> indoorComplaintsDependencies() async {
 
   // ViewModel
   sl.registerFactory<IndoorComplaintsViewModel>(
-    () => IndoorComplaintsViewModel(indoorComplaintsUsecase: sl()),
+    () => IndoorComplaintsViewModel(
+      indoorComplaintsUsecase: sl(),
+      deleteComplaintRemoteUsecase: sl(),
+    ),
   );
 }
 
