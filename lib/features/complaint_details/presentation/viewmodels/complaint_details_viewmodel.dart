@@ -76,11 +76,38 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   // ══════════════════════════════════════════════════════════════
   // Duration & Status State
   // ══════════════════════════════════════════════════════════════
-  String _selectedTime = 'Select Duration';
-  String get selectedTime => _selectedTime;
-  set selectedTime(String value) {
-    _selectedTime = value;
+  static const List<DurationOption> _durationOptions = [
+    DurationOption(displayText: 'Select Duration', key: ''),
+    DurationOption(displayText: '04 Hours', key: '4h'),
+    DurationOption(displayText: '08 Hours', key: '8h'),
+    DurationOption(displayText: '12 Hours', key: '12h'),
+    DurationOption(displayText: '24 Hours', key: '24h'),
+    DurationOption(displayText: '48 Hours', key: '48h'),
+    DurationOption(displayText: '05 Days', key: '5d'),
+    DurationOption(displayText: '01 Week', key: '1w'),
+    DurationOption(displayText: '02 Weeks', key: '2w'),
+  ];
+
+  List<DurationOption> get durationOptions => _durationOptions;
+
+  // Get display texts for dropdown
+  List<String> get durationDisplayTexts =>
+      _durationOptions.map((e) => e.displayText).toList();
+
+  String _selectedDuration = 'Select Duration';
+  String get selectedDuration => _selectedDuration;
+  set selectedDuration(String value) {
+    _selectedDuration = value;
     notifyListeners();
+  }
+
+  // Get the API key for selected duration
+  String get selectedDurationKey {
+    final option = _durationOptions.firstWhere(
+      (opt) => opt.displayText == _selectedDuration,
+      orElse: () => _durationOptions.first,
+    );
+    return option.key;
   }
 
   String _selectedStatus = 'Select Status';
@@ -109,6 +136,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
       call: () => _setComplaintDurationUsecase(complaint),
       onSuccess: (result) {
         isChangingDuration = false;
+        AppNavigator.pop();
         AppToastsUtils.showSuccess(context, "Duration set successfully");
       },
       onError: (error) {
@@ -246,4 +274,11 @@ class BillItem {
     required this.date,
     required this.description,
   });
+}
+
+class DurationOption {
+  final String displayText;
+  final String key;
+
+  const DurationOption({required this.displayText, required this.key});
 }

@@ -30,17 +30,7 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
     'Assigned',
     'Resolved',
   ];
-  final duration = <String>[
-    'Select Duration',
-    '04 Hours',
-    '08 Hours',
-    '12 Hours',
-    '24 Hours',
-    '48 Hours',
-    '05 Days',
-    '01 Week',
-    '02 Weeks',
-  ];
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -69,11 +59,12 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                               children: [
                                 Expanded(
                                   child: CustomDropdown(
-                                    value: vm.selectedTime,
-                                    valuesList: duration,
+                                    value: vm.selectedDuration,
+                                    valuesList: vm.durationDisplayTexts,
                                     onChanged: (value) {
                                       showDialog(
                                         context: context,
+
                                         builder: (context) {
                                           return AlertDialog(
                                             title: Text(
@@ -81,26 +72,70 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                               style: context.bodyMedium
                                                   .copyWith(fontWeight: .bold),
                                             ),
-                                            content: const Text(
-                                              'Are you sure you want to continue?',
+                                            content: SizedBox(
+                                              height: 100,
+                                              child: Column(
+                                                children: [
+                                                  const Text(
+                                                    'Are you sure you want to continue?',
+                                                  ),
+                                                  Spacer(),
+
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: TextButton(
+                                                          onPressed: () =>
+                                                              AppNavigator.pop(),
+                                                          child: const Text(
+                                                            'Cancel',
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      ChangeNotifierProvider(
+                                                        create: (_) =>
+                                                            sl<
+                                                              ComplaintDetailsViewModel
+                                                            >(),
+                                                        child:
+                                                            Consumer<
+                                                              ComplaintDetailsViewModel
+                                                            >(
+                                                              builder: (context, ref, _) => Expanded(
+                                                                child: CustomButton(
+                                                                  isLoading: ref
+                                                                      .isChangingDuration,
+                                                                  size: Size(
+                                                                    100,
+                                                                    30,
+                                                                  ),
+                                                                  radius: 5,
+                                                                  text: "Yes",
+                                                                  fontsize: 14,
+                                                                  onPressed: () async {
+                                                                    ref.selectedDuration =
+                                                                        value!;
+                                                                    await ref.setComplaintDuration(
+                                                                      complaint: ChangeDuration(
+                                                                        durationKey:
+                                                                            ref.selectedDurationKey,
+                                                                        complaintId:
+                                                                            widget.complaintId,
+                                                                      ),
+                                                                      context:
+                                                                          context,
+                                                                    );
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  heightBox(10),
+                                                ],
+                                              ),
                                             ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () =>
-                                                    AppNavigator.pop(),
-                                                child: const Text('Cancel'),
-                                              ),
-                                              CustomButton(
-                                                size: Size(100, 30),
-                                                radius: 5,
-                                                text: "Yes",
-                                                fontsize: 14,
-                                                onPressed: () {
-                                                  vm.selectedTime = value!;
-                                                  AppNavigator.pop();
-                                                },
-                                              ),
-                                            ],
                                           );
                                         },
                                       );

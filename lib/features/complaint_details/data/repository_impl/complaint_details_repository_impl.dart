@@ -28,6 +28,7 @@ class ComplaintDetailsRepositoryImpl extends BaseRepository
     );
   }
 
+  @override
   Future<Either<AppException, SetDurationResponse>> setComplaintDuration({
     required int complaintId,
     required String durationKey,
