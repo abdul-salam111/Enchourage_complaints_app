@@ -103,6 +103,12 @@ Future<void> complaintDetailsDependencies() async {
   sl.registerLazySingleton<GetMessagesListUsecase>(
     () => GetMessagesListUsecase(repository: sl()),
   );
+  sl.registerLazySingleton<GetEmployeesListUsecase>(
+    () => GetEmployeesListUsecase(repository: sl()),
+  );
+  sl.registerLazySingleton<ChangeComplaintStatusUsecase>(
+    () => ChangeComplaintStatusUsecase(repository: sl()),
+  );
   // ViewModel
   sl.registerFactory<ComplaintDetailsViewModel>(
     () => ComplaintDetailsViewModel(
@@ -110,6 +116,8 @@ Future<void> complaintDetailsDependencies() async {
       addNewMessageUsecase: sl(),
       setComplaintDurationUsecase: sl(),
       getMessagesListUsecase: sl(),
+      getEmployeesListUsecase: sl(),
+      changeComplaintStatusUsecase: sl(),
     ),
   );
 }

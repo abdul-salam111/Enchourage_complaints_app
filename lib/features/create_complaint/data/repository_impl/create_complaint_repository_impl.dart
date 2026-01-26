@@ -41,4 +41,20 @@ class CreateComplaintRepositoryImpl extends BaseRepository
   }) {
     return execute(call: () => dataSource.createComplaint(request: request));
   }
+
+  @override
+  Future<Either<AppException, List<Employees>>> getEmployeesList() {
+    return execute(call: () => dataSource.getEmployeesList());
+  }
+
+  @override
+  Future<Either<AppException, ChangeComplaintStatus>> changeComplaintStatus({
+    required ChangeComplaintStatus changeComplaintStatus,
+  }) {
+    return execute(
+      call: () => dataSource.changeComplaintStatus(
+        changeComplaintStatus: changeComplaintStatus,
+      ),
+    );
+  }
 }

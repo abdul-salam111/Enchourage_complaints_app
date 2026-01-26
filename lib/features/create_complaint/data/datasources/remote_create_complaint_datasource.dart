@@ -1,3 +1,5 @@
+import 'package:enchourage_app/features/create_complaint/data/models/request_models/change_complaint_status/change_complaint_status.dart';
+
 import '../../../../app_exports.dart';
 
 abstract interface class IRemoteCreateComplaintDataSource {
@@ -8,6 +10,10 @@ abstract interface class IRemoteCreateComplaintDataSource {
   Future<ComplaintTypesList> getComplaintTypes();
   Future<CreateComplaintResponse> createComplaint({
     required CreateComplaintRequest request,
+  });
+  Future<List<Employees>> getEmployeesList();
+  Future<ChangeComplaintStatus> changeComplaintStatus({
+    required ChangeComplaintStatus changeComplaintStatus,
   });
 }
 
@@ -56,6 +62,14 @@ class RemoteCreateComplaintDataSourceImpl extends BaseRemoteDatasource
   }
 
   @override
+  Future<List<Employees>> getEmployeesList() async {
+    return getList(
+      url: ApiEndPoints.getEmployeesList(),
+      parser: (json) => Employees.fromJson(json),
+    );
+  }
+
+  @override
   Future<CreateComplaintResponse> createComplaint({
     required CreateComplaintRequest request,
   }) async {
@@ -88,5 +102,16 @@ class RemoteCreateComplaintDataSourceImpl extends BaseRemoteDatasource
     } catch (e) {
       throw AppException(e.toString());
     }
+  }
+
+  @override
+  Future<ChangeComplaintStatus> changeComplaintStatus({
+    required ChangeComplaintStatus changeComplaintStatus,
+  }) async {
+    return post(
+      url: ApiEndPoints.changeComplaintStatus(),
+      parser: (json) => ChangeComplaintStatus.fromJson(json),
+      body: changeComplaintStatus.toJson(),
+    );
   }
 }

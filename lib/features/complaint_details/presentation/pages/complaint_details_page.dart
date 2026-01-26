@@ -36,7 +36,8 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
     return ChangeNotifierProvider(
       create: (_) => sl<ComplaintDetailsViewModel>()
         ..fetchComplaintDetails(widget.complaintId)
-        ..getMessagesList(complaintId: widget.complaintId),
+        ..getMessagesList(complaintId: widget.complaintId)
+        ..getEmployees(),
       child: Scaffold(
         appBar: AppBar(title: Text('ComptNo: ${widget.complaintId}')),
         body: Consumer<ComplaintDetailsViewModel>(
@@ -92,11 +93,8 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                                           ),
                                                         ),
                                                       ),
-                                                      ChangeNotifierProvider(
-                                                        create: (_) =>
-                                                            sl<
-                                                              ComplaintDetailsViewModel
-                                                            >(),
+                                                      ChangeNotifierProvider.value(
+                                                        value: vm,
                                                         child:
                                                             Consumer<
                                                               ComplaintDetailsViewModel
@@ -143,12 +141,206 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                   ),
                                 ),
                                 widthBox(10),
+                                widthBox(10),
                                 Expanded(
                                   child: CustomDropdown(
-                                    value: vm.selectedStatus,
+                                    // ✅ FIXED - No new Provider!
+                                    value: vm
+                                        .selectedStatus, // Use the existing 'vm' from parent Consumer
                                     valuesList: statuses,
-                                    onChanged: (value) =>
-                                        vm.selectedStatus = value!,
+                                    onChanged: (value) {
+                                      if (value == "Assigned") {
+                                        showDialog(
+                                          context: context,
+                                          builder: (dialogContext) {
+                                            // ✅ Use ChangeNotifierProvider.value (not Provider.value)
+                                            return ChangeNotifierProvider.value(
+                                              value:
+                                                  vm, // Pass the existing vm from parent
+                                              child: Consumer<ComplaintDetailsViewModel>(
+                                                builder: (context, vm, _) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                      'Confirm',
+                                                      style: context.bodyMedium
+                                                          .copyWith(
+                                                            fontWeight: .bold,
+                                                          ),
+                                                    ),
+                                                    content: SizedBox(
+                                                      height: 140,
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            .start,
+                                                        children: [
+                                                          const Text(
+                                                            'Select Employee',
+                                                          ),
+                                                          CustomDropdown(
+                                                            value: vm
+                                                                .selectedEmployee
+                                                                ?.name,
+                                                            valuesList: vm
+                                                                .employees
+                                                                .map(
+                                                                  (e) =>
+                                                                      e.name!,
+                                                                )
+                                                                .toList(),
+                                                            onChanged: (value) {
+                                                              vm.selectedEmployee = vm
+                                                                  .employees
+                                                                  .firstWhere(
+                                                                    (element) =>
+                                                                        element
+                                                                            .name ==
+                                                                        value,
+                                                                  );
+                                                            },
+                                                          ),
+                                                          heightBox(20),
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                .spaceBetween,
+                                                            children: [
+                                                              Expanded(
+                                                                child: CustomButton(
+                                                                  radius: 6,
+                                                                  size:
+                                                                      const Size(
+                                                                        150,
+                                                                        30,
+                                                                      ),
+                                                                  text: "Close",
+                                                                  textColor:
+                                                                      AppColors
+                                                                          .primaryDark,
+                                                                  fontsize: 12,
+                                                                  backgroundColor:
+                                                                      Colors
+                                                                          .white,
+                                                                  onPressed: () =>
+                                                                      AppNavigator.pop(),
+                                                                ),
+                                                              ),
+                                                              widthBox(20),
+                                                              Expanded(
+                                                                child: CustomButton(
+                                                                  isLoading: vm
+                                                                      .isChangingStatus,
+                                                                  radius: 6,
+                                                                  size:
+                                                                      const Size(
+                                                                        150,
+                                                                        30,
+                                                                      ),
+                                                                  text:
+                                                                      "Assign",
+                                                                  fontsize: 12,
+                                                                  onPressed: () async {
+                                                                    await vm.changeComplaintStatus(
+                                                                      ChangeComplaintStatus(
+                                                                        status:
+                                                                            "Assigned",
+                                                                        assignTo: vm
+                                                                            .selectedEmployee
+                                                                            ?.name,
+                                                                        complaintNo:
+                                                                            widget.complaintId,
+                                                                      ),
+                                                                      context,
+                                                                    );
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }
+                                      if (value != "Assigned") {
+                                        showDialog(
+                                          context: context,
+                                          builder: (dialogContext) {
+                                            // ✅ Use ChangeNotifierProvider.value
+                                            return ChangeNotifierProvider.value(
+                                              value: vm,
+                                              child: Consumer<ComplaintDetailsViewModel>(
+                                                builder: (context, vm, _) {
+                                                  return AlertDialog(
+                                                    title: Text(
+                                                      'Confirm',
+                                                      style: context.bodyMedium
+                                                          .copyWith(
+                                                            fontWeight: .bold,
+                                                          ),
+                                                    ),
+                                                    content: SizedBox(
+                                                      height: 100,
+                                                      child: Column(
+                                                        children: [
+                                                          const Text(
+                                                            'Are you sure you want to change status?',
+                                                          ),
+                                                          const Spacer(),
+                                                          Row(
+                                                            children: [
+                                                              Expanded(
+                                                                child: TextButton(
+                                                                  onPressed: () =>
+                                                                      AppNavigator.pop(),
+                                                                  child:
+                                                                      const Text(
+                                                                        'Cancel',
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                              Expanded(
+                                                                child: CustomButton(
+                                                                  isLoading: vm
+                                                                      .isChangingStatus,
+                                                                  size:
+                                                                      const Size(
+                                                                        100,
+                                                                        30,
+                                                                      ),
+                                                                  radius: 5,
+                                                                  text: "Yes",
+                                                                  fontsize: 14,
+                                                                  onPressed: () async {
+                                                                    await vm.changeComplaintStatus(
+                                                                      ChangeComplaintStatus(
+                                                                        complaintNo:
+                                                                            widget.complaintId,
+                                                                        status:
+                                                                            value,
+                                                                      ),
+                                                                      context,
+                                                                    );
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          heightBox(10),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    },
                                   ),
                                 ),
                               ],

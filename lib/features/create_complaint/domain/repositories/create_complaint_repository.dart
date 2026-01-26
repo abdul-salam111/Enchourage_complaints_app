@@ -13,4 +13,8 @@ abstract interface class ICreateComplaintRepository {
   Future<Either<AppException, CreateComplaintResponse>> createComplaint({
     required CreateComplaintRequest request,
   });
+  Future<Either<AppException, List<Employees>>> getEmployeesList();
+  Future<Either<AppException, ChangeComplaintStatus>> changeComplaintStatus({
+    required ChangeComplaintStatus changeComplaintStatus,
+  });
 }

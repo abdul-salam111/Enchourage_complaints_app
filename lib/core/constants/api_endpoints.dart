@@ -26,4 +26,8 @@ class ApiEndPoints {
       "${baseUrl}admin/complaint/$complaintId/duration";
   static String getMessagesList(int complaintId) =>
       "${baseUrl}admin/complaint/$complaintId/view-message";
+  static String changeComplaintStatus() =>
+      "${baseUrl}admin/complaint/select-status";
+  static String getEmployeesList() => "${baseUrl}admin/employees";
+  static String deleteSelectedComplaints() => "${baseUrl}admin/employees";
 }

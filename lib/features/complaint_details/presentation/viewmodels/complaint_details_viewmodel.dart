@@ -8,15 +8,21 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   final AddNewMessageUsecase _addNewMessageUsecase;
   final SetComplaintDurationUsecase _setComplaintDurationUsecase;
   final GetMessagesListUsecase _getMessagesListUsecase;
+  final ChangeComplaintStatusUsecase _changeComplaintStatusUsecase;
+  final GetEmployeesListUsecase _getEmployeesListUsecase;
 
   ComplaintDetailsViewModel({
     required ComplaintDetailsUsecase complaintDetailsUsecase,
     required AddNewMessageUsecase addNewMessageUsecase,
     required SetComplaintDurationUsecase setComplaintDurationUsecase,
+    required ChangeComplaintStatusUsecase changeComplaintStatusUsecase,
     required GetMessagesListUsecase getMessagesListUsecase,
+    required GetEmployeesListUsecase getEmployeesListUsecase,
   }) : _complaintDetailsUsecase = complaintDetailsUsecase,
        _setComplaintDurationUsecase = setComplaintDurationUsecase,
        _getMessagesListUsecase = getMessagesListUsecase,
+       _changeComplaintStatusUsecase = changeComplaintStatusUsecase,
+       _getEmployeesListUsecase = getEmployeesListUsecase,
        _addNewMessageUsecase = addNewMessageUsecase;
 
   // ══════════════════════════════════════════════════════════════
@@ -61,17 +67,42 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
       onSuccess: (result) {
         _setComplaintDetails(result);
 
-        // ✅ Find matching option by key
-        final apiKey =
-            result.data?.timeDuration?.toString().toLowerCase() ?? '';
+        // ✅ FIXED: Normalize the API response to match your keys
+        final apiDuration =
+            result.data?.timeDuration?.toString().toLowerCase().trim() ?? '';
+
+        String normalizedKey = '';
+        if (apiDuration.isNotEmpty) {
+          // Extract number and unit
+          final parts = apiDuration.split(' ');
+          if (parts.length >= 2) {
+            final number = parts[0];
+            final unit = parts[1].toLowerCase();
+
+            if (unit.startsWith('hour')) {
+              normalizedKey = '${number}h';
+            } else if (unit.startsWith('day')) {
+              normalizedKey = '${number}d';
+            } else if (unit.startsWith('week')) {
+              normalizedKey = '${number}w';
+            }
+          }
+        }
+
+        debugPrint('API Duration: $apiDuration');
+        debugPrint('Normalized Key: $normalizedKey');
+
+        // Find matching option
         final matchingOption = _durationOptions.firstWhere(
-          (opt) => opt.key.toLowerCase() == apiKey,
+          (opt) => opt.key.toLowerCase() == normalizedKey.toLowerCase(),
           orElse: () => _durationOptions.first,
         );
 
         selectedDuration = matchingOption.displayText;
         selectedStatus = result.data?.status ?? "Select Status";
 
+        debugPrint('Selected Duration: $selectedDuration');
+        debugPrint('Selected Status: $selectedStatus');
         debugPrint('Complaint details loaded: ${result.data?.complaintNo}');
       },
       onError: (error) {
@@ -291,6 +322,58 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
       },
     );
     isGettingMessages = false;
+  }
+
+  Employees? _selectedEmployee;
+  Employees? get selectedEmployee => _selectedEmployee;
+  set selectedEmployee(Employees? value) {
+    _selectedEmployee = value;
+    notifyListeners();
+  }
+
+  List<Employees> employees = [];
+  List<Employees> get employeesList => employees;
+  set employeesList(List<Employees> value) {
+    employees = value;
+    notifyListeners();
+  }
+
+  //get employees
+  Future<void> getEmployees() async {
+    await executeQuiet(
+      call: () => _getEmployeesListUsecase(NoParams()),
+      onSuccess: (data) {
+        employees = data;
+      },
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // Change Complaint Status
+  // ──────────────────────────────────────────────────────────────
+  bool _isChangingStatus = false;
+  bool get isChangingStatus => _isChangingStatus;
+  set isChangingStatus(bool value) {
+    _isChangingStatus = value;
+    notifyListeners();
+  }
+
+  Future<void> changeComplaintStatus(
+    ChangeComplaintStatus changeComplaintStatus,
+    BuildContext context,
+  ) async {
+    isChangingStatus = true; // ✅ FIXED
+    await executeQuiet(
+      call: () => _changeComplaintStatusUsecase(changeComplaintStatus),
+      onSuccess: (data) {
+        selectedStatus = data.status ?? "";
+        notifyListeners();
+
+        AppNavigator.pop();
+        AppToastsUtils.showSuccess(context, "Status Changed Successfully!");
+      },
+    );
+    isChangingStatus = false; // ✅ FIXED
   }
 
   // ══════════════════════════════════════════════════════════════
