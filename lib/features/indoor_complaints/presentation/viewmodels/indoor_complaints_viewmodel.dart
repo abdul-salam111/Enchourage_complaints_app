@@ -6,11 +6,14 @@ class IndoorComplaintsViewModel
   IndoorComplaintsViewModel({
     required IndoorComplaintsUsecase indoorComplaintsUsecase,
     required DeleteComplaintRemoteUsecase deleteComplaintRemoteUsecase,
+    required DeleteSelectedComplaintsUsecase deleteAllComplaintsRemoteUsecase,
   }) : _indoorComplaintsUsecase = indoorComplaintsUsecase,
-       _deleteComplaintRemoteUsecase = deleteComplaintRemoteUsecase;
+       _deleteComplaintRemoteUsecase = deleteComplaintRemoteUsecase,
+       _deleteSelectedComplaintsUsecase = deleteAllComplaintsRemoteUsecase;
 
   final IndoorComplaintsUsecase _indoorComplaintsUsecase;
   final DeleteComplaintRemoteUsecase _deleteComplaintRemoteUsecase;
+  final DeleteSelectedComplaintsUsecase _deleteSelectedComplaintsUsecase;
   final FocusNode searchFocusNode = FocusNode();
 
   Future<void> loadIndoorComplaints() async {
@@ -49,6 +52,21 @@ class IndoorComplaintsViewModel
       successMessage: 'Complaint deleted successfully',
       onError: (error) {
         success = false;
+      },
+      showError: true,
+    );
+
+    return success;
+  }
+
+  @override
+  Future<bool> performBatchDelete(List<int> ids) async {
+    bool success = false;
+
+    await execute(
+      call: () => _deleteSelectedComplaintsUsecase.call(ids),
+      onSuccess: (bool res) {
+        success = res;
       },
       showError: true,
     );

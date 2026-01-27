@@ -29,5 +29,7 @@ class ApiEndPoints {
   static String changeComplaintStatus() =>
       "${baseUrl}admin/complaint/select-status";
   static String getEmployeesList() => "${baseUrl}admin/employees";
-  static String deleteSelectedComplaints() => "${baseUrl}admin/employees";
+  static String deleteSelectedComplaints() =>
+      "${baseUrl}admin/complaint/delete-selected";
+  static String getBillingTypes() => "${baseUrl}admin/billing-types";
 }

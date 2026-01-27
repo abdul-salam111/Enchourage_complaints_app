@@ -42,7 +42,22 @@ class _IndoorComplaintsPageState extends State<IndoorComplaintsPage> {
                       complaintsList: vm.filteredData,
                     );
                   },
-                  onDelete: () {},
+                  onDelete: () {
+                    confirmationPopupHelper(
+                      context,
+                      () async {
+                        AppNavigator.pop();
+                        await vm.deleteSelectedItems();
+                      },
+                      () {
+                        AppNavigator.pop();
+                      },
+                      "Delete Complaint",
+                      "Are you sure you want to delete this complaint?",
+                      "Delete",
+                      "Cancel",
+                    );
+                  },
                 ),
 
                 TableHeaderWidget(

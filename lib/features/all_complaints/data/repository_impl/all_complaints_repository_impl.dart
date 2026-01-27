@@ -19,4 +19,14 @@ class AllComplaintsRepositoryImpl extends BaseRepository
       call: () => dataSource.deleteComplaint(complaintId: complaintId),
     );
   }
+
+  @override
+  Future<Either<AppException, bool>> deleteSelectedComplaints({
+    required List<int> complaintId,
+  }) {
+    return execute(
+      call: () =>
+          dataSource.deleteSelectedComplaints(complaintIds: complaintId),
+    );
+  }
 }

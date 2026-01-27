@@ -76,6 +76,7 @@ export 'features/all_complaints/domain/entities/all_complaints_entity.dart';
 export 'features/all_complaints/domain/repositories/all_complaints_repository.dart';
 export 'features/all_complaints/domain/usecases/all_complaints_usecase.dart';
 export 'features/all_complaints/domain/usecases/delete_complaint_remote_usecase.dart';
+export 'features/all_complaints/domain/usecases/delete_selected_complaints_usecase.dart';
 export 'features/all_complaints/presentation/pages/all_complaints_page.dart';
 export 'features/all_complaints/presentation/viewmodels/all_complaints_viewmodel.dart';
 export 'features/complaint_details/data/datasources/remote_complaint_details_datasource.dart';

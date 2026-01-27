@@ -219,4 +219,46 @@ abstract class SelectableFilterableListVM<T, K> extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // ----------------- Delete Selected Items -----------------
+  bool _isDeletingSelected = false;
+  bool get isDeletingSelected => _isDeletingSelected;
+
+  set isDeletingSelected(bool value) {
+    _isDeletingSelected = value;
+    notifyListeners();
+  }
+
+  /// Override this method in child classes to implement batch delete logic
+  /// This should call the batch delete use case and return true on success
+  Future<bool> performBatchDelete(List<K> ids) async {
+    throw UnimplementedError(
+      'performBatchDelete must be implemented in subclass',
+    );
+  }
+
+  /// Generic method to delete selected items
+  Future<void> deleteSelectedItems() async {
+    if (selectedRows.isEmpty) return;
+
+    isDeletingSelected = true;
+    notifyListeners();
+
+    try {
+      final idsToDelete = selectedRows.toList();
+      final success = await performBatchDelete(idsToDelete);
+
+      if (success) {
+        // Remove from data sources
+        data.removeWhere((item) => idsToDelete.contains(keyOf(item)));
+        filteredData.removeWhere((item) => idsToDelete.contains(keyOf(item)));
+
+        // Clear the selection
+        selectedRows.clear();
+      }
+    } finally {
+      isDeletingSelected = false;
+      notifyListeners();
+    }
+  }
 }

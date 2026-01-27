@@ -59,7 +59,22 @@ class _OutdoorComplaintsPageState extends State<OutdoorComplaintsPage> {
                       complaintsList: vm.filteredData as List<Complaint>?,
                     );
                   },
-                  onDelete: () {},
+                  onDelete: () {
+                    confirmationPopupHelper(
+                      context,
+                      () async {
+                        AppNavigator.pop();
+                        await vm.deleteSelectedItems();
+                      },
+                      () {
+                        AppNavigator.pop();
+                      },
+                      "Delete Complaint",
+                      "Are you sure you want to delete this complaint?",
+                      "Delete",
+                      "Cancel",
+                    );
+                  },
                 ),
                 CustomDropdown(
                   value: vm.selectedDepartment,

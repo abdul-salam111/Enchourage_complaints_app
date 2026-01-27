@@ -43,14 +43,27 @@ class _AllComplaintsPageState extends State<AllComplaintsPage> {
                         complaintsList: vm.filteredData,
                       );
                     },
-                    onDelete: () {},
+                    onDelete: () async {
+                      confirmationPopupHelper(
+                        context,
+                        () async {
+                          AppNavigator.pop();
+                          vm.deleteSelectedItems();
+                        },
+                        () {
+                          AppNavigator.pop();
+                        },
+                        "Delete Complaint",
+                        "Are you sure you want to delete this complaint?",
+                        "Delete",
+                        "Cancel",
+                      );
+                    },
                   ),
-
                   TableHeaderWidget(
                     isAllSelected: vm.isAllSelected,
                     onToggleAll: (val) => vm.toggleSelectAll(val ?? false),
                   ),
-
                   Expanded(
                     child: ComplaintsTableList(
                       isDeleting: vm.isDeleting,

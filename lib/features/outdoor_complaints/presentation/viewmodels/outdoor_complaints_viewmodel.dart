@@ -6,11 +6,15 @@ class OutdoorComplaintsViewmodel
   OutdoorComplaintsViewmodel({
     required OutdoorComplaintsUsecase outudoorComplaintsUsecase,
     required DeleteComplaintRemoteUsecase deleteComplaintRemoteUsecase,
+    required DeleteSelectedComplaintsUsecase deleteSelectedComplaintsUsecase,
   }) : _outdoorComplaintsUsecase = outudoorComplaintsUsecase,
+       _deleteSelectedComplaintsUsecase = deleteSelectedComplaintsUsecase,
        _deleteComplaintRemoteUsecase = deleteComplaintRemoteUsecase;
 
   final OutdoorComplaintsUsecase _outdoorComplaintsUsecase;
   final DeleteComplaintRemoteUsecase _deleteComplaintRemoteUsecase;
+  final DeleteSelectedComplaintsUsecase _deleteSelectedComplaintsUsecase;
+
   final FocusNode searchFocusNode = FocusNode();
 
   // Department filter state
@@ -110,6 +114,21 @@ class OutdoorComplaintsViewmodel
       successMessage: 'Complaint deleted successfully',
       onError: (error) {
         success = false;
+      },
+      showError: true,
+    );
+
+    return success;
+  }
+
+  @override
+  Future<bool> performBatchDelete(List<int> ids) async {
+    bool success = false;
+
+    await execute(
+      call: () => _deleteSelectedComplaintsUsecase.call(ids),
+      onSuccess: (bool res) {
+        success = res;
       },
       showError: true,
     );

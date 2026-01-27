@@ -5,11 +5,14 @@ class AllComplaintsViewModel extends SelectableFilterableListVM<Complaint, int>
   AllComplaintsViewModel({
     required AllComplaintsUsecase allComplaintsUsecase,
     required DeleteComplaintRemoteUsecase deleteComplaintRemoteUsecase,
+    required DeleteSelectedComplaintsUsecase deleteSelectedComplaintsUsecase,
   }) : _allComplaintsUsecase = allComplaintsUsecase,
+       _deleteSelectedComplaintsUsecase = deleteSelectedComplaintsUsecase,
        _deleteComplaintRemoteUsecase = deleteComplaintRemoteUsecase;
 
   final AllComplaintsUsecase _allComplaintsUsecase;
   final DeleteComplaintRemoteUsecase _deleteComplaintRemoteUsecase;
+  final DeleteSelectedComplaintsUsecase _deleteSelectedComplaintsUsecase;
 
   final FocusNode searchFocusNode = FocusNode();
 
@@ -49,6 +52,21 @@ class AllComplaintsViewModel extends SelectableFilterableListVM<Complaint, int>
       successMessage: 'Complaint deleted successfully',
       onError: (error) {
         success = false;
+      },
+      showError: true,
+    );
+
+    return success;
+  }
+
+  @override
+  Future<bool> performBatchDelete(List<int> ids) async {
+    bool success = false;
+
+    await execute(
+      call: () => _deleteSelectedComplaintsUsecase.call(ids),
+      onSuccess: (bool res) {
+        success = res;
       },
       showError: true,
     );

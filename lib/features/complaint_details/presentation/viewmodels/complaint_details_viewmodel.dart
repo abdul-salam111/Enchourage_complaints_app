@@ -196,10 +196,6 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   // Messages State
   // ══════════════════════════════════════════════════════════════
 
-  // ══════════════════════════════════════════════════════════════
-  // Messages State
-  // ══════════════════════════════════════════════════════════════
-
   bool _isSendingMessage = false;
   bool get isSendingMessage => _isSendingMessage;
   set isSendingMessage(bool value) {
@@ -362,7 +358,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     ChangeComplaintStatus changeComplaintStatus,
     BuildContext context,
   ) async {
-    isChangingStatus = true; // ✅ FIXED
+    isChangingStatus = true;
     await executeQuiet(
       call: () => _changeComplaintStatusUsecase(changeComplaintStatus),
       onSuccess: (data) {
@@ -373,7 +369,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
         AppToastsUtils.showSuccess(context, "Status Changed Successfully!");
       },
     );
-    isChangingStatus = false; // ✅ FIXED
+    isChangingStatus = false;
   }
 
   // ══════════════════════════════════════════════════════════════

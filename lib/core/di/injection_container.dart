@@ -5,7 +5,6 @@ final sl = GetIt.instance;
 
 Future<void> setupLocator() async {
   await coreDependencies();
-
   await authDependencies();
   await dashboardDependencies();
   await allComplaintsDependencies();
@@ -68,11 +67,16 @@ Future<void> allComplaintsDependencies() async {
   sl.registerLazySingleton<DeleteComplaintRemoteUsecase>(
     () => DeleteComplaintRemoteUsecase(repository: sl()),
   );
+
+  sl.registerLazySingleton<DeleteSelectedComplaintsUsecase>(
+    () => DeleteSelectedComplaintsUsecase(repository: sl()),
+  );
   // ViewModel
   sl.registerFactory<AllComplaintsViewModel>(
     () => AllComplaintsViewModel(
       allComplaintsUsecase: sl(),
       deleteComplaintRemoteUsecase: sl(),
+      deleteSelectedComplaintsUsecase: sl(),
     ),
   );
 }
@@ -144,6 +148,7 @@ Future<void> indoorComplaintsDependencies() async {
     () => IndoorComplaintsViewModel(
       indoorComplaintsUsecase: sl(),
       deleteComplaintRemoteUsecase: sl(),
+      deleteAllComplaintsRemoteUsecase: sl(),
     ),
   );
 }
@@ -170,6 +175,7 @@ Future<void> outdoorComplaintsDependencies() async {
     () => OutdoorComplaintsViewmodel(
       outudoorComplaintsUsecase: sl(),
       deleteComplaintRemoteUsecase: sl(),
+      deleteSelectedComplaintsUsecase: sl(),
     ),
   );
 }
