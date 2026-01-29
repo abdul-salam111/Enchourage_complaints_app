@@ -2,6 +2,7 @@ import '../../../../app_exports.dart';
 
 class AddBillTab extends StatelessWidget {
   const AddBillTab({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ComplaintDetailsViewModel>(
@@ -9,7 +10,7 @@ class AddBillTab extends StatelessWidget {
         children: [
           Text(
             "Enter Bill Details Here",
-            style: context.bodyLarge.copyWith(fontWeight: .bold),
+            style: context.bodyLarge.copyWith(fontWeight: FontWeight.bold),
           ),
           heightBox(10),
           Row(
@@ -19,7 +20,9 @@ class AddBillTab extends StatelessWidget {
                   hint: 'Select Property',
                   value: vm.selectedProperty,
                   valuesList: vm.propertiesList,
-                  onChanged: (val) => vm.selectedProperty = val,
+                  onChanged: (val) {
+                    vm.selectedProperty = val;
+                  },
                 ),
               ),
               widthBox(10),
@@ -27,8 +30,10 @@ class AddBillTab extends StatelessWidget {
                 child: CustomDropdown(
                   hint: 'Select Bill Type',
                   value: vm.selectedBillType,
-                  valuesList: vm.billTypesList,
-                  onChanged: (val) => vm.selectedBillType = val,
+                  valuesList: vm.billTypesDisplayList,
+                  onChanged: (val) {
+                    vm.selectedBillType = val;
+                  },
                 ),
               ),
             ],
@@ -39,7 +44,7 @@ class AddBillTab extends StatelessWidget {
             labelFontSize: 13,
             controller: TextEditingController(),
             hintText: '\$ Enter Amount',
-            keyboardType: .number,
+            keyboardType: TextInputType.number,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 10,
@@ -51,25 +56,25 @@ class AddBillTab extends StatelessWidget {
             width: double.infinity,
             height: context.screenHeight * 0.15,
             decoration: BoxDecoration(
-              borderRadius: .circular(10),
+              borderRadius: BorderRadius.circular(10),
               color: Colors.white,
-              border: .all(color: AppColors.border),
+              border: Border.all(color: AppColors.border),
             ),
             child: Center(
               child: Column(
-                crossAxisAlignment: .center,
-                mainAxisAlignment: .center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Iconsax.camera,
                     size: 15,
                     color: AppColors.textSecondaryLight,
                   ),
-                  widthBox(5),
+                  heightBox(5),
                   Text(
                     "Upload Bill",
                     style: context.bodySmall.copyWith(
-                      fontWeight: .normal,
+                      fontWeight: FontWeight.normal,
                       color: AppColors.textSecondaryLight,
                     ),
                   ),
@@ -83,7 +88,7 @@ class AddBillTab extends StatelessWidget {
             labelFontSize: 13,
             controller: TextEditingController(),
             hintText: 'Enter Description',
-            keyboardType: .text,
+            keyboardType: TextInputType.text,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 10,
@@ -99,11 +104,13 @@ class AddBillTab extends StatelessWidget {
             radius: 7,
             fontsize: 12,
           ),
-
+          heightBox(10),
           CustomButton(
             size: Size(context.screenWidth * 0.3, 35),
             fontsize: 12,
-            onPressed: () {},
+            onPressed: () {
+              AppNavigator.pop();
+            },
             text: "Cancel",
             radius: 7,
             backgroundColor: Colors.white,
@@ -111,7 +118,7 @@ class AddBillTab extends StatelessWidget {
           ),
           heightBox(20),
         ],
-      ).withPadding(.all(12)),
+      ).withPadding(EdgeInsets.all(12)),
     );
   }
 }

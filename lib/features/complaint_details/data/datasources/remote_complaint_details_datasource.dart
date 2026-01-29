@@ -1,3 +1,7 @@
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/bills_types_list/bills_types_list.dart';
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_bills_list/complaint_bills_list.dart';
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_property_list/complaint_property_list.dart';
+
 import '../../../../app_exports.dart';
 
 abstract interface class IRemoteComplaintDetailsDataSource {
@@ -12,6 +16,12 @@ abstract interface class IRemoteComplaintDetailsDataSource {
   });
 
   Future<MessagesList> getMessagesList({required int complaintId});
+  Future<ComplaintBillsList> getComplaintBillsList({required int complaintId});
+
+  Future<ComplaintPropertyList> getComplaintPropertyList({
+    required int complaintId,
+  });
+  Future<BillsTypesList> getBillsTypesListDropdown();
 }
 
 class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
@@ -55,6 +65,34 @@ class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
     return get(
       url: ApiEndPoints.getMessagesList(complaintId),
       parser: (json) => MessagesList.fromJson(json),
+    );
+  }
+
+  @override
+  Future<ComplaintBillsList> getComplaintBillsList({
+    required int complaintId,
+  }) async {
+    return get(
+      url: ApiEndPoints.getComplaintBillsList(complaintId),
+      parser: (json) => ComplaintBillsList.fromJson(json),
+    );
+  }
+
+  @override
+  Future<ComplaintPropertyList> getComplaintPropertyList({
+    required int complaintId,
+  }) async {
+    return get(
+      url: ApiEndPoints.getComplaintPropertyList(complaintId),
+      parser: (json) => ComplaintPropertyList.fromJson(json),
+    );
+  }
+
+  @override
+  Future<BillsTypesList> getBillsTypesListDropdown() async {
+    return get(
+      url: ApiEndPoints.getBillingDropdownList(),
+      parser: (json) => BillsTypesList.fromJson(json),
     );
   }
 }

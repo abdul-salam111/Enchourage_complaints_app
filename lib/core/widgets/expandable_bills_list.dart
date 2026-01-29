@@ -1,3 +1,5 @@
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_bills_list/complaint_bills_list.dart';
+
 import '../../../../app_exports.dart';
 
 class ExpandableBillList extends StatelessWidget {
@@ -10,7 +12,7 @@ class ExpandableBillList extends StatelessWidget {
     this.padding = EdgeInsets.zero,
   });
 
-  final List<BillItem> items;
+  final List<ComplaintBills> items;
   final bool Function(int index) isExpanded;
   final void Function(int index) onToggle;
 
@@ -32,10 +34,10 @@ class ExpandableBillList extends StatelessWidget {
               final expanded = isExpanded(index);
 
               return ExpandableBillRow(
-                title: bill.title,
-                amountText: '\$${bill.amount.toStringAsFixed(2)}',
-                dateText: bill.date,
-                description: bill.description,
+                title: bill.id.toString(),
+                amountText: '\$${bill.amount.toString()}',
+                dateText: bill.created_at?.formatted ?? "",
+                description: bill.description.toString(),
                 expanded: expanded,
                 isOdd: index.isOdd,
                 onToggle: () => onToggle(index),

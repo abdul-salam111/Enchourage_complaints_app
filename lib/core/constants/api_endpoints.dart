@@ -31,5 +31,11 @@ class ApiEndPoints {
   static String getEmployeesList() => "${baseUrl}admin/employees";
   static String deleteSelectedComplaints() =>
       "${baseUrl}admin/complaint/delete-selected";
-  static String getBillingTypes() => "${baseUrl}admin/billing-types";
+  static String getComplaintBillsList(int complaintNumber) =>
+      "${baseUrl}admin/bills/$complaintNumber/view-bill";
+
+  static String getBillingDropdownList() => "${baseUrl}admin/billing-types";
+
+  static String getComplaintPropertyList(int complaintId) =>
+      "${baseUrl}admin/property/$complaintId";
 }

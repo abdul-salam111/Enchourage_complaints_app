@@ -37,7 +37,10 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
       create: (_) => sl<ComplaintDetailsViewModel>()
         ..fetchComplaintDetails(widget.complaintId)
         ..getMessagesList(complaintId: widget.complaintId)
-        ..getEmployees(),
+        ..getEmployees()
+        ..getComplaintBillsList(complaintId: widget.complaintId)
+        ..getComplaintPropertyList(complaintId: widget.complaintId)
+        ..getBillTypesList(),
       child: Scaffold(
         appBar: AppBar(title: Text('ComptNo: ${widget.complaintId}')),
         body: Consumer<ComplaintDetailsViewModel>(

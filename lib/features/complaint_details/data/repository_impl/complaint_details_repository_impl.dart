@@ -1,3 +1,7 @@
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/bills_types_list/bills_types_list.dart';
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_bills_list/complaint_bills_list.dart';
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_property_list/complaint_property_list.dart';
+
 import '../../../../app_exports.dart';
 
 class ComplaintDetailsRepositoryImpl extends BaseRepository
@@ -48,5 +52,28 @@ class ComplaintDetailsRepositoryImpl extends BaseRepository
     return execute(
       call: () => dataSource.getMessagesList(complaintId: complaintId),
     );
+  }
+
+  @override
+  Future<Either<AppException, ComplaintBillsList>> getComplaintBillsList({
+    required int complaintId,
+  }) {
+    return execute(
+      call: () => dataSource.getComplaintBillsList(complaintId: complaintId),
+    );
+  }
+
+  @override
+  Future<Either<AppException, ComplaintPropertyList>> getComplaintPropertyList({
+    required int complaintId,
+  }) {
+    return execute(
+      call: () => dataSource.getComplaintPropertyList(complaintId: complaintId),
+    );
+  }
+
+  @override
+  Future<Either<AppException, BillsTypesList>> getBillsTypesListDropdown() {
+    return execute(call: () => dataSource.getBillsTypesListDropdown());
   }
 }

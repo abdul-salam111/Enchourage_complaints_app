@@ -1,3 +1,10 @@
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/bills_types_list/bills_types_list.dart';
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_bills_list/complaint_bills_list.dart';
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_property_list/complaint_property_list.dart';
+import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_billing_types_dropdown_usecase.dart';
+import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_bills_list_usecase.dart';
+import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaints_property_list_usecase.dart';
+
 import '../../../../app_exports.dart';
 
 class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
@@ -10,6 +17,10 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   final GetMessagesListUsecase _getMessagesListUsecase;
   final ChangeComplaintStatusUsecase _changeComplaintStatusUsecase;
   final GetEmployeesListUsecase _getEmployeesListUsecase;
+  final GetComplaintBillsListUsecase _getComplaintBillsListUsecase;
+  final GetComplaintsPropertyListUsecase _getComplaintsPropertyListUsecase;
+  final GetComplaintBillingTypesDropdownUsecase
+  _getComplaintBillingTypesDropdownUsecase;
 
   ComplaintDetailsViewModel({
     required ComplaintDetailsUsecase complaintDetailsUsecase,
@@ -18,11 +29,19 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     required ChangeComplaintStatusUsecase changeComplaintStatusUsecase,
     required GetMessagesListUsecase getMessagesListUsecase,
     required GetEmployeesListUsecase getEmployeesListUsecase,
+    required GetComplaintBillsListUsecase getComplaintBillsListUsecase,
+    required GetComplaintsPropertyListUsecase getComplaintsPropertyListUsecase,
+    required GetComplaintBillingTypesDropdownUsecase
+    getComplaintBillingTypesDropdownUsecase,
   }) : _complaintDetailsUsecase = complaintDetailsUsecase,
        _setComplaintDurationUsecase = setComplaintDurationUsecase,
        _getMessagesListUsecase = getMessagesListUsecase,
        _changeComplaintStatusUsecase = changeComplaintStatusUsecase,
        _getEmployeesListUsecase = getEmployeesListUsecase,
+       _getComplaintBillsListUsecase = getComplaintBillsListUsecase,
+       _getComplaintBillingTypesDropdownUsecase =
+           getComplaintBillingTypesDropdownUsecase,
+       _getComplaintsPropertyListUsecase = getComplaintsPropertyListUsecase,
        _addNewMessageUsecase = addNewMessageUsecase;
 
   // ══════════════════════════════════════════════════════════════
@@ -249,12 +268,6 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // Bills State
-  // ══════════════════════════════════════════════════════════════
-  final List<BillItem> _bills = const [];
-  List<BillItem> get bills => List.unmodifiable(_bills);
-
   // ──────────────────────────────────────────────────────────────
   // Bills Expand/Collapse State
   // ──────────────────────────────────────────────────────────────
@@ -266,38 +279,6 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     _expandedRows.contains(index)
         ? _expandedRows.remove(index)
         : _expandedRows.add(index);
-    notifyListeners();
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  // Add Bill Tab State
-  // ══════════════════════════════════════════════════════════════
-  final List<String> _propertiesList = const [
-    'Property A',
-    'Property B',
-    'Property C',
-  ];
-  List<String> get propertiesList => List.unmodifiable(_propertiesList);
-
-  final List<String> _billTypesList = const [
-    'Electricity',
-    'Water',
-    'Gas',
-    'Maintenance',
-  ];
-  List<String> get billTypesList => List.unmodifiable(_billTypesList);
-
-  String? _selectedProperty;
-  String? get selectedProperty => _selectedProperty;
-  set selectedProperty(String? value) {
-    _selectedProperty = value;
-    notifyListeners();
-  }
-
-  String? _selectedBillType;
-  String? get selectedBillType => _selectedBillType;
-  set selectedBillType(String? value) {
-    _selectedBillType = value;
     notifyListeners();
   }
 
@@ -373,6 +354,103 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   }
 
   // ══════════════════════════════════════════════════════════════
+  // Property & Bill Type Selection State
+  // ══════════════════════════════════════════════════════════════
+
+  String? _selectedPropertyAddress;
+  String? get selectedProperty => _selectedPropertyAddress;
+  set selectedProperty(String? value) {
+    _selectedPropertyAddress = value;
+    notifyListeners();
+  }
+
+  // Get property address for dropdown
+  List<String> get propertiesList {
+    if (_complaintProperty == null) return [];
+    return [_complaintProperty!.address ?? 'Unknown Address'];
+  }
+
+  // Get the selected property object
+  ComplaintProperty? get selectedPropertyObject => _complaintProperty;
+
+  String? _selectedBillTypeName;
+  String? get selectedBillType => _selectedBillTypeName;
+  set selectedBillType(String? value) {
+    _selectedBillTypeName = value;
+    notifyListeners();
+  }
+
+  // Convert bill types to display list
+  List<String> get billTypesDisplayList {
+    return _billTypesList
+        .map((e) => e.title ?? '')
+        .where((s) => s.isNotEmpty)
+        .toList();
+  }
+
+  // Get the selected bill type object
+  BillType? get selectedBillTypeObject {
+    if (_selectedBillTypeName == null) return null;
+    try {
+      return _billTypesList.firstWhere((b) => b.title == _selectedBillTypeName);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // Bills
+  // ══════════════════════════════════════════════════════════════
+
+  List<ComplaintBills> _complaintBillsList = [];
+  List<ComplaintBills> get complaintBillsList => _complaintBillsList;
+  setComplaintBillsList(List<ComplaintBills> value) {
+    _complaintBillsList = value;
+    notifyListeners();
+  }
+
+  Future<void> getComplaintBillsList({required int complaintId}) async {
+    await executeQuiet(
+      call: () => _getComplaintBillsListUsecase(complaintId),
+      onSuccess: (data) {
+        setComplaintBillsList(data.data ?? []);
+      },
+    );
+  }
+
+  ComplaintProperty? _complaintProperty;
+  ComplaintProperty? get complaintPropertyList => _complaintProperty;
+  setComplaintProperty(ComplaintProperty value) {
+    _complaintProperty = value;
+    notifyListeners();
+  }
+
+  Future<void> getComplaintPropertyList({required int complaintId}) async {
+    await executeQuiet(
+      call: () => _getComplaintsPropertyListUsecase(complaintId),
+      onSuccess: (data) {
+        setComplaintProperty(data.data!);
+      },
+    );
+  }
+
+  List<BillType> _billTypesList = [];
+  List<BillType> get billTypesList => _billTypesList;
+  setBillTypesList(List<BillType> value) {
+    _billTypesList = value;
+    notifyListeners();
+  }
+
+  Future<void> getBillTypesList() async {
+    await executeQuiet(
+      call: () => _getComplaintBillingTypesDropdownUsecase(NoParams()),
+      onSuccess: (data) {
+        setBillTypesList(data.data ?? []);
+      },
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════
   // Cleanup
   // ══════════════════════════════════════════════════════════════
   @override
@@ -381,24 +459,6 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     _expandedRows.clear();
     super.dispose();
   }
-}
-
-// ══════════════════════════════════════════════════════════════
-// Models
-// ══════════════════════════════════════════════════════════════
-
-class BillItem {
-  final String title;
-  final double amount;
-  final String date;
-  final String description;
-
-  const BillItem({
-    required this.title,
-    required this.amount,
-    required this.date,
-    required this.description,
-  });
 }
 
 class DurationOption {

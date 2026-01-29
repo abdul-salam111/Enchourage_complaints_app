@@ -9,7 +9,7 @@ class ViewBillTab extends StatelessWidget {
       builder: (context, vm, _) {
         return ExpandableBillList(
           header: const ViewBillTableHeader(),
-          items: vm.bills,
+          items: vm.complaintBillsList,
           isExpanded: vm.isRowExpanded,
           onToggle: vm.toggleExpandRow,
         );
