@@ -27,6 +27,9 @@ abstract interface class IRemoteComplaintDetailsDataSource {
   Future<CreateComplaintBillResponse> createComplaintBill({
     required AddComplaintBillRequest complaintDetails,
   });
+  Future<CreateComplaintBillResponse> updateComplaintBill({
+    required AddComplaintBillRequest complaintDetails,
+  });
 }
 
 class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
@@ -103,6 +106,40 @@ class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
 
   @override
   Future<CreateComplaintBillResponse> createComplaintBill({
+    required AddComplaintBillRequest complaintDetails,
+  }) async {
+    try {
+      final fields = complaintDetails.toJson();
+      List<FileUploadModel>? files;
+      if (complaintDetails.receipts != null &&
+          complaintDetails.receipts!.isNotEmpty) {
+        files = complaintDetails.receipts!
+            .map(
+              (path) =>
+                  FileUploadModel(fieldName: 'receipt[]', filePath: path.path),
+            )
+            .toList();
+      }
+
+      final response = await dioHelper.sendMultipartRequest(
+        url: ApiEndPoints.createComplaintBill(),
+        fields: fields,
+        files: files,
+        isAuthRequired: true,
+        authToken: await storage.readValues(StorageKeys.token),
+        onSendProgress: (sent, total) {},
+      );
+
+      return CreateComplaintBillResponse.fromJson(response);
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException(e.toString());
+    }
+  }
+
+  @override
+  Future<CreateComplaintBillResponse> updateComplaintBill({
     required AddComplaintBillRequest complaintDetails,
   }) async {
     try {

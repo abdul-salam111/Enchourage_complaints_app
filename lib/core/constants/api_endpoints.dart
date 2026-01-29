@@ -40,4 +40,6 @@ class ApiEndPoints {
       "${baseUrl}admin/property/$complaintId";
 
   static String createComplaintBill() => "${baseUrl}admin/bills/add";
+  static String updateComplaintBill(int complaintId) =>
+      "${baseUrl}admin/bills/$complaintId/edit-bill";
 }
