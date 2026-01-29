@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:enchourage_app/features/complaint_details/data/models/request_models/create_complaint_bill/add_complaint_bill_request.dart';
 import 'package:enchourage_app/features/complaint_details/data/models/response_models/bills_types_list/bills_types_list.dart';
 import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_bills_list/complaint_bills_list.dart';
 import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_property_list/complaint_property_list.dart';
+import 'package:enchourage_app/features/complaint_details/domain/usecases/add_complaint_bill_usecase.dart';
 import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_billing_types_dropdown_usecase.dart';
 import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_bills_list_usecase.dart';
 import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaints_property_list_usecase.dart';
@@ -21,6 +25,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   final GetComplaintsPropertyListUsecase _getComplaintsPropertyListUsecase;
   final GetComplaintBillingTypesDropdownUsecase
   _getComplaintBillingTypesDropdownUsecase;
+  final AddComplaintBillUsecase _addComplaintBillUsecase;
 
   ComplaintDetailsViewModel({
     required ComplaintDetailsUsecase complaintDetailsUsecase,
@@ -33,6 +38,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     required GetComplaintsPropertyListUsecase getComplaintsPropertyListUsecase,
     required GetComplaintBillingTypesDropdownUsecase
     getComplaintBillingTypesDropdownUsecase,
+    required AddComplaintBillUsecase addComplaintBillUsecase,
   }) : _complaintDetailsUsecase = complaintDetailsUsecase,
        _setComplaintDurationUsecase = setComplaintDurationUsecase,
        _getMessagesListUsecase = getMessagesListUsecase,
@@ -42,6 +48,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
        _getComplaintBillingTypesDropdownUsecase =
            getComplaintBillingTypesDropdownUsecase,
        _getComplaintsPropertyListUsecase = getComplaintsPropertyListUsecase,
+       _addComplaintBillUsecase = addComplaintBillUsecase,
        _addNewMessageUsecase = addNewMessageUsecase;
 
   // ══════════════════════════════════════════════════════════════
@@ -446,6 +453,77 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
       call: () => _getComplaintBillingTypesDropdownUsecase(NoParams()),
       onSuccess: (data) {
         setBillTypesList(data.data ?? []);
+      },
+    );
+  }
+  // ══════════════════════════════════════════════════════════════
+  // Add Bill State & Methods
+  // ══════════════════════════════════════════════════════════════
+
+  bool _isAddingBill = false;
+  bool get isAddingBill => _isAddingBill;
+  set isAddingBill(bool value) {
+    _isAddingBill = value;
+    notifyListeners();
+  }
+
+  Future<void> addComplaintBill({
+    required BuildContext context,
+    required int complaintNo,
+    required double amount,
+    String? description,
+    required List<File> receipts,
+  }) async {
+    // Validation
+    if (selectedBillTypeObject == null) {
+      AppToastsUtils.showError(context, "Please select bill type");
+      return;
+    }
+
+    if (selectedPropertyObject == null) {
+      AppToastsUtils.showError(context, "Property not found");
+      return;
+    }
+
+    if (amount <= 0) {
+      AppToastsUtils.showError(context, "Please enter valid amount");
+      return;
+    }
+
+    if (receipts.isEmpty) {
+      AppToastsUtils.showError(context, "Please upload at least one receipt");
+      return;
+    }
+
+    isAddingBill = true;
+
+    final request = AddComplaintBillRequest(
+      complaintNo: complaintNo,
+      billingTypeId: selectedBillTypeObject!.id!,
+      amount: amount,
+      description: description,
+      propertyId: selectedPropertyObject!.property_id!,
+      receipts: receipts,
+    );
+
+    await execute(
+      call: () => _addComplaintBillUsecase(request),
+      onSuccess: (data) {
+        isAddingBill = false;
+
+        // Clear selections
+        selectedBillType = null;
+        selectedProperty = null;
+
+        AppNavigator.pop();
+        AppToastsUtils.showSuccess(context, "Bill added successfully!");
+
+        // Refresh bills list
+        getComplaintBillsList(complaintId: complaintNo);
+      },
+      onError: (error) {
+        isAddingBill = false;
+        AppToastsUtils.showError(context, error.toString());
       },
     );
   }

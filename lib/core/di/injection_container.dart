@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:enchourage_app/features/complaint_details/domain/usecases/add_complaint_bill_usecase.dart';
 import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_billing_types_dropdown_usecase.dart';
 import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_bills_list_usecase.dart';
 import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaints_property_list_usecase.dart';
@@ -125,6 +126,9 @@ Future<void> complaintDetailsDependencies() async {
   sl.registerLazySingleton<GetComplaintBillingTypesDropdownUsecase>(
     () => GetComplaintBillingTypesDropdownUsecase(repository: sl()),
   );
+  sl.registerLazySingleton<AddComplaintBillUsecase>(
+    () => AddComplaintBillUsecase(repository: sl()),
+  );
   // ViewModel
   sl.registerFactory<ComplaintDetailsViewModel>(
     () => ComplaintDetailsViewModel(
@@ -137,6 +141,7 @@ Future<void> complaintDetailsDependencies() async {
       getComplaintBillsListUsecase: sl(),
       getComplaintsPropertyListUsecase: sl(),
       getComplaintBillingTypesDropdownUsecase: sl(),
+      addComplaintBillUsecase: sl(),
     ),
   );
 }
