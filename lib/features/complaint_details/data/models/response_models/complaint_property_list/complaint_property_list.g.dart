@@ -20,14 +20,14 @@ Map<String, dynamic> _$ComplaintPropertyListToJson(
 
 _ComplaintProperty _$ComplaintPropertyFromJson(Map<String, dynamic> json) =>
     _ComplaintProperty(
-      complaintId: (json['complaintId'] as num?)?.toInt(),
-      propertyId: (json['propertyId'] as num?)?.toInt(),
+      complaint_id: (json['complaint_id'] as num?)?.toInt(),
+      property_id: (json['property_id'] as num?)?.toInt(),
       address: json['address'] as String?,
     );
 
 Map<String, dynamic> _$ComplaintPropertyToJson(_ComplaintProperty instance) =>
     <String, dynamic>{
-      'complaintId': instance.complaintId,
-      'propertyId': instance.propertyId,
+      'complaint_id': instance.complaint_id,
+      'property_id': instance.property_id,
       'address': instance.address,
     };

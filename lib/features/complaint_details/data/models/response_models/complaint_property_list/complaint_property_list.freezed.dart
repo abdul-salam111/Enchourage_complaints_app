@@ -302,7 +302,7 @@ $ComplaintPropertyCopyWith<$Res>? get data {
 /// @nodoc
 mixin _$ComplaintProperty {
 
- int? get complaintId; int? get propertyId; String? get address;
+ int? get complaint_id; int? get property_id; String? get address;
 /// Create a copy of ComplaintProperty
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -315,16 +315,16 @@ $ComplaintPropertyCopyWith<ComplaintProperty> get copyWith => _$ComplaintPropert
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ComplaintProperty&&(identical(other.complaintId, complaintId) || other.complaintId == complaintId)&&(identical(other.propertyId, propertyId) || other.propertyId == propertyId)&&(identical(other.address, address) || other.address == address));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ComplaintProperty&&(identical(other.complaint_id, complaint_id) || other.complaint_id == complaint_id)&&(identical(other.property_id, property_id) || other.property_id == property_id)&&(identical(other.address, address) || other.address == address));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,complaintId,propertyId,address);
+int get hashCode => Object.hash(runtimeType,complaint_id,property_id,address);
 
 @override
 String toString() {
-  return 'ComplaintProperty(complaintId: $complaintId, propertyId: $propertyId, address: $address)';
+  return 'ComplaintProperty(complaint_id: $complaint_id, property_id: $property_id, address: $address)';
 }
 
 
@@ -335,7 +335,7 @@ abstract mixin class $ComplaintPropertyCopyWith<$Res>  {
   factory $ComplaintPropertyCopyWith(ComplaintProperty value, $Res Function(ComplaintProperty) _then) = _$ComplaintPropertyCopyWithImpl;
 @useResult
 $Res call({
- int? complaintId, int? propertyId, String? address
+ int? complaint_id, int? property_id, String? address
 });
 
 
@@ -352,10 +352,10 @@ class _$ComplaintPropertyCopyWithImpl<$Res>
 
 /// Create a copy of ComplaintProperty
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? complaintId = freezed,Object? propertyId = freezed,Object? address = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? complaint_id = freezed,Object? property_id = freezed,Object? address = freezed,}) {
   return _then(_self.copyWith(
-complaintId: freezed == complaintId ? _self.complaintId : complaintId // ignore: cast_nullable_to_non_nullable
-as int?,propertyId: freezed == propertyId ? _self.propertyId : propertyId // ignore: cast_nullable_to_non_nullable
+complaint_id: freezed == complaint_id ? _self.complaint_id : complaint_id // ignore: cast_nullable_to_non_nullable
+as int?,property_id: freezed == property_id ? _self.property_id : property_id // ignore: cast_nullable_to_non_nullable
 as int?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -442,10 +442,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? complaintId,  int? propertyId,  String? address)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? complaint_id,  int? property_id,  String? address)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ComplaintProperty() when $default != null:
-return $default(_that.complaintId,_that.propertyId,_that.address);case _:
+return $default(_that.complaint_id,_that.property_id,_that.address);case _:
   return orElse();
 
 }
@@ -463,10 +463,10 @@ return $default(_that.complaintId,_that.propertyId,_that.address);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? complaintId,  int? propertyId,  String? address)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? complaint_id,  int? property_id,  String? address)  $default,) {final _that = this;
 switch (_that) {
 case _ComplaintProperty():
-return $default(_that.complaintId,_that.propertyId,_that.address);case _:
+return $default(_that.complaint_id,_that.property_id,_that.address);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -483,10 +483,10 @@ return $default(_that.complaintId,_that.propertyId,_that.address);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? complaintId,  int? propertyId,  String? address)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? complaint_id,  int? property_id,  String? address)?  $default,) {final _that = this;
 switch (_that) {
 case _ComplaintProperty() when $default != null:
-return $default(_that.complaintId,_that.propertyId,_that.address);case _:
+return $default(_that.complaint_id,_that.property_id,_that.address);case _:
   return null;
 
 }
@@ -498,11 +498,11 @@ return $default(_that.complaintId,_that.propertyId,_that.address);case _:
 @JsonSerializable()
 
 class _ComplaintProperty implements ComplaintProperty {
-  const _ComplaintProperty({this.complaintId, this.propertyId, this.address});
+  const _ComplaintProperty({this.complaint_id, this.property_id, this.address});
   factory _ComplaintProperty.fromJson(Map<String, dynamic> json) => _$ComplaintPropertyFromJson(json);
 
-@override final  int? complaintId;
-@override final  int? propertyId;
+@override final  int? complaint_id;
+@override final  int? property_id;
 @override final  String? address;
 
 /// Create a copy of ComplaintProperty
@@ -518,16 +518,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ComplaintProperty&&(identical(other.complaintId, complaintId) || other.complaintId == complaintId)&&(identical(other.propertyId, propertyId) || other.propertyId == propertyId)&&(identical(other.address, address) || other.address == address));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ComplaintProperty&&(identical(other.complaint_id, complaint_id) || other.complaint_id == complaint_id)&&(identical(other.property_id, property_id) || other.property_id == property_id)&&(identical(other.address, address) || other.address == address));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,complaintId,propertyId,address);
+int get hashCode => Object.hash(runtimeType,complaint_id,property_id,address);
 
 @override
 String toString() {
-  return 'ComplaintProperty(complaintId: $complaintId, propertyId: $propertyId, address: $address)';
+  return 'ComplaintProperty(complaint_id: $complaint_id, property_id: $property_id, address: $address)';
 }
 
 
@@ -538,7 +538,7 @@ abstract mixin class _$ComplaintPropertyCopyWith<$Res> implements $ComplaintProp
   factory _$ComplaintPropertyCopyWith(_ComplaintProperty value, $Res Function(_ComplaintProperty) _then) = __$ComplaintPropertyCopyWithImpl;
 @override @useResult
 $Res call({
- int? complaintId, int? propertyId, String? address
+ int? complaint_id, int? property_id, String? address
 });
 
 
@@ -555,10 +555,10 @@ class __$ComplaintPropertyCopyWithImpl<$Res>
 
 /// Create a copy of ComplaintProperty
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? complaintId = freezed,Object? propertyId = freezed,Object? address = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? complaint_id = freezed,Object? property_id = freezed,Object? address = freezed,}) {
   return _then(_ComplaintProperty(
-complaintId: freezed == complaintId ? _self.complaintId : complaintId // ignore: cast_nullable_to_non_nullable
-as int?,propertyId: freezed == propertyId ? _self.propertyId : propertyId // ignore: cast_nullable_to_non_nullable
+complaint_id: freezed == complaint_id ? _self.complaint_id : complaint_id // ignore: cast_nullable_to_non_nullable
+as int?,property_id: freezed == property_id ? _self.property_id : property_id // ignore: cast_nullable_to_non_nullable
 as int?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

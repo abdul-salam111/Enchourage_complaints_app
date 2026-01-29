@@ -99,7 +99,16 @@ class AddBillTab extends StatelessWidget {
           heightBox(20),
           CustomButton(
             size: Size(context.screenWidth * 0.3, 35),
-            onPressed: () {},
+            onPressed: () {
+              // Access selected objects
+              final property = vm.selectedPropertyObject;
+              final billType = vm.selectedBillTypeObject;
+
+              debugPrint('Selected Property: ${property?.property_id}');
+              debugPrint('Selected Bill Type: ${billType?.id}');
+
+              // TODO: Implement submit logic
+            },
             text: "Submit Bill",
             radius: 7,
             fontsize: 12,

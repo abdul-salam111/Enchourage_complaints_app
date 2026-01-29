@@ -14,8 +14,8 @@ abstract class ComplaintPropertyList with _$ComplaintPropertyList {
 @freezed
 abstract class ComplaintProperty with _$ComplaintProperty {
   const factory ComplaintProperty({
-    int? complaintId,
-    int? propertyId,
+    int? complaint_id,
+    int? property_id,
     String? address,
   }) = _ComplaintProperty;
 
