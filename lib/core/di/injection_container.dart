@@ -1,8 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:enchourage_app/features/complaint_details/domain/usecases/add_complaint_bill_usecase.dart';
-import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_billing_types_dropdown_usecase.dart';
-import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_bills_list_usecase.dart';
-import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaints_property_list_usecase.dart';
 import '../../app_exports.dart';
 
 final sl = GetIt.instance;
@@ -19,7 +15,7 @@ Future<void> setupLocator() async {
 }
 
 Future<void> coreDependencies() async {
-  sl.registerLazySingleton<Dio>(() => Dio());
+  sl.registerLazySingleton<Dio>(() => getDio());
   sl.registerLazySingleton(() => DioHelper(sl()));
 }
 

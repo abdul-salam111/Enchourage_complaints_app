@@ -1,5 +1,4 @@
 import '../../../../app_exports.dart';
-import '../models/response_models/outdoor_complaints_list.dart';
 
 abstract interface class IRemoteOutdoorComplaintsDataSource {
   Future<OutdoorComplaintsList> getOutdoorComplaintsList();

@@ -1,14 +1,5 @@
 import 'dart:io';
 
-import 'package:enchourage_app/features/complaint_details/data/models/request_models/create_complaint_bill/add_complaint_bill_request.dart';
-import 'package:enchourage_app/features/complaint_details/data/models/response_models/bills_types_list/bills_types_list.dart';
-import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_bills_list/complaint_bills_list.dart';
-import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_property_list/complaint_property_list.dart';
-import 'package:enchourage_app/features/complaint_details/domain/usecases/add_complaint_bill_usecase.dart';
-import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_billing_types_dropdown_usecase.dart';
-import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaint_bills_list_usecase.dart';
-import 'package:enchourage_app/features/complaint_details/domain/usecases/get_complaints_property_list_usecase.dart';
-
 import '../../../../app_exports.dart';
 
 class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {

@@ -1,5 +1,3 @@
-import 'package:enchourage_app/features/complaint_details/data/models/response_models/bills_types_list/bills_types_list.dart';
-
 import '../../../../app_exports.dart';
 
 class GetComplaintBillingTypesDropdownUsecase

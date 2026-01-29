@@ -11,4 +11,5 @@ class RoutePaths {
   static const String complaint_details = "/complaint_details";
   static const String create_complaint = "/create_complaint";
   static const String profile = "/profile";
+  static const String viewcomplaintbill = "/viewcomplaintbill";
 }

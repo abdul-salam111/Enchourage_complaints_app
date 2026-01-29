@@ -87,6 +87,15 @@ class AppRoutes {
         name: RouteNames.profile,
         builder: (context, state) => const ProfileView(),
       ),
+      GoRoute(
+        path: RoutePaths.viewcomplaintbill,
+        name: RouteNames.viewcomplaintbill,
+        builder: (context, state) {
+          return ViewComplaintsBill(
+            complaintBills: state.extra as ComplaintBills,
+          );
+        },
+      ),
     ],
   );
 }

@@ -41,6 +41,7 @@ class ExpandableBillList extends StatelessWidget {
                 expanded: expanded,
                 isOdd: index.isOdd,
                 onToggle: () => onToggle(index),
+                bill: bill,
               );
             },
           ),
@@ -60,6 +61,7 @@ class ExpandableBillRow extends StatelessWidget {
     required this.expanded,
     required this.isOdd,
     required this.onToggle,
+    required this.bill,
   });
 
   final String title;
@@ -70,6 +72,7 @@ class ExpandableBillRow extends StatelessWidget {
   final bool expanded;
   final bool isOdd;
   final VoidCallback onToggle;
+  final ComplaintBills bill;
 
   @override
   Widget build(BuildContext context) {
@@ -124,18 +127,49 @@ class ExpandableBillRow extends StatelessWidget {
         ),
 
         if (expanded)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text(
-                "Description:",
-                style: context.bodySmall.copyWith(fontWeight: FontWeight.bold),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: .start,
+                  children: [
+                    Text(
+                      "Description:",
+                      style: context.bodySmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      description,
+                      style: context.bodySmall.copyWith(
+                        color: AppColors.textSecondaryLight,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              Text(
-                description,
-                style: context.bodySmall.copyWith(
-                  color: AppColors.textSecondaryLight,
-                  fontWeight: FontWeight.normal,
+              widthBox(20),
+              SizedBox(
+                child: IconButton(
+                  onPressed: () {
+                    context.pushNamed(
+                      RouteNames.viewcomplaintbill,
+                      extra: bill,
+                    );
+                  },
+                  icon: Container(
+                    padding: .all(3),
+                    decoration: BoxDecoration(
+                      color: AppColors.warningDark,
+                      borderRadius: .circular(5),
+                    ),
+                    child: const Icon(
+                      Iconsax.eye,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -148,7 +182,6 @@ class ExpandableBillRow extends StatelessWidget {
               bottom: 4,
             ),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
               border: Border(bottom: BorderSide(color: AppColors.grey200)),
             ),
           ),
