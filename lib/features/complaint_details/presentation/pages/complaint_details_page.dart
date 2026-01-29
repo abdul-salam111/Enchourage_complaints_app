@@ -34,13 +34,18 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => sl<ComplaintDetailsViewModel>()
-        ..fetchComplaintDetails(widget.complaintId)
-        ..getMessagesList(complaintId: widget.complaintId)
-        ..getEmployees()
-        ..getComplaintBillsList(complaintId: widget.complaintId)
-        ..getComplaintPropertyList(complaintId: widget.complaintId)
-        ..getBillTypesList(),
+      create: (_) {
+        final vm = sl<ComplaintDetailsViewModel>();
+        Future.wait([
+          vm.fetchComplaintDetails(widget.complaintId),
+          vm.getMessagesList(complaintId: widget.complaintId),
+          vm.getEmployees(),
+          vm.getComplaintBillsList(complaintId: widget.complaintId),
+          vm.getComplaintPropertyList(complaintId: widget.complaintId),
+          vm.getBillTypesList(),
+        ]);
+        return vm;
+      },
       child: Scaffold(
         appBar: AppBar(title: Text('ComptNo: ${widget.complaintId}')),
         body: Consumer<ComplaintDetailsViewModel>(
@@ -147,19 +152,15 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                 widthBox(10),
                                 Expanded(
                                   child: CustomDropdown(
-                                    // ✅ FIXED - No new Provider!
-                                    value: vm
-                                        .selectedStatus, // Use the existing 'vm' from parent Consumer
+                                    value: vm.selectedStatus,
                                     valuesList: statuses,
                                     onChanged: (value) {
                                       if (value == "Assigned") {
                                         showDialog(
                                           context: context,
                                           builder: (dialogContext) {
-                                            // ✅ Use ChangeNotifierProvider.value (not Provider.value)
                                             return ChangeNotifierProvider.value(
-                                              value:
-                                                  vm, // Pass the existing vm from parent
+                                              value: vm,
                                               child: Consumer<ComplaintDetailsViewModel>(
                                                 builder: (context, vm, _) {
                                                   return AlertDialog(

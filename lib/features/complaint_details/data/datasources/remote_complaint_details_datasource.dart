@@ -1,6 +1,8 @@
+import 'package:enchourage_app/features/complaint_details/data/models/request_models/create_complaint_bill/add_complaint_bill_request.dart';
 import 'package:enchourage_app/features/complaint_details/data/models/response_models/bills_types_list/bills_types_list.dart';
 import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_bills_list/complaint_bills_list.dart';
 import 'package:enchourage_app/features/complaint_details/data/models/response_models/complaint_property_list/complaint_property_list.dart';
+import 'package:enchourage_app/features/complaint_details/data/models/response_models/create_complaint_bill/create_complaint_bill_response.dart';
 
 import '../../../../app_exports.dart';
 
@@ -22,6 +24,9 @@ abstract interface class IRemoteComplaintDetailsDataSource {
     required int complaintId,
   });
   Future<BillsTypesList> getBillsTypesListDropdown();
+  Future<CreateComplaintBillResponse> createComplaintBill({
+    required AddComplaintBillRequest complaintDetails,
+  });
 }
 
 class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
@@ -94,5 +99,39 @@ class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
       url: ApiEndPoints.getBillingDropdownList(),
       parser: (json) => BillsTypesList.fromJson(json),
     );
+  }
+
+  @override
+  Future<CreateComplaintBillResponse> createComplaintBill({
+    required AddComplaintBillRequest complaintDetails,
+  }) async {
+    try {
+      final fields = complaintDetails.toJson();
+      List<FileUploadModel>? files;
+      if (complaintDetails.receipts != null &&
+          complaintDetails.receipts!.isNotEmpty) {
+        files = complaintDetails.receipts!
+            .map(
+              (path) =>
+                  FileUploadModel(fieldName: 'receipt[]', filePath: path.path),
+            )
+            .toList();
+      }
+
+      final response = await dioHelper.sendMultipartRequest(
+        url: ApiEndPoints.createComplaintBill(),
+        fields: fields,
+        files: files,
+        isAuthRequired: true,
+        authToken: await storage.readValues(StorageKeys.token),
+        onSendProgress: (sent, total) {},
+      );
+
+      return CreateComplaintBillResponse.fromJson(response);
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException(e.toString());
+    }
   }
 }

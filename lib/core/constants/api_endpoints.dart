@@ -38,4 +38,6 @@ class ApiEndPoints {
 
   static String getComplaintPropertyList(int complaintId) =>
       "${baseUrl}admin/property/$complaintId";
+
+  static String createComplaintBill() => "${baseUrl}admin/bills/add";
 }

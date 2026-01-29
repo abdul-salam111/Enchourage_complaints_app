@@ -106,8 +106,6 @@ class AddBillTab extends StatelessWidget {
 
               debugPrint('Selected Property: ${property?.property_id}');
               debugPrint('Selected Bill Type: ${billType?.id}');
-
-              // TODO: Implement submit logic
             },
             text: "Submit Bill",
             radius: 7,
