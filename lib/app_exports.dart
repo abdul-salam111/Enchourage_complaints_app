@@ -96,13 +96,15 @@ export 'features/complaint_details/domain/repositories/complaint_details_reposit
 export 'features/complaint_details/domain/usecases/add_complaint_bill_usecase.dart';
 export 'features/complaint_details/domain/usecases/add_new_message_usecase.dart';
 export 'features/complaint_details/domain/usecases/complaint_details_usecase.dart';
+export 'features/complaint_details/domain/usecases/delete_complaint_bill_usecase.dart';
 export 'features/complaint_details/domain/usecases/get_complaint_billing_types_dropdown_usecase.dart';
 export 'features/complaint_details/domain/usecases/get_complaint_bills_list_usecase.dart';
 export 'features/complaint_details/domain/usecases/get_complaints_property_list_usecase.dart';
 export 'features/complaint_details/domain/usecases/get_messages_list_usecase.dart';
 export 'features/complaint_details/domain/usecases/set_complaint_duration_usecase.dart';
+export 'features/complaint_details/domain/usecases/update_complaint_bill_usecase.dart';
 export 'features/complaint_details/presentation/pages/complaint_details_page.dart';
-export 'features/complaint_details/presentation/pages/view_complaints.dart';
+export 'features/complaint_details/presentation/pages/view_complaints_bill.dart';
 export 'features/complaint_details/presentation/viewmodels/complaint_details_viewmodel.dart';
 export 'features/complaint_details/presentation/widgets/add_bill_tab.dart';
 export 'features/complaint_details/presentation/widgets/card_row.dart';

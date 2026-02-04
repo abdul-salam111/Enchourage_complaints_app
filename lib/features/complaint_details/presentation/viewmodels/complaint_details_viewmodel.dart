@@ -17,6 +17,8 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   final GetComplaintBillingTypesDropdownUsecase
   _getComplaintBillingTypesDropdownUsecase;
   final AddComplaintBillUsecase _addComplaintBillUsecase;
+  final UpdateComplaintBillUsecase _updateComplaintBillUsecase;
+  final DeleteComplaintBillUsecase _deleteComplaintBillUsecase;
 
   ComplaintDetailsViewModel({
     required ComplaintDetailsUsecase complaintDetailsUsecase,
@@ -30,6 +32,8 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
     required GetComplaintBillingTypesDropdownUsecase
     getComplaintBillingTypesDropdownUsecase,
     required AddComplaintBillUsecase addComplaintBillUsecase,
+    required UpdateComplaintBillUsecase updateComplaintBillUsecase,
+    required DeleteComplaintBillUsecase deleteComplaintBillUsecase,
   }) : _complaintDetailsUsecase = complaintDetailsUsecase,
        _setComplaintDurationUsecase = setComplaintDurationUsecase,
        _getMessagesListUsecase = getMessagesListUsecase,
@@ -40,6 +44,8 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
            getComplaintBillingTypesDropdownUsecase,
        _getComplaintsPropertyListUsecase = getComplaintsPropertyListUsecase,
        _addComplaintBillUsecase = addComplaintBillUsecase,
+       _updateComplaintBillUsecase = updateComplaintBillUsecase,
+       _deleteComplaintBillUsecase = deleteComplaintBillUsecase,
        _addNewMessageUsecase = addNewMessageUsecase;
 
   // ══════════════════════════════════════════════════════════════
@@ -403,7 +409,7 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
   List<ComplaintBills> _complaintBillsList = [];
   List<ComplaintBills> get complaintBillsList => _complaintBillsList;
   setComplaintBillsList(List<ComplaintBills> value) {
-    _complaintBillsList = value;
+    _complaintBillsList = List.from(value); // Creates mutable copy
     notifyListeners();
   }
 
@@ -447,14 +453,41 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
       },
     );
   }
+
   // ══════════════════════════════════════════════════════════════
-  // Add Bill State & Methods
+  // Add/Edit Bill State & Methods
   // ══════════════════════════════════════════════════════════════
 
   bool _isAddingBill = false;
   bool get isAddingBill => _isAddingBill;
   set isAddingBill(bool value) {
     _isAddingBill = value;
+    notifyListeners();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // Edit Bill State
+  // ══════════════════════════════════════════════════════════════
+
+  ComplaintBills? _editingBill;
+  ComplaintBills? get editingBill => _editingBill;
+
+  bool get isEditMode => _editingBill != null;
+
+  void setEditingBill(ComplaintBills? bill) {
+    _editingBill = bill;
+    if (bill != null) {
+      // Pre-populate fields when editing
+      selectedBillType = bill.billingType;
+      selectedProperty = complaintPropertyList?.address;
+    }
+    notifyListeners();
+  }
+
+  void clearEditingBill() {
+    _editingBill = null;
+    selectedBillType = null;
+    selectedProperty = null;
     notifyListeners();
   }
 
@@ -478,11 +511,6 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
 
     if (amount <= 0) {
       AppToastsUtils.showError(context, "Please enter valid amount");
-      return;
-    }
-
-    if (receipts.isEmpty) {
-      AppToastsUtils.showError(context, "Please upload at least one receipt");
       return;
     }
 
@@ -514,6 +542,97 @@ class ComplaintDetailsViewModel extends ChangeNotifier with UseCaseExecutor {
       },
       onError: (error) {
         isAddingBill = false;
+        AppToastsUtils.showError(context, error.toString());
+      },
+    );
+  }
+
+  Future<void> updateComplaintBill({
+    required BuildContext context,
+    required int complaintNo,
+    required double amount,
+    String? description,
+    required List<File> receipts,
+  }) async {
+    // Validation
+    if (selectedBillTypeObject == null) {
+      AppToastsUtils.showError(context, "Please select bill type");
+      return;
+    }
+
+    if (selectedPropertyObject == null) {
+      AppToastsUtils.showError(context, "Property not found");
+      return;
+    }
+
+    if (amount <= 0) {
+      AppToastsUtils.showError(context, "Please enter valid amount");
+      return;
+    }
+
+    isAddingBill = true;
+
+    final request = AddComplaintBillRequest(
+      complaintNo: complaintNo,
+      billingTypeId: selectedBillTypeObject!.id!,
+      amount: amount,
+      description: description,
+      propertyId: selectedPropertyObject!.property_id!,
+      receipts: receipts.isEmpty ? null : receipts,
+    );
+
+    await execute(
+      call: () => _updateComplaintBillUsecase(
+        UpdateComplaintBillParam(
+          addComplaintBillRequest: request,
+          billId: editingBill!.id!,
+        ),
+      ),
+      onSuccess: (data) {
+        isAddingBill = false;
+
+        // Clear editing state
+        clearEditingBill();
+
+        AppNavigator.pop();
+        AppToastsUtils.showSuccess(context, "Bill updated successfully!");
+
+        // Refresh bills list
+        getComplaintBillsList(complaintId: complaintNo);
+      },
+      onError: (error) {
+        isAddingBill = false;
+        AppToastsUtils.showError(context, error.toString());
+      },
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // delete bill
+  // ══════════════════════════════════════════════════════════════
+
+  bool _isDeletingBill = false;
+  bool get isDeletingBill => _isDeletingBill;
+  set isDeletingBill(bool value) {
+    _isDeletingBill = value;
+    notifyListeners();
+  }
+
+  Future<void> deleteComplaintBill({
+    required BuildContext context,
+    required int billId,
+  }) async {
+    isDeletingBill = true;
+    await execute(
+      call: () => _deleteComplaintBillUsecase(billId),
+      onSuccess: (data) {
+        isDeletingBill = false;
+        _complaintBillsList.removeWhere((bill) => bill.id == billId);
+        notifyListeners();
+        AppToastsUtils.showSuccess(context, "Bill deleted successfully!");
+      },
+      onError: (error) {
+        isDeletingBill = false;
         AppToastsUtils.showError(context, error.toString());
       },
     );

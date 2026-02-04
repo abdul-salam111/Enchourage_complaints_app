@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 
 class LoadingIndicator extends StatelessWidget {
   final double size;
+  final Color? color;
+  final double? strokeWidth;
 
   const LoadingIndicator({
     super.key,
     this.size = 60,
+    this.color,
+    this.strokeWidth,
   });
 
   @override
@@ -18,12 +22,12 @@ class LoadingIndicator extends StatelessWidget {
         width: size,
         child: Platform.isAndroid
             ? CircularProgressIndicator(
-                strokeWidth: 4,
-                color: Theme.of(context).progressIndicatorTheme.color,
+                strokeWidth: strokeWidth ?? 4,
+                color: color ?? Theme.of(context).progressIndicatorTheme.color,
               )
             : CupertinoActivityIndicator(
                 radius: size / 2,
-                color: Theme.of(context).progressIndicatorTheme.color,
+                color: color ?? Theme.of(context).progressIndicatorTheme.color,
               ),
       ),
     );

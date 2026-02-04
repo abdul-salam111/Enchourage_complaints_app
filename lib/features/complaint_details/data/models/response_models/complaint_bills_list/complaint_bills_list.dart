@@ -11,8 +11,9 @@ String complaintBillsListToJson(ComplaintBillsList data) =>
 
 @freezed
 abstract class ComplaintBillsList with _$ComplaintBillsList {
-  const factory ComplaintBillsList({List<ComplaintBills>? data}) =
-      _ComplaintBillsList;
+  const factory ComplaintBillsList({
+    @JsonKey(name: 'data') List<ComplaintBills>? data,
+  }) = _ComplaintBillsList;
 
   factory ComplaintBillsList.fromJson(Map<String, dynamic> json) =>
       _$ComplaintBillsListFromJson(json);
@@ -21,12 +22,15 @@ abstract class ComplaintBillsList with _$ComplaintBillsList {
 @freezed
 abstract class ComplaintBills with _$ComplaintBills {
   const factory ComplaintBills({
-    int? id,
-    int? billing_type,
-    int? amount,
-    dynamic description,
-    DateTime? created_at,
-    List<dynamic>? receipts,
+    @JsonKey(name: 'id') int? id,
+    @JsonKey(name: 'billing_type_id') int? billingTypeId,
+    @JsonKey(name: 'billing_type') String? billingType,
+    @JsonKey(name: 'property_id') int? propertyId,
+    @JsonKey(name: 'property_address') String? propertyAddress,
+    @JsonKey(name: 'amount') double? amount,
+    @JsonKey(name: 'description') String? description,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'receipts') List<String>? receipts,
   }) = _ComplaintBills;
 
   factory ComplaintBills.fromJson(Map<String, dynamic> json) =>

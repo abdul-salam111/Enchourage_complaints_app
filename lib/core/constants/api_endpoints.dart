@@ -42,4 +42,6 @@ class ApiEndPoints {
   static String createComplaintBill() => "${baseUrl}admin/bills/add";
   static String updateComplaintBill(int complaintId) =>
       "${baseUrl}admin/bills/$complaintId/edit-bill";
+  static String deleteComplaintBill(int complaintId) =>
+      "${baseUrl}admin/bill/$complaintId";
 }

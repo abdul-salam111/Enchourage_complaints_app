@@ -29,4 +29,10 @@ abstract interface class IComplaintDetailsRepository {
 
   Future<Either<AppException, CreateComplaintBillResponse>>
   createComplaintBill({required AddComplaintBillRequest complaintDetails});
+  deleteComplaintBill({required int billId});
+  Future<Either<AppException, CreateComplaintBillResponse>>
+  updateComplaintBill({
+    required AddComplaintBillRequest complaintDetails,
+    required int billId,
+  });
 }

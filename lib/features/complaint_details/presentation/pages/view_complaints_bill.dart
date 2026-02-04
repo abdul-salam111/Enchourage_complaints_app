@@ -24,7 +24,7 @@ class _ViewComplaintsBillState extends State<ViewComplaintsBill> {
                 style: context.bodySmall.copyWith(color: AppColors.grey600),
               ),
               Text(
-                widget.complaintBills.billing_type.toString(),
+                widget.complaintBills.billingType.toString(),
                 style: context.bodySmall.copyWith(fontWeight: .bold),
               ),
               heightBox(5),
@@ -51,7 +51,7 @@ class _ViewComplaintsBillState extends State<ViewComplaintsBill> {
                 style: context.bodySmall.copyWith(color: AppColors.grey600),
               ),
               Text(
-                widget.complaintBills.created_at?.formatted ?? "",
+                widget.complaintBills.createdAt?.formatted ?? "",
                 style: context.bodySmall.copyWith(fontWeight: .bold),
               ),
             ],

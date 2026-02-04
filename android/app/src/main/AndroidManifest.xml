@@ -14,7 +14,7 @@
         android:maxSdkVersion="32" />
 
     <application
-        android:label="Enchourage Complaints"
+        android:label="Naval Anchorage Admin App"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

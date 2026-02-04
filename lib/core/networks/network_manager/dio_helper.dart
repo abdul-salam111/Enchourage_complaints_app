@@ -180,7 +180,7 @@ class DioHelper {
         case 403:
           throw ForbiddenException(errorMessage ?? 'Access forbidden');
         case 404:
-          throw NotFoundException(errorMessage ?? 'Resource not found');
+          throw NotFoundException('Resource not found');
         case 405:
           throw MethodNotAllowedException(errorMessage ?? 'Method not allowed');
         case 408:
@@ -402,6 +402,75 @@ class DioHelper {
       rethrow;
     } catch (error) {
       throw FetchDataException(error.toString());
+    }
+  }
+
+  /// Send multipart PUT request with files
+  Future<dynamic> sendMultipartRequestPut({
+    required String url,
+    Map<String, dynamic>? fields,
+    List<FileUploadModel>? files,
+    bool isAuthRequired = false,
+    String? authToken,
+    ProgressCallback? onSendProgress,
+  }) async {
+    try {
+      // Create FormData
+      FormData formData = FormData();
+
+      // Add text fields
+      if (fields != null) {
+        fields.forEach((key, value) {
+          formData.fields.add(MapEntry(key, value.toString()));
+        });
+      }
+
+      // Add files
+      if (files != null && files.isNotEmpty) {
+        for (var fileModel in files) {
+          File file = File(fileModel.filePath);
+
+          // Check if file exists
+          if (!await file.exists()) {
+            throw Exception('File not found: ${fileModel.filePath}');
+          }
+
+          String fileName = fileModel.fileName ?? file.path.split('/').last;
+
+          formData.files.add(
+            MapEntry(
+              fileModel.fieldName,
+              await MultipartFile.fromFile(
+                file.path,
+                filename: fileName,
+                contentType: fileModel.contentType,
+              ),
+            ),
+          );
+        }
+      }
+
+      // Set up options
+      Options requestOptions = Options(
+        headers: {
+          if (isAuthRequired && authToken != null)
+            "Authorization": "Bearer $authToken",
+        },
+      );
+
+      // Make the PUT request
+      Response response = await dio.put(
+        url,
+        data: formData,
+        options: requestOptions,
+        onSendProgress: onSendProgress,
+      );
+
+      return response.data;
+    } on DioException catch (error) {
+      _handleDioError(error);
+    } catch (error) {
+      rethrow;
     }
   }
 }

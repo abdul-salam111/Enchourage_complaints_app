@@ -81,4 +81,25 @@ class ComplaintDetailsRepositoryImpl extends BaseRepository
           dataSource.createComplaintBill(complaintDetails: complaintDetails),
     );
   }
+
+  @override
+  Future<Either<AppException, CreateComplaintBillResponse>>
+  updateComplaintBill({
+    required AddComplaintBillRequest complaintDetails,
+    required int billId,
+  }) {
+    return execute(
+      call: () => dataSource.updateComplaintBill(
+        complaintDetails: complaintDetails,
+        billId: billId,
+      ),
+    );
+  }
+
+  @override
+  Future<Either<AppException, bool>> deleteComplaintBill({
+    required int billId,
+  }) {
+    return execute(call: () => dataSource.deleteComplaintBill(billId: billId));
+  }
 }

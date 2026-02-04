@@ -23,7 +23,9 @@ abstract interface class IRemoteComplaintDetailsDataSource {
   });
   Future<CreateComplaintBillResponse> updateComplaintBill({
     required AddComplaintBillRequest complaintDetails,
+    required int billId,
   });
+  Future<bool> deleteComplaintBill({required int billId});
 }
 
 class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
@@ -135,9 +137,15 @@ class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
   @override
   Future<CreateComplaintBillResponse> updateComplaintBill({
     required AddComplaintBillRequest complaintDetails,
+    required int billId,
   }) async {
     try {
       final fields = complaintDetails.toJson();
+
+      // Add _method field for Laravel PUT method spoofing
+      fields['_method'] = 'PUT';
+
+      // Handle file uploads
       List<FileUploadModel>? files;
       if (complaintDetails.receipts != null &&
           complaintDetails.receipts!.isNotEmpty) {
@@ -150,7 +158,7 @@ class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
       }
 
       final response = await dioHelper.sendMultipartRequest(
-        url: ApiEndPoints.createComplaintBill(),
+        url: ApiEndPoints.updateComplaintBill(billId),
         fields: fields,
         files: files,
         isAuthRequired: true,
@@ -164,5 +172,13 @@ class RemoteComplaintDetailsDataSourceImpl extends BaseRemoteDatasource
     } catch (e) {
       throw AppException(e.toString());
     }
+  }
+
+  @override
+  Future<bool> deleteComplaintBill({required int billId}) async {
+    return delete<bool>(
+      url: ApiEndPoints.deleteComplaintBill(billId),
+      parser: (json) => true,
+    );
   }
 }

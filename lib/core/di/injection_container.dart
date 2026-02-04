@@ -125,6 +125,13 @@ Future<void> complaintDetailsDependencies() async {
   sl.registerLazySingleton<AddComplaintBillUsecase>(
     () => AddComplaintBillUsecase(repository: sl()),
   );
+  sl.registerLazySingleton<UpdateComplaintBillUsecase>(
+    () => UpdateComplaintBillUsecase(repository: sl()),
+  );
+  sl.registerLazySingleton<DeleteComplaintBillUsecase>(
+    () => DeleteComplaintBillUsecase(repository: sl()),
+  );
+
   // ViewModel
   sl.registerFactory<ComplaintDetailsViewModel>(
     () => ComplaintDetailsViewModel(
@@ -138,6 +145,8 @@ Future<void> complaintDetailsDependencies() async {
       getComplaintsPropertyListUsecase: sl(),
       getComplaintBillingTypesDropdownUsecase: sl(),
       addComplaintBillUsecase: sl(),
+      updateComplaintBillUsecase: sl(),
+      deleteComplaintBillUsecase: sl(),
     ),
   );
 }
