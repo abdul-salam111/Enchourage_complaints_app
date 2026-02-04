@@ -361,8 +361,9 @@ class CreateComplaintViewModel extends ChangeNotifier with UseCaseExecutor {
     await execute(
       call: () => _createComplaintUsecase(request),
       onSuccess: (result) {
-        AppToastsUtils.success('Complaint submitted successfully');
+        AppNavigator.pop();
 
+        AppToastsUtils.success('Complaint submitted successfully');
         clearForm();
       },
       onError: (error) {

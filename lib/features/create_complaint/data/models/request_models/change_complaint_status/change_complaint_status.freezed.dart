@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChangeComplaintStatus {
 
-@JsonKey(name: "complaint_no") int? get complaintNo;@JsonKey(name: "status") String? get status;@JsonKey(name: "assign_to") String? get assignTo;
+@JsonKey(name: "complaint_no") int? get complaintNo;@JsonKey(name: "status") String? get status;@JsonKey(name: "assign_to_user_id") String? get assignTo;
 /// Create a copy of ChangeComplaintStatus
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ChangeComplaintStatusCopyWith<$Res>  {
   factory $ChangeComplaintStatusCopyWith(ChangeComplaintStatus value, $Res Function(ChangeComplaintStatus) _then) = _$ChangeComplaintStatusCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: "complaint_no") int? complaintNo,@JsonKey(name: "status") String? status,@JsonKey(name: "assign_to") String? assignTo
+@JsonKey(name: "complaint_no") int? complaintNo,@JsonKey(name: "status") String? status,@JsonKey(name: "assign_to_user_id") String? assignTo
 });
 
 
@@ -155,7 +155,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "status")  String? status, @JsonKey(name: "assign_to")  String? assignTo)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "status")  String? status, @JsonKey(name: "assign_to_user_id")  String? assignTo)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChangeComplaintStatus() when $default != null:
 return $default(_that.complaintNo,_that.status,_that.assignTo);case _:
@@ -176,7 +176,7 @@ return $default(_that.complaintNo,_that.status,_that.assignTo);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "status")  String? status, @JsonKey(name: "assign_to")  String? assignTo)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "status")  String? status, @JsonKey(name: "assign_to_user_id")  String? assignTo)  $default,) {final _that = this;
 switch (_that) {
 case _ChangeComplaintStatus():
 return $default(_that.complaintNo,_that.status,_that.assignTo);case _:
@@ -196,7 +196,7 @@ return $default(_that.complaintNo,_that.status,_that.assignTo);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "status")  String? status, @JsonKey(name: "assign_to")  String? assignTo)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "complaint_no")  int? complaintNo, @JsonKey(name: "status")  String? status, @JsonKey(name: "assign_to_user_id")  String? assignTo)?  $default,) {final _that = this;
 switch (_that) {
 case _ChangeComplaintStatus() when $default != null:
 return $default(_that.complaintNo,_that.status,_that.assignTo);case _:
@@ -211,12 +211,12 @@ return $default(_that.complaintNo,_that.status,_that.assignTo);case _:
 @JsonSerializable()
 
 class _ChangeComplaintStatus implements ChangeComplaintStatus {
-  const _ChangeComplaintStatus({@JsonKey(name: "complaint_no") this.complaintNo, @JsonKey(name: "status") this.status, @JsonKey(name: "assign_to") this.assignTo});
+  const _ChangeComplaintStatus({@JsonKey(name: "complaint_no") this.complaintNo, @JsonKey(name: "status") this.status, @JsonKey(name: "assign_to_user_id") this.assignTo});
   factory _ChangeComplaintStatus.fromJson(Map<String, dynamic> json) => _$ChangeComplaintStatusFromJson(json);
 
 @override@JsonKey(name: "complaint_no") final  int? complaintNo;
 @override@JsonKey(name: "status") final  String? status;
-@override@JsonKey(name: "assign_to") final  String? assignTo;
+@override@JsonKey(name: "assign_to_user_id") final  String? assignTo;
 
 /// Create a copy of ChangeComplaintStatus
 /// with the given fields replaced by the non-null parameter values.
@@ -251,7 +251,7 @@ abstract mixin class _$ChangeComplaintStatusCopyWith<$Res> implements $ChangeCom
   factory _$ChangeComplaintStatusCopyWith(_ChangeComplaintStatus value, $Res Function(_ChangeComplaintStatus) _then) = __$ChangeComplaintStatusCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: "complaint_no") int? complaintNo,@JsonKey(name: "status") String? status,@JsonKey(name: "assign_to") String? assignTo
+@JsonKey(name: "complaint_no") int? complaintNo,@JsonKey(name: "status") String? status,@JsonKey(name: "assign_to_user_id") String? assignTo
 });
 
 

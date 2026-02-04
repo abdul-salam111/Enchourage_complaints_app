@@ -11,7 +11,7 @@ _ChangeComplaintStatus _$ChangeComplaintStatusFromJson(
 ) => _ChangeComplaintStatus(
   complaintNo: (json['complaint_no'] as num?)?.toInt(),
   status: json['status'] as String?,
-  assignTo: json['assign_to'] as String?,
+  assignTo: json['assign_to_user_id'] as String?,
 );
 
 Map<String, dynamic> _$ChangeComplaintStatusToJson(
@@ -19,5 +19,5 @@ Map<String, dynamic> _$ChangeComplaintStatusToJson(
 ) => <String, dynamic>{
   'complaint_no': instance.complaintNo,
   'status': instance.status,
-  'assign_to': instance.assignTo,
+  'assign_to_user_id': instance.assignTo,
 };

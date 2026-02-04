@@ -7,7 +7,7 @@ abstract class ChangeComplaintStatus with _$ChangeComplaintStatus {
   const factory ChangeComplaintStatus({
     @JsonKey(name: "complaint_no") int? complaintNo,
     @JsonKey(name: "status") String? status,
-    @JsonKey(name: "assign_to") String? assignTo,
+    @JsonKey(name: "assign_to_user_id") String? assignTo,
   }) = _ChangeComplaintStatus;
 
   factory ChangeComplaintStatus.fromJson(Map<String, dynamic> json) =>

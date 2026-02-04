@@ -248,7 +248,8 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                                                             "Assigned",
                                                                         assignTo: vm
                                                                             .selectedEmployee
-                                                                            ?.name,
+                                                                            ?.id
+                                                                            .toString(),
                                                                         complaintNo:
                                                                             widget.complaintId,
                                                                       ),
@@ -325,6 +326,10 @@ class _ComplaintDetailsPageState extends State<ComplaintDetailsPage>
                                                                             widget.complaintId,
                                                                         status:
                                                                             value,
+                                                                        assignTo: vm
+                                                                            .selectedEmployee
+                                                                            ?.id
+                                                                            .toString(),
                                                                       ),
                                                                       context,
                                                                     );
